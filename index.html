@@ -40,7 +40,7 @@ h2{font-size:18px;line-height:1.45;margin:0 0 7px;letter-spacing:-.015em}
 <script>
 'use strict';
 
-const DATA_URL='https://gzamrrcmrxirrqsijszm.supabase.co/functions/v1/today5-data';
+const DATA_URL='./news.json';
 const ARCHIVE_KEY='today5_archive_v1';
 const SAVED_KEY='today5_saved_v1';
 const SETTINGS_KEY='today5_settings_v1';
@@ -80,15 +80,15 @@ function isSaved(item){return state.saved.some(x=>articleId(x)===articleId(item)
 function normalizePayload(data){
   return {
     day:data.day || new Date().toISOString().slice(0,10),
-    updated:decode64(data.updated),
-    quick:decode64(data.quick),
+    updated:String(data.updated||'更新時刻不明'),
+    quick:String(data.quick||''),
     items:(data.items||[]).map(x=>({
       rank:x.rank,
-      title:decode64(x.title),
-      source:decode64(x.source),
-      category:decode64(x.category),
-      cause:safeSummaryText(x.cause?decode64(x.cause):'','公開情報では原因・背景が明確に示されていません。'),
-      outlook:safeSummaryText(x.outlook?decode64(x.outlook):'','今後の続報確認が必要です。'),
+      title:String(x.title||''),
+      source:String(x.source||''),
+      category:String(x.category||''),
+      cause:safeSummaryText(x.cause,'引用元で確認できる範囲では背景が明確ではありません。'),
+      outlook:safeSummaryText(x.outlook,'今後の続報確認が必要です。'),
       link:x.link
     }))
   };
@@ -129,7 +129,7 @@ function buildHero(app){
   const h1=el('h1');
   h1.append(document.createTextNode('世界・日本・経済を'),document.createElement('br'),document.createTextNode('5本だけ。'));
   hero.appendChild(h1);
-  hero.appendChild(el('p','', '見出しだけでなく、要約もサッと確認。気になる記事は保存できます。'));
+  hero.appendChild(el('p','', '主要ニュースを5本だけ。引用元の記事を確認して、背景と今後を分かりやすく整理しています。'));
   app.appendChild(hero);
 }
 function buildCard(item,index,container,showRank=true){
@@ -179,7 +179,7 @@ function renderToday(app){
   quick.appendChild(el('b','', '30秒まとめ'));
   quick.appendChild(el('p','',state.current.quick));
   app.appendChild(quick);
-  app.appendChild(el('div','note','要約は引用元の記事本文を取得できたニュースだけを対象に、「なぜ？」と「これから」に分けて整理します。本文が十分に取れない記事は掲載しません。'));
+  app.appendChild(el('div','note','要約は引用元の記事を確認して「なぜ？」と「これから」に分けて整理しています。元記事へのリンクも確認できます。'));
 }
 function renderArchive(app){
   app.appendChild(el('div','sectionTitle',state.selectedArchive?'過去のニュース':'過去'));
