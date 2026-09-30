@@ -147,9 +147,9 @@ function buildCard(item,index,container,showRank=true){
   card.appendChild(row);
 
   const summary=el('div','summaryBox'+(state.settings.summariesOpen?' open':''));
-  summary.appendChild(el('div','summaryLabel','記事の要約'));
-  const causePart=el('div','summaryPart');causePart.append(el('b','', '原因'),el('span','',item.cause||item.summary||'公開情報では原因・背景が明確に示されていません。'));summary.appendChild(causePart);
-  const outlookPart=el('div','summaryPart');outlookPart.append(el('b','', '展望'),el('span','',item.outlook||'今後の続報確認が必要です。'));summary.appendChild(outlookPart);
+  summary.appendChild(el('div','summaryLabel','引用元の記事をもとに整理'));
+  const causePart=el('div','summaryPart');causePart.append(el('b','', 'なぜ？'),el('span','',item.cause||item.summary||'公開情報では原因・背景が明確に示されていません。'));summary.appendChild(causePart);
+  const outlookPart=el('div','summaryPart');outlookPart.append(el('b','', 'これから'),el('span','',item.outlook||'今後の続報確認が必要です。'));summary.appendChild(outlookPart);
   card.appendChild(summary);
 
   const actions=el('div','cardActions');
@@ -179,7 +179,7 @@ function renderToday(app){
   quick.appendChild(el('b','', '30秒まとめ'));
   quick.appendChild(el('p','',state.current.quick));
   app.appendChild(quick);
-  app.appendChild(el('div','note','要約は「原因」と「展望」の2項目で表示します。速報では内容が更新される場合があります。'));
+  app.appendChild(el('div','note','要約は引用元の記事をもとに「なぜ？」と「これから」に分けて整理します。速報では内容が更新される場合があります。'));
 }
 function renderArchive(app){
   app.appendChild(el('div','sectionTitle',state.selectedArchive?'過去のニュース':'過去'));
