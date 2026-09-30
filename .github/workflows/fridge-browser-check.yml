@@ -51,7 +51,7 @@ jobs:
               return {
                 ok:true,
                 storage:[...document.querySelectorAll('#storage option')].map(x=>x.textContent),
-                tabs:[...document.querySelectorAll('#tabs .tab')].map(x=>x.dataset.s),
+                tabs:[...document.querySelectorAll('#tabs .tab[data-s]')].map(x=>x.dataset.s),
                 hasAddCategory:!!document.getElementById('addCategory'),
                 hasHistoryPick:!!document.getElementById('historyPick'),
                 hasBarcodeInput:!!document.getElementById('barcode'),
