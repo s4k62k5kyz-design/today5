@@ -17,8 +17,12 @@ jobs:
       - name: Verify mobile fridge UI
         shell: bash
         run: |
-          google-chrome --headless=new --no-sandbox --disable-gpu --remote-debugging-port=9222 about:blank >/tmp/chrome.log 2>&1 &
-          sleep 2
+          google-chrome --headless=new --no-sandbox --disable-gpu --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222 about:blank >/tmp/chrome.log 2>&1 &
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:9222/json/version >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:9222/json/version >/dev/null || { cat /tmp/chrome.log; exit 1; }
           cat > /tmp/check.mjs <<'NODE'
           const targetUrl = 'https://s4k62k5kyz-design.github.io/today5/fridge/';
           const created = await fetch('http://127.0.0.1:9222/json/new?' + encodeURIComponent(targetUrl), {method:'PUT'});
