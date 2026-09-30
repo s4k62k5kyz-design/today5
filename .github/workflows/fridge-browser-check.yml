@@ -76,8 +76,8 @@ jobs:
           const state=r.result.result.value;
           console.log(JSON.stringify(state));
           if(!state?.ok) throw new Error(JSON.stringify(state));
-          if(JSON.stringify(state.storage)!==JSON.stringify(['冷蔵庫上','野菜室'])) throw new Error('Storage options wrong: '+JSON.stringify(state.storage));
-          if(JSON.stringify(state.tabs)!==JSON.stringify(['すべて','冷蔵庫上','野菜室'])) throw new Error('Tabs wrong: '+JSON.stringify(state.tabs));
+          if(JSON.stringify(state.storage)!==JSON.stringify(['冷蔵庫上','野菜室','冷凍庫小','冷凍庫大'])) throw new Error('Storage options wrong: '+JSON.stringify(state.storage));
+          if(JSON.stringify(state.tabs)!==JSON.stringify(['すべて','冷蔵庫上','野菜室','冷凍庫小','冷凍庫大'])) throw new Error('Tabs wrong: '+JSON.stringify(state.tabs));
           if(!state.hasAddCategory||!state.hasHistoryPick||!state.hasManageCategories||!state.hasManageFoods) throw new Error('Category/history management controls missing');
           if(!state.hasBarcodeInput||!state.hasScanButton) throw new Error('Barcode controls missing');
           if(!state.scannerLibraryLoaded) throw new Error('Barcode scanner library failed to load');
@@ -92,13 +92,14 @@ jobs:
               document.getElementById('manageFoods').click();
               const b={open:document.getElementById('manageOverlay')?.classList.contains('show')||false,title:document.getElementById('manageTitle')?.textContent||''};
               document.getElementById('closeManage').click();
-              return {categories:a,foods:b};
+              return {categories:a,foods:b,deleteButton:!!document.getElementById('masterDelete')};
             })()
           `,returnByValue:true});
           const manageState=r.result.result.value;
           console.log(JSON.stringify({manageState}));
           if(!manageState.categories.open||manageState.categories.title!=='カテゴリー管理') throw new Error('Category manager did not open: '+JSON.stringify(manageState));
           if(!manageState.foods.open||manageState.foods.title!=='食材名管理') throw new Error('Food manager did not open: '+JSON.stringify(manageState));
+          if(!manageState.deleteButton) throw new Error('Master delete button missing');
           r=await cmd('Runtime.evaluate',{expression:`
             (() => {
               document.getElementById('helpTab').click();
