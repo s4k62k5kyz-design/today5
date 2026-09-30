@@ -56,6 +56,8 @@ jobs:
                 hasHistoryPick:!!document.getElementById('historyPick'),
                 hasManageCategories:!!document.getElementById('manageCategories'),
                 hasManageFoods:!!document.getElementById('manageFoods'),
+                hasStatusCards:document.querySelectorAll('#statusCards .statCard').length===3,
+                addButtonText:document.getElementById('saveBtn')?.textContent||'',
                 hasBarcodeInput:!!document.getElementById('barcode'),
                 hasScanButton:!!document.getElementById('scanBarcode'),
                 scannerLibraryLoaded:typeof Html5Qrcode==='function',
@@ -79,11 +81,30 @@ jobs:
           if(JSON.stringify(state.storage)!==JSON.stringify(['冷蔵庫上','野菜室','冷凍庫小','冷凍庫大'])) throw new Error('Storage options wrong: '+JSON.stringify(state.storage));
           if(JSON.stringify(state.tabs)!==JSON.stringify(['すべて','冷蔵庫上','野菜室','冷凍庫小','冷凍庫大'])) throw new Error('Tabs wrong: '+JSON.stringify(state.tabs));
           if(!state.hasAddCategory||!state.hasHistoryPick||!state.hasManageCategories||!state.hasManageFoods) throw new Error('Category/history management controls missing');
+          if(!state.hasStatusCards) throw new Error('Summary status cards missing');
+          if(state.addButtonText!=='追加する') throw new Error('Add action text wrong: '+state.addButtonText);
           if(!state.hasBarcodeInput||!state.hasScanButton) throw new Error('Barcode controls missing');
           if(!state.scannerLibraryLoaded) throw new Error('Barcode scanner library failed to load');
           if(!state.hasHelpTab||state.helpSections<8) throw new Error('Help manual missing');
           if(!state.helpPosition||state.helpPosition.position!=='fixed'||state.helpPosition.x>30||state.helpPosition.y>45) throw new Error('Help is not fixed at top-left: '+JSON.stringify(state.helpPosition));
           if(state.overlaps) throw new Error('Expiry and quantity overlap on mobile: '+JSON.stringify(state));
+          r=await cmd('Runtime.evaluate',{expression:`
+            (() => {
+              const soon=document.querySelector('#statusCards [data-status="soon"]');
+              const expired=document.querySelector('#statusCards [data-status="expired"]');
+              const all=document.querySelector('#statusCards [data-status="all"]');
+              soon.click();
+              const s1=soon.classList.contains('on')&&!expired.classList.contains('on')&&!all.classList.contains('on');
+              expired.click();
+              const s2=expired.classList.contains('on')&&!soon.classList.contains('on')&&!all.classList.contains('on');
+              all.click();
+              const s3=all.classList.contains('on')&&!soon.classList.contains('on')&&!expired.classList.contains('on');
+              return {soon:s1,expired:s2,all:s3};
+            })()
+          `,returnByValue:true});
+          const statusState=r.result.result.value;
+          console.log(JSON.stringify({statusState}));
+          if(!statusState.soon||!statusState.expired||!statusState.all) throw new Error('Summary filters did not toggle correctly: '+JSON.stringify(statusState));
           r=await cmd('Runtime.evaluate',{expression:`
             (() => {
               document.getElementById('manageCategories').click();
