@@ -1,9 +1,10 @@
-name: Verify fridge button in Chrome
+name: Verify fridge UI in Chrome
 
 on:
   push:
     branches: ["main"]
     paths:
+      - "fridge/**"
       - ".github/workflows/fridge-browser-check.yml"
   workflow_dispatch:
 
@@ -12,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for Pages publish
-        run: sleep 35
-      - name: Click login button in real Chrome
+        run: sleep 40
+      - name: Verify mobile fridge UI
         shell: bash
         run: |
           google-chrome --headless=new --no-sandbox --disable-gpu --remote-debugging-port=9222 about:blank >/tmp/chrome.log 2>&1 &
@@ -29,31 +30,39 @@ jobs:
           ws.onmessage=(e)=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){pending.get(m.id)(m);pending.delete(m.id)}};
           function cmd(method,params={}){return new Promise(res=>{const n=++id;pending.set(n,res);ws.send(JSON.stringify({id:n,method,params}))})}
           await cmd('Page.enable');
-          await new Promise(r=>setTimeout(r,3000));
+          await cmd('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:3,mobile:true});
+          await new Promise(r=>setTimeout(r,3500));
           let r=await cmd('Runtime.evaluate',{expression:`
             (() => {
-              const p=document.getElementById('pass');
-              const b=document.getElementById('loginbtn');
-              const f=document.getElementById('loginForm');
-              if(!p||!b||!f) return {ok:false,reason:'login elements missing',title:document.title,url:location.href};
-              p.value='000000';
-              b.click();
-              return {ok:true,tag:b.tagName,type:b.type,hasForm:!!b.form};
+              const login=document.getElementById('login');
+              if(login) login.classList.remove('show');
+              const add=document.getElementById('add');
+              if(!add) return {ok:false,reason:'add button missing',title:document.title,url:location.href};
+              add.click();
+              const expiry=document.querySelector('.expiry-field');
+              const quantity=document.getElementById('quantity')?.closest('.field');
+              const er=expiry?.getBoundingClientRect();
+              const qr=quantity?.getBoundingClientRect();
+              const overlaps=!!(er&&qr&&!(er.right<=qr.left||qr.right<=er.left||er.bottom<=qr.top||qr.bottom<=er.top));
+              return {
+                ok:true,
+                storage:[...document.querySelectorAll('#storage option')].map(x=>x.textContent),
+                tabs:[...document.querySelectorAll('#tabs .tab')].map(x=>x.dataset.s),
+                hasAddCategory:!!document.getElementById('addCategory'),
+                hasHistoryPick:!!document.getElementById('historyPick'),
+                expiryRect:er?{x:er.x,y:er.y,w:er.width,h:er.height}:null,
+                quantityRect:qr?{x:qr.x,y:qr.y,w:qr.width,h:qr.height}:null,
+                overlaps
+              };
             })()
           `,returnByValue:true});
-          const before=r.result.result.value;
-          if(!before?.ok) throw new Error(JSON.stringify(before));
-          await new Promise(r=>setTimeout(r,3000));
-          r=await cmd('Runtime.evaluate',{expression:`
-            (() => ({
-              err: document.getElementById('err')?.textContent || '',
-              buttonText: document.getElementById('loginbtn')?.textContent || '',
-              loginVisible: document.getElementById('login')?.classList.contains('show') ?? null
-            }))()
-          `,returnByValue:true});
-          const after=r.result.result.value;
-          console.log(JSON.stringify({before,after}));
-          if(after.err!=='暗証番号が違います') throw new Error('Button/login flow failed: '+JSON.stringify(after));
+          const state=r.result.result.value;
+          console.log(JSON.stringify(state));
+          if(!state?.ok) throw new Error(JSON.stringify(state));
+          if(JSON.stringify(state.storage)!==JSON.stringify(['冷蔵庫上','野菜室'])) throw new Error('Storage options wrong: '+JSON.stringify(state.storage));
+          if(JSON.stringify(state.tabs)!==JSON.stringify(['すべて','冷蔵庫上','野菜室'])) throw new Error('Tabs wrong: '+JSON.stringify(state.tabs));
+          if(!state.hasAddCategory||!state.hasHistoryPick) throw new Error('Category/history controls missing');
+          if(state.overlaps) throw new Error('Expiry and quantity overlap on mobile: '+JSON.stringify(state));
           ws.close();
           NODE
           node /tmp/check.mjs
