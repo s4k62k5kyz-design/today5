@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="color-scheme" content="light">
+<title>TODAY 5</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--sub:#667085;--line:#e7eaf0;--dark:#111827}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif}
+body{min-height:100vh}
+.app{max-width:760px;margin:0 auto;padding:0 16px 100px}
+header{position:sticky;top:0;z-index:10;background:rgba(245,247,251,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:18px 0 12px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}.brand{font-size:28px;font-weight:900;letter-spacing:-.04em}.tag,.date,.src{font-size:12px;color:var(--sub)}.date{text-align:right;font-weight:700}
+.hero{margin:18px 0 14px;background:linear-gradient(135deg,#0f172a,#334155);color:white;padding:22px;border-radius:24px;box-shadow:0 12px 32px rgba(15,23,42,.14)}
+.hero small{opacity:.76;font-weight:800}.hero h1{font-size:28px;line-height:1.25;margin:7px 0 10px;letter-spacing:-.03em}.hero p{margin:0;color:#e5e7eb;font-size:14px;line-height:1.7}
+.cards{display:grid;gap:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:17px;box-shadow:0 5px 16px rgba(16,24,40,.035)}
+.row{display:flex;gap:13px}.rank{min-width:36px;height:36px;border-radius:12px;background:var(--dark);color:#fff;display:grid;place-items:center;font-weight:900}.body{min-width:0;flex:1}.meta{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.badge,.hot{font-size:11px;font-weight:900;padding:5px 8px;border-radius:999px;background:#eef2f7}.hot{background:#fff1f0;color:#b42318}
+h2{font-size:18px;line-height:1.45;margin:0 0 7px;letter-spacing:-.015em}.summary{font-size:14px;line-height:1.65;color:var(--sub);margin:0}.card a{display:inline-block;margin-top:12px;color:#111827;font-size:13px;font-weight:900;text-decoration:none;border-bottom:1px solid #111827}
+.quick{margin-top:20px;background:#fff7ed;border:1px solid #fed7aa;border-radius:22px;padding:19px}.quick b{display:block;font-size:17px;margin-bottom:8px}.quick p{margin:0;color:#7c2d12;font-size:14px;line-height:1.75}
+.note{text-align:center;font-size:11px;color:#98a2b3;line-height:1.6;padding:20px 8px}.status{background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px;text-align:center;color:var(--sub)}.status.error{background:#fff1f0;border-color:#fecdca;color:#b42318}
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;width:min(720px,calc(100% - 24px));background:rgba(17,24,39,.96);backdrop-filter:blur(12px);color:#fff;border-radius:18px;padding:12px 14px;display:flex;justify-content:space-around;box-shadow:0 14px 40px rgba(15,23,42,.28)}.nav span{font-size:11px;font-weight:800}
+@media(min-width:700px){.app{padding-left:24px;padding-right:24px}.hero{padding:28px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+'use strict';
+const DATA_URL = 'https://gzamrrcmrxirrqsijszm.supabase.co/functions/v1/today5-data';
+const decodeUtf8Base64 = (s) => {
+  const binary = atob(s);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
+};
+const el = (tag, className, text) => {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+};
+function buildShell() {
+  const root = document.getElementById('root');
+  const app = el('main','app');
+  root.appendChild(app);
+
+  const header = el('header');
+  const top = el('div','top');
+  const left = el('div');
+  left.appendChild(el('div','brand','TODAY 5'));
+  left.appendChild(el('div','tag','今日これだけは押さえろ'));
+  const date = el('div','date','更新中');
+  top.append(left,date); header.appendChild(top); app.appendChild(header);
+
+  const hero = el('section','hero');
+  hero.appendChild(el('small','', '最新ニュースを自動取得'));
+  const h1 = el('h1');
+  h1.append(document.createTextNode('世界・日本・経済を'), document.createElement('br'), document.createTextNode('5本だけ。'));
+  hero.appendChild(h1);
+  hero.appendChild(el('p','', 'アクセスするたび最新の主要ニュースを取得します。元記事もすぐ確認できます。'));
+  app.appendChild(hero);
+
+  const cards = el('section','cards');
+  cards.appendChild(el('div','status','最新ニュースを取得中です...'));
+  app.appendChild(cards);
+
+  const nav = el('nav','nav');
+  ['今日','過去','保存','設定'].forEach(v => nav.appendChild(el('span','',v)));
+  root.appendChild(nav);
+  return {app,cards,date};
+}
+function render(data, ui) {
+  ui.cards.textContent = '';
+  ui.date.textContent = decodeUtf8Base64(data.updated);
+  data.items.forEach((item, i) => {
+    const card = el('article','card');
+    const row = el('div','row');
+    row.appendChild(el('div','rank',String(item.rank)));
+    const body = el('div','body');
+    const meta = el('div','meta');
+    if (i === 0) meta.appendChild(el('span','hot','TOP'));
+    meta.appendChild(el('span','badge',decodeUtf8Base64(item.category)));
+    meta.appendChild(el('span','src',decodeUtf8Base64(item.source)));
+    body.appendChild(meta);
+    body.appendChild(el('h2','',decodeUtf8Base64(item.title)));
+    body.appendChild(el('p','summary',decodeUtf8Base64(item.desc)));
+    row.appendChild(body);
+    card.appendChild(row);
+    const link = el('a','', '元記事を開く');
+    link.href = item.link; link.target = '_blank'; link.rel = 'noopener noreferrer';
+    card.appendChild(link);
+    ui.cards.appendChild(card);
+  });
+  const quick = el('section','quick');
+  quick.appendChild(el('b','', '30秒まとめ'));
+  quick.appendChild(el('p','',decodeUtf8Base64(data.quick)));
+  ui.app.appendChild(quick);
+  ui.app.appendChild(el('div','note','見出しとリンクはニュース配信元に基づきます。速報は更新される場合があります。'));
+}
+async function main(){
+  const ui = buildShell();
+  try {
+    const response = await fetch(DATA_URL, {cache:'no-store'});
+    if (!response.ok) throw new Error('HTTP '+response.status);
+    const data = await response.json();
+    if (!Array.isArray(data.items) || !data.items.length) throw new Error('No news');
+    render(data,ui);
+  } catch (err) {
+    ui.cards.textContent = '';
+    ui.cards.appendChild(el('div','status error','ニュースの取得に失敗しました。再読み込みしてください。'));
+    console.error(err);
+  }
+}
+main();
+</script>
+</body>
+</html>
