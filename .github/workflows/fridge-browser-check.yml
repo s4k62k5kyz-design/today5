@@ -54,6 +54,8 @@ jobs:
                 tabs:[...document.querySelectorAll('#tabs .tab[data-s]')].map(x=>x.dataset.s),
                 hasAddCategory:!!document.getElementById('addCategory'),
                 hasHistoryPick:!!document.getElementById('historyPick'),
+                hasManageCategories:!!document.getElementById('manageCategories'),
+                hasManageFoods:!!document.getElementById('manageFoods'),
                 hasBarcodeInput:!!document.getElementById('barcode'),
                 hasScanButton:!!document.getElementById('scanBarcode'),
                 scannerLibraryLoaded:typeof Html5Qrcode==='function',
@@ -76,12 +78,27 @@ jobs:
           if(!state?.ok) throw new Error(JSON.stringify(state));
           if(JSON.stringify(state.storage)!==JSON.stringify(['冷蔵庫上','野菜室'])) throw new Error('Storage options wrong: '+JSON.stringify(state.storage));
           if(JSON.stringify(state.tabs)!==JSON.stringify(['すべて','冷蔵庫上','野菜室'])) throw new Error('Tabs wrong: '+JSON.stringify(state.tabs));
-          if(!state.hasAddCategory||!state.hasHistoryPick) throw new Error('Category/history controls missing');
+          if(!state.hasAddCategory||!state.hasHistoryPick||!state.hasManageCategories||!state.hasManageFoods) throw new Error('Category/history management controls missing');
           if(!state.hasBarcodeInput||!state.hasScanButton) throw new Error('Barcode controls missing');
           if(!state.scannerLibraryLoaded) throw new Error('Barcode scanner library failed to load');
           if(!state.hasHelpTab||state.helpSections<8) throw new Error('Help manual missing');
           if(!state.helpPosition||state.helpPosition.position!=='fixed'||state.helpPosition.x>30||state.helpPosition.y>45) throw new Error('Help is not fixed at top-left: '+JSON.stringify(state.helpPosition));
           if(state.overlaps) throw new Error('Expiry and quantity overlap on mobile: '+JSON.stringify(state));
+          r=await cmd('Runtime.evaluate',{expression:`
+            (() => {
+              document.getElementById('manageCategories').click();
+              const a={open:document.getElementById('manageOverlay')?.classList.contains('show')||false,title:document.getElementById('manageTitle')?.textContent||''};
+              document.getElementById('closeManage').click();
+              document.getElementById('manageFoods').click();
+              const b={open:document.getElementById('manageOverlay')?.classList.contains('show')||false,title:document.getElementById('manageTitle')?.textContent||''};
+              document.getElementById('closeManage').click();
+              return {categories:a,foods:b};
+            })()
+          `,returnByValue:true});
+          const manageState=r.result.result.value;
+          console.log(JSON.stringify({manageState}));
+          if(!manageState.categories.open||manageState.categories.title!=='カテゴリー管理') throw new Error('Category manager did not open: '+JSON.stringify(manageState));
+          if(!manageState.foods.open||manageState.foods.title!=='食材名管理') throw new Error('Food manager did not open: '+JSON.stringify(manageState));
           r=await cmd('Runtime.evaluate',{expression:`
             (() => {
               document.getElementById('helpTab').click();
