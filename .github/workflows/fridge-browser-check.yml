@@ -59,6 +59,12 @@ jobs:
                 scannerLibraryLoaded:typeof Html5Qrcode==='function',
                 hasHelpTab:!!document.getElementById('helpTab'),
                 helpSections:document.querySelectorAll('#helpOverlay .helpsec').length,
+                helpPosition:(() => {
+                  const h=document.getElementById('helpTab');
+                  if(!h) return null;
+                  const r=h.getBoundingClientRect(),s=getComputedStyle(h);
+                  return {position:s.position,x:r.x,y:r.y,w:r.width,h:r.height};
+                })(),
                 expiryRect:er?{x:er.x,y:er.y,w:er.width,h:er.height}:null,
                 quantityRect:qr?{x:qr.x,y:qr.y,w:qr.width,h:qr.height}:null,
                 overlaps
@@ -74,6 +80,7 @@ jobs:
           if(!state.hasBarcodeInput||!state.hasScanButton) throw new Error('Barcode controls missing');
           if(!state.scannerLibraryLoaded) throw new Error('Barcode scanner library failed to load');
           if(!state.hasHelpTab||state.helpSections<8) throw new Error('Help manual missing');
+          if(!state.helpPosition||state.helpPosition.position!=='fixed'||state.helpPosition.x>30||state.helpPosition.y>45) throw new Error('Help is not fixed at top-left: '+JSON.stringify(state.helpPosition));
           if(state.overlaps) throw new Error('Expiry and quantity overlap on mobile: '+JSON.stringify(state));
           r=await cmd('Runtime.evaluate',{expression:`
             (() => {
