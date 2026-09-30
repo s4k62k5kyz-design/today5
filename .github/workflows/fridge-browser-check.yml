@@ -57,6 +57,8 @@ jobs:
                 hasBarcodeInput:!!document.getElementById('barcode'),
                 hasScanButton:!!document.getElementById('scanBarcode'),
                 scannerLibraryLoaded:typeof Html5Qrcode==='function',
+                hasHelpTab:!!document.getElementById('helpTab'),
+                helpSections:document.querySelectorAll('#helpOverlay .helpsec').length,
                 expiryRect:er?{x:er.x,y:er.y,w:er.width,h:er.height}:null,
                 quantityRect:qr?{x:qr.x,y:qr.y,w:qr.width,h:qr.height}:null,
                 overlaps
@@ -71,7 +73,18 @@ jobs:
           if(!state.hasAddCategory||!state.hasHistoryPick) throw new Error('Category/history controls missing');
           if(!state.hasBarcodeInput||!state.hasScanButton) throw new Error('Barcode controls missing');
           if(!state.scannerLibraryLoaded) throw new Error('Barcode scanner library failed to load');
+          if(!state.hasHelpTab||state.helpSections<8) throw new Error('Help manual missing');
           if(state.overlaps) throw new Error('Expiry and quantity overlap on mobile: '+JSON.stringify(state));
+          r=await cmd('Runtime.evaluate',{expression:`
+            (() => {
+              document.getElementById('helpTab').click();
+              const h=document.getElementById('helpOverlay');
+              return {open:h?.classList.contains('show')||false,title:h?.querySelector('h2')?.textContent||''};
+            })()
+          `,returnByValue:true});
+          const helpState=r.result.result.value;
+          console.log(JSON.stringify({helpState}));
+          if(!helpState.open||helpState.title!=='冷蔵庫ノートの使い方') throw new Error('Help tab did not open: '+JSON.stringify(helpState));
           ws.close();
           NODE
           node /tmp/check.mjs
