@@ -50,6 +50,9 @@ jobs:
                 tabs:[...document.querySelectorAll('#tabs .tab')].map(x=>x.dataset.s),
                 hasAddCategory:!!document.getElementById('addCategory'),
                 hasHistoryPick:!!document.getElementById('historyPick'),
+                hasBarcodeInput:!!document.getElementById('barcode'),
+                hasScanButton:!!document.getElementById('scanBarcode'),
+                scannerLibraryLoaded:typeof Html5Qrcode==='function',
                 expiryRect:er?{x:er.x,y:er.y,w:er.width,h:er.height}:null,
                 quantityRect:qr?{x:qr.x,y:qr.y,w:qr.width,h:qr.height}:null,
                 overlaps
@@ -62,6 +65,8 @@ jobs:
           if(JSON.stringify(state.storage)!==JSON.stringify(['冷蔵庫上','野菜室'])) throw new Error('Storage options wrong: '+JSON.stringify(state.storage));
           if(JSON.stringify(state.tabs)!==JSON.stringify(['すべて','冷蔵庫上','野菜室'])) throw new Error('Tabs wrong: '+JSON.stringify(state.tabs));
           if(!state.hasAddCategory||!state.hasHistoryPick) throw new Error('Category/history controls missing');
+          if(!state.hasBarcodeInput||!state.hasScanButton) throw new Error('Barcode controls missing');
+          if(!state.scannerLibraryLoaded) throw new Error('Barcode scanner library failed to load');
           if(state.overlaps) throw new Error('Expiry and quantity overlap on mobile: '+JSON.stringify(state));
           ws.close();
           NODE
