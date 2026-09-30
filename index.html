@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
 <meta name="color-scheme" content="light">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>TODAY 5</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#172033;--sub:#667085;--line:#e7eaf0;--dark:#111827;--soft:#eef2f7;--accent:#7c2d12}
@@ -85,7 +88,6 @@ function normalizePayload(data){
       source:decode64(x.source),
       category:decode64(x.category),
       cause:safeSummaryText(x.cause?decode64(x.cause):'','公開情報では原因・背景が明確に示されていません。'),
-      result:safeSummaryText(x.result?decode64(x.result):'','現時点では「'+decode64(x.title)+'」という動き・事実が報じられています。'),
       outlook:safeSummaryText(x.outlook?decode64(x.outlook):'','今後の続報確認が必要です。'),
       link:x.link
     }))
@@ -177,7 +179,7 @@ function renderToday(app){
   quick.appendChild(el('b','', '30秒まとめ'));
   quick.appendChild(el('p','',state.current.quick));
   app.appendChild(quick);
-  app.appendChild(el('div','note','要約はニュース配信フィードの情報をもとに短く整理しています。速報では内容が更新される場合があります。'));
+  app.appendChild(el('div','note','要約は「原因」と「展望」の2項目で表示します。速報では内容が更新される場合があります。'));
 }
 function renderArchive(app){
   app.appendChild(el('div','sectionTitle',state.selectedArchive?'過去のニュース':'過去'));
