@@ -58,6 +58,8 @@ jobs:
                 hasManageFoods:!!document.getElementById('manageFoods'),
                 hasStatusCards:document.querySelectorAll('#statusCards .statCard').length===3,
                 addButtonText:document.getElementById('saveBtn')?.textContent||'',
+                hasRemainingToggle:!!document.getElementById('trackRemaining'),
+                remainingOptions:[...document.querySelectorAll('#remainingLevel option')].map(x=>x.textContent),
                 hasBarcodeInput:!!document.getElementById('barcode'),
                 hasScanButton:!!document.getElementById('scanBarcode'),
                 scannerLibraryLoaded:typeof Html5Qrcode==='function',
@@ -83,6 +85,21 @@ jobs:
           if(!state.hasAddCategory||!state.hasHistoryPick||!state.hasManageCategories||!state.hasManageFoods) throw new Error('Category/history management controls missing');
           if(!state.hasStatusCards) throw new Error('Summary status cards missing');
           if(state.addButtonText!=='追加する') throw new Error('Add action text wrong: '+state.addButtonText);
+          if(!state.hasRemainingToggle) throw new Error('Remaining meter toggle missing');
+          if(JSON.stringify(state.remainingOptions)!==JSON.stringify(['満タン','75%','半分','25%','ほぼ空'])) throw new Error('Remaining meter options wrong: '+JSON.stringify(state.remainingOptions));
+          r=await cmd('Runtime.evaluate',{expression:`
+            (() => {
+              const t=document.getElementById('trackRemaining');
+              const box=document.getElementById('remainingControls');
+              const before=getComputedStyle(box).display;
+              t.click();
+              const after=getComputedStyle(box).display;
+              return {before,after,checked:t.checked};
+            })()
+          `,returnByValue:true});
+          const remainingState=r.result.result.value;
+          console.log(JSON.stringify({remainingState}));
+          if(remainingState.before!=='none'||remainingState.after==='none'||!remainingState.checked) throw new Error('Remaining meter toggle did not work: '+JSON.stringify(remainingState));
           if(!state.hasBarcodeInput||!state.hasScanButton) throw new Error('Barcode controls missing');
           if(!state.scannerLibraryLoaded) throw new Error('Barcode scanner library failed to load');
           if(!state.hasHelpTab||state.helpSections<8) throw new Error('Help manual missing');
