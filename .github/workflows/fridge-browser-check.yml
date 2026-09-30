@@ -17,7 +17,7 @@ jobs:
       - name: Verify mobile fridge UI
         shell: bash
         run: |
-          google-chrome --headless=new --no-sandbox --disable-gpu --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222 about:blank >/tmp/chrome.log 2>&1 &
+          google-chrome --headless=new --no-sandbox --disable-gpu --use-fake-ui-for-media-stream --use-fake-device-for-media-stream --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222 about:blank >/tmp/chrome.log 2>&1 &
           for i in {1..20}; do
             if curl -fsS http://127.0.0.1:9222/json/version >/dev/null 2>&1; then break; fi
             sleep 1
@@ -85,6 +85,34 @@ jobs:
           const helpState=r.result.result.value;
           console.log(JSON.stringify({helpState}));
           if(!helpState.open||helpState.title!=='冷蔵庫ノートの使い方') throw new Error('Help tab did not open: '+JSON.stringify(helpState));
+          r=await cmd('Runtime.evaluate',{expression:`
+            (() => {
+              document.getElementById('closeHelp').click();
+              document.getElementById('scanBarcode').click();
+              return true;
+            })()
+          `,returnByValue:true});
+          await new Promise(r=>setTimeout(r,3500));
+          r=await cmd('Runtime.evaluate',{expression:`
+            (() => {
+              const ov=document.getElementById('scannerOverlay');
+              const video=document.querySelector('#barcodeReader video');
+              const status=document.getElementById('scanStatus')?.textContent||'';
+              const sel=document.getElementById('cameraSelect');
+              return {
+                overlayOpen:ov?.classList.contains('show')||false,
+                status,
+                videoPresent:!!video,
+                videoReady:!!(video&&video.srcObject),
+                cameraOptions:sel?[...sel.options].length:0
+              };
+            })()
+          `,returnByValue:true});
+          const cameraState=r.result.result.value;
+          console.log(JSON.stringify({cameraState}));
+          if(!cameraState.overlayOpen) throw new Error('Scanner overlay did not open');
+          if(/開始できません|対応していません/.test(cameraState.status)) throw new Error('Desktop/Android-style camera path failed: '+JSON.stringify(cameraState));
+          if(!cameraState.videoPresent) throw new Error('Camera video element missing: '+JSON.stringify(cameraState));
           ws.close();
           NODE
           node /tmp/check.mjs
