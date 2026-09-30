@@ -1,0 +1,59 @@
+name: Verify fridge button in Chrome
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/fridge-browser-check.yml"
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Pages publish
+        run: sleep 35
+      - name: Click login button in real Chrome
+        shell: bash
+        run: |
+          google-chrome --headless=new --no-sandbox --disable-gpu --remote-debugging-port=9222 about:blank >/tmp/chrome.log 2>&1 &
+          sleep 2
+          cat > /tmp/check.mjs <<'NODE'
+          const targetUrl = 'https://s4k62k5kyz-design.github.io/today5/fridge/';
+          const created = await fetch('http://127.0.0.1:9222/json/new?' + encodeURIComponent(targetUrl), {method:'PUT'});
+          if (!created.ok) throw new Error('Could not create Chrome tab: ' + created.status);
+          const info = await created.json();
+          const ws = new WebSocket(info.webSocketDebuggerUrl);
+          await new Promise((resolve,reject)=>{ws.onopen=resolve;ws.onerror=reject});
+          let id=0; const pending=new Map();
+          ws.onmessage=(e)=>{const m=JSON.parse(e.data);if(m.id&&pending.has(m.id)){pending.get(m.id)(m);pending.delete(m.id)}};
+          function cmd(method,params={}){return new Promise(res=>{const n=++id;pending.set(n,res);ws.send(JSON.stringify({id:n,method,params}))})}
+          await cmd('Page.enable');
+          await new Promise(r=>setTimeout(r,3000));
+          let r=await cmd('Runtime.evaluate',{expression:`
+            (() => {
+              const p=document.getElementById('pass');
+              const b=document.getElementById('loginbtn');
+              const f=document.getElementById('loginForm');
+              if(!p||!b||!f) return {ok:false,reason:'login elements missing',title:document.title,url:location.href};
+              p.value='000000';
+              b.click();
+              return {ok:true,tag:b.tagName,type:b.type,hasForm:!!b.form};
+            })()
+          `,returnByValue:true});
+          const before=r.result.result.value;
+          if(!before?.ok) throw new Error(JSON.stringify(before));
+          await new Promise(r=>setTimeout(r,3000));
+          r=await cmd('Runtime.evaluate',{expression:`
+            (() => ({
+              err: document.getElementById('err')?.textContent || '',
+              buttonText: document.getElementById('loginbtn')?.textContent || '',
+              loginVisible: document.getElementById('login')?.classList.contains('show') ?? null
+            }))()
+          `,returnByValue:true});
+          const after=r.result.result.value;
+          console.log(JSON.stringify({before,after}));
+          if(after.err!=='暗証番号が違います') throw new Error('Button/login flow failed: '+JSON.stringify(after));
+          ws.close();
+          NODE
+          node /tmp/check.mjs
