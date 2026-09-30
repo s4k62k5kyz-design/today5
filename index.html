@@ -147,7 +147,6 @@ function buildCard(item,index,container,showRank=true){
   const summary=el('div','summaryBox'+(state.settings.summariesOpen?' open':''));
   summary.appendChild(el('div','summaryLabel','記事の要約'));
   const causePart=el('div','summaryPart');causePart.append(el('b','', '原因'),el('span','',item.cause||item.summary||'公開情報では原因・背景が明確に示されていません。'));summary.appendChild(causePart);
-  const resultPart=el('div','summaryPart');resultPart.append(el('b','', '結果'),el('span','',item.result||'現時点で報じられている事実を確認してください。'));summary.appendChild(resultPart);
   const outlookPart=el('div','summaryPart');outlookPart.append(el('b','', '展望'),el('span','',item.outlook||'今後の続報確認が必要です。'));summary.appendChild(outlookPart);
   card.appendChild(summary);
 
