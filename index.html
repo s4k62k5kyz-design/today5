@@ -67,6 +67,11 @@ function el(tag,cls,text){
   if(text!==undefined)x.textContent=text;
   return x;
 }
+function safeSummaryText(text,fallback){
+  const s=String(text||'').trim();
+  if(/Comprehensive up-to-date news coverage|aggregated from sources all over the world|Google News|Top stories from|Stay informed with Google News/i.test(s)) return fallback;
+  return s||fallback;
+}
 function articleId(item){return item.link}
 function isSaved(item){return state.saved.some(x=>articleId(x)===articleId(item))}
 function normalizePayload(data){
@@ -79,9 +84,9 @@ function normalizePayload(data){
       title:decode64(x.title),
       source:decode64(x.source),
       category:decode64(x.category),
-      cause:x.cause?decode64(x.cause):'公開情報では原因・背景が明確に示されていません。',
-      result:x.result?decode64(x.result):'現時点で報じられている事実を確認してください。',
-      outlook:x.outlook?decode64(x.outlook):'今後の続報確認が必要です。',
+      cause:safeSummaryText(x.cause?decode64(x.cause):'','公開情報では原因・背景が明確に示されていません。'),
+      result:safeSummaryText(x.result?decode64(x.result):'','現時点では「'+decode64(x.title)+'」という動き・事実が報じられています。'),
+      outlook:safeSummaryText(x.outlook?decode64(x.outlook):'','今後の続報確認が必要です。'),
       link:x.link
     }))
   };
