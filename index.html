@@ -147,7 +147,7 @@ function buildCard(item,index,container,showRank=true){
   card.appendChild(row);
 
   const summary=el('div','summaryBox'+(state.settings.summariesOpen?' open':''));
-  summary.appendChild(el('div','summaryLabel','引用元の記事をもとに整理'));
+  summary.appendChild(el('div','summaryLabel','引用元の記事本文をもとに整理'));
   const causePart=el('div','summaryPart');causePart.append(el('b','', 'なぜ？'),el('span','',item.cause||item.summary||'公開情報では原因・背景が明確に示されていません。'));summary.appendChild(causePart);
   const outlookPart=el('div','summaryPart');outlookPart.append(el('b','', 'これから'),el('span','',item.outlook||'今後の続報確認が必要です。'));summary.appendChild(outlookPart);
   card.appendChild(summary);
@@ -179,7 +179,7 @@ function renderToday(app){
   quick.appendChild(el('b','', '30秒まとめ'));
   quick.appendChild(el('p','',state.current.quick));
   app.appendChild(quick);
-  app.appendChild(el('div','note','要約は引用元の記事をもとに「なぜ？」と「これから」に分けて整理します。速報では内容が更新される場合があります。'));
+  app.appendChild(el('div','note','要約は引用元の記事本文を取得できたニュースだけを対象に、「なぜ？」と「これから」に分けて整理します。本文が十分に取れない記事は掲載しません。'));
 }
 function renderArchive(app){
   app.appendChild(el('div','sectionTitle',state.selectedArchive?'過去のニュース':'過去'));
@@ -277,7 +277,7 @@ async function fetchLatest(force=false){
     if(!response.ok)throw new Error('HTTP '+response.status);
     const raw=await response.json();
     const data=normalizePayload(raw);
-    if(!data.items.length)throw new Error('No news');
+    if(!data.items.length){throw new Error('引用元本文を十分に取得できる記事がありませんでした。')}
     state.current=data;
     saveArchive(data);
     render();
@@ -286,7 +286,7 @@ async function fetchLatest(force=false){
     if(state.view==='today'){
       const app=document.querySelector('.app');
       const old=app.querySelector('.status');
-      if(old){old.className='status error';old.textContent='ニュースの取得に失敗しました。再読み込みしてください。'}
+      if(old){old.className='status error';old.textContent='引用元の記事本文を十分に取得できるニュースを準備できませんでした。再読み込みしてください。'}
     }
   }
 }
