@@ -7,21 +7,28 @@
 <meta name="color-scheme" content="light">
 <title>TODAY 5</title>
 <style>
-:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--sub:#667085;--line:#e7eaf0;--dark:#111827}
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--sub:#667085;--line:#e7eaf0;--dark:#111827;--soft:#eef2f7;--accent:#7c2d12}
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif}
 body{min-height:100vh}
-.app{max-width:760px;margin:0 auto;padding:0 16px 100px}
+button,input{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:0 auto;padding:0 16px 108px}
 header{position:sticky;top:0;z-index:10;background:rgba(245,247,251,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:18px 0 12px}
 .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px}.brand{font-size:28px;font-weight:900;letter-spacing:-.04em}.tag,.date,.src{font-size:12px;color:var(--sub)}.date{text-align:right;font-weight:700}
 .hero{margin:18px 0 14px;background:linear-gradient(135deg,#0f172a,#334155);color:white;padding:22px;border-radius:24px;box-shadow:0 12px 32px rgba(15,23,42,.14)}
 .hero small{opacity:.76;font-weight:800}.hero h1{font-size:28px;line-height:1.25;margin:7px 0 10px;letter-spacing:-.03em}.hero p{margin:0;color:#e5e7eb;font-size:14px;line-height:1.7}
+.sectionTitle{font-size:20px;font-weight:900;margin:20px 0 12px;letter-spacing:-.02em}.sectionSub{font-size:13px;color:var(--sub);line-height:1.6;margin:-6px 0 14px}
 .cards{display:grid;gap:12px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:17px;box-shadow:0 5px 16px rgba(16,24,40,.035)}
-.row{display:flex;gap:13px}.rank{min-width:36px;height:36px;border-radius:12px;background:var(--dark);color:#fff;display:grid;place-items:center;font-weight:900}.body{min-width:0;flex:1}.meta{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.badge,.hot{font-size:11px;font-weight:900;padding:5px 8px;border-radius:999px;background:#eef2f7}.hot{background:#fff1f0;color:#b42318}
-h2{font-size:18px;line-height:1.45;margin:0 0 7px;letter-spacing:-.015em}.summary{font-size:14px;line-height:1.65;color:var(--sub);margin:0}.card a{display:inline-block;margin-top:12px;color:#111827;font-size:13px;font-weight:900;text-decoration:none;border-bottom:1px solid #111827}
-.quick{margin-top:20px;background:#fff7ed;border:1px solid #fed7aa;border-radius:22px;padding:19px}.quick b{display:block;font-size:17px;margin-bottom:8px}.quick p{margin:0;color:#7c2d12;font-size:14px;line-height:1.75}
+.row{display:flex;gap:13px}.rank{min-width:36px;height:36px;border-radius:12px;background:var(--dark);color:#fff;display:grid;place-items:center;font-weight:900}.body{min-width:0;flex:1}.meta{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:6px}.badge,.hot{font-size:11px;font-weight:900;padding:5px 8px;border-radius:999px;background:var(--soft)}.hot{background:#fff1f0;color:#b42318}
+h2{font-size:18px;line-height:1.45;margin:0 0 7px;letter-spacing:-.015em}
+.cardActions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.plainBtn,.saveBtn,.refreshBtn{border:0;border-radius:999px;padding:9px 12px;font-size:12px;font-weight:900;background:var(--soft);color:#344054}.saveBtn.saved{background:#fff7ed;color:#9a3412}.articleLink{color:#111827;font-size:12px;font-weight:900;text-decoration:none;border-bottom:1px solid #111827}
+.summaryBox{display:none;margin-top:12px;background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:13px;color:#475467;font-size:14px;line-height:1.72}.summaryBox.open{display:block}.summaryLabel{font-size:11px;font-weight:900;color:#667085;margin-bottom:5px}
+.quick{margin-top:20px;background:#fff7ed;border:1px solid #fed7aa;border-radius:22px;padding:19px}.quick b{display:block;font-size:17px;margin-bottom:8px}.quick p{margin:0;color:var(--accent);font-size:14px;line-height:1.75}
 .note{text-align:center;font-size:11px;color:#98a2b3;line-height:1.6;padding:20px 8px}.status{background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px;text-align:center;color:var(--sub)}.status.error{background:#fff1f0;border-color:#fecdca;color:#b42318}
-.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;width:min(720px,calc(100% - 24px));background:rgba(17,24,39,.96);backdrop-filter:blur(12px);color:#fff;border-radius:18px;padding:12px 14px;display:flex;justify-content:space-around;box-shadow:0 14px 40px rgba(15,23,42,.28)}.nav span{font-size:11px;font-weight:800}
+.archiveList{display:grid;gap:10px}.archiveBtn{width:100%;border:1px solid var(--line);background:#fff;border-radius:16px;padding:15px;text-align:left;display:flex;justify-content:space-between;align-items:center;color:var(--text)}.archiveBtn b{font-size:15px}.archiveBtn span{font-size:12px;color:var(--sub)}
+.settings{display:grid;gap:12px}.settingCard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}.settingRow{display:flex;justify-content:space-between;align-items:center;gap:12px}.settingRow b{font-size:15px}.settingRow small{display:block;margin-top:4px;color:var(--sub);line-height:1.5}.toggle{width:50px;height:30px;border-radius:999px;border:0;background:#d0d5dd;position:relative}.toggle:after{content:"";position:absolute;width:24px;height:24px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.18s}.toggle.on{background:#111827}.toggle.on:after{left:23px}.dangerBtn{width:100%;border:1px solid #fecdca;background:#fff1f0;color:#b42318;border-radius:14px;padding:12px;font-weight:900}
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;width:min(720px,calc(100% - 24px));background:rgba(17,24,39,.96);backdrop-filter:blur(12px);border-radius:18px;padding:7px;display:grid;grid-template-columns:repeat(4,1fr);box-shadow:0 14px 40px rgba(15,23,42,.28);z-index:20}.nav button{border:0;background:transparent;color:#98a2b3;border-radius:13px;padding:10px 4px;font-size:11px;font-weight:900}.nav button.active{background:#fff;color:#111827}
 @media(min-width:700px){.app{padding-left:24px;padding-right:24px}.hero{padding:28px}}
 </style>
 </head>
@@ -29,92 +36,252 @@ h2{font-size:18px;line-height:1.45;margin:0 0 7px;letter-spacing:-.015em}.summar
 <div id="root"></div>
 <script>
 'use strict';
-const DATA_URL = 'https://gzamrrcmrxirrqsijszm.supabase.co/functions/v1/today5-data';
-const decodeUtf8Base64 = (s) => {
-  const binary = atob(s);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return new TextDecoder('utf-8').decode(bytes);
-};
-const el = (tag, className, text) => {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-};
-function buildShell() {
-  const root = document.getElementById('root');
-  const app = el('main','app');
-  root.appendChild(app);
 
-  const header = el('header');
-  const top = el('div','top');
-  const left = el('div');
+const DATA_URL='https://gzamrrcmrxirrqsijszm.supabase.co/functions/v1/today5-data';
+const ARCHIVE_KEY='today5_archive_v1';
+const SAVED_KEY='today5_saved_v1';
+const SETTINGS_KEY='today5_settings_v1';
+
+const state={
+  current:null,
+  view:'today',
+  selectedArchive:null,
+  archive:loadJson(ARCHIVE_KEY,{}),
+  saved:loadJson(SAVED_KEY,[]),
+  settings:loadJson(SETTINGS_KEY,{summariesOpen:false})
+};
+
+function loadJson(key,fallback){
+  try{const v=localStorage.getItem(key);return v?JSON.parse(v):fallback}catch{return fallback}
+}
+function saveJson(key,value){localStorage.setItem(key,JSON.stringify(value))}
+function decode64(s){
+  const binary=atob(s);
+  const bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
+}
+function el(tag,cls,text){
+  const x=document.createElement(tag);
+  if(cls)x.className=cls;
+  if(text!==undefined)x.textContent=text;
+  return x;
+}
+function articleId(item){return item.link}
+function isSaved(item){return state.saved.some(x=>articleId(x)===articleId(item))}
+function normalizePayload(data){
+  return {
+    day:data.day || new Date().toISOString().slice(0,10),
+    updated:decode64(data.updated),
+    quick:decode64(data.quick),
+    items:(data.items||[]).map(x=>({
+      rank:x.rank,
+      title:decode64(x.title),
+      source:decode64(x.source),
+      category:decode64(x.category),
+      summary:decode64(x.summary),
+      link:x.link
+    }))
+  };
+}
+function saveArchive(data){
+  if(!data.day||!data.items.length)return;
+  state.archive[data.day]=data;
+  const keys=Object.keys(state.archive).sort().reverse();
+  if(keys.length>31)keys.slice(31).forEach(k=>delete state.archive[k]);
+  saveJson(ARCHIVE_KEY,state.archive);
+}
+function toggleSaved(item){
+  const id=articleId(item);
+  const idx=state.saved.findIndex(x=>articleId(x)===id);
+  if(idx>=0)state.saved.splice(idx,1);
+  else state.saved.unshift({...item,savedAt:new Date().toISOString()});
+  saveJson(SAVED_KEY,state.saved);
+  render();
+}
+function setView(view){
+  state.view=view;
+  state.selectedArchive=null;
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function buildHeader(app){
+  const header=el('header');
+  const top=el('div','top');
+  const left=el('div');
   left.appendChild(el('div','brand','TODAY 5'));
   left.appendChild(el('div','tag','今日これだけは押さえろ'));
-  const date = el('div','date','更新中');
-  top.append(left,date); header.appendChild(top); app.appendChild(header);
-
-  const hero = el('section','hero');
+  const right=el('div','date',state.current?state.current.updated:'更新中');
+  top.append(left,right);header.appendChild(top);app.appendChild(header);
+}
+function buildHero(app){
+  const hero=el('section','hero');
   hero.appendChild(el('small','', '最新ニュースを自動取得'));
-  const h1 = el('h1');
-  h1.append(document.createTextNode('世界・日本・経済を'), document.createElement('br'), document.createTextNode('5本だけ。'));
+  const h1=el('h1');
+  h1.append(document.createTextNode('世界・日本・経済を'),document.createElement('br'),document.createTextNode('5本だけ。'));
   hero.appendChild(h1);
-  hero.appendChild(el('p','', 'アクセスするたび最新の主要ニュースを取得します。元記事もすぐ確認できます。'));
+  hero.appendChild(el('p','', '見出しだけでなく、要約もサッと確認。気になる記事は保存できます。'));
   app.appendChild(hero);
-
-  const cards = el('section','cards');
-  cards.appendChild(el('div','status','最新ニュースを取得中です...'));
-  app.appendChild(cards);
-
-  const nav = el('nav','nav');
-  ['今日','過去','保存','設定'].forEach(v => nav.appendChild(el('span','',v)));
-  root.appendChild(nav);
-  return {app,cards,date};
 }
-function render(data, ui) {
-  ui.cards.textContent = '';
-  ui.date.textContent = decodeUtf8Base64(data.updated);
-  data.items.forEach((item, i) => {
-    const card = el('article','card');
-    const row = el('div','row');
-    row.appendChild(el('div','rank',String(item.rank)));
-    const body = el('div','body');
-    const meta = el('div','meta');
-    if (i === 0) meta.appendChild(el('span','hot','TOP'));
-    meta.appendChild(el('span','badge',decodeUtf8Base64(item.category)));
-    meta.appendChild(el('span','src',decodeUtf8Base64(item.source)));
-    body.appendChild(meta);
-    body.appendChild(el('h2','',decodeUtf8Base64(item.title)));
-    body.appendChild(el('p','summary',decodeUtf8Base64(item.desc)));
-    row.appendChild(body);
-    card.appendChild(row);
-    const link = el('a','', '元記事を開く');
-    link.href = item.link; link.target = '_blank'; link.rel = 'noopener noreferrer';
-    card.appendChild(link);
-    ui.cards.appendChild(card);
+function buildCard(item,index,container,showRank=true){
+  const card=el('article','card');
+  const row=el('div','row');
+  if(showRank)row.appendChild(el('div','rank',String(index+1)));
+  const body=el('div','body');
+  const meta=el('div','meta');
+  if(index===0&&showRank)meta.appendChild(el('span','hot','TOP'));
+  meta.appendChild(el('span','badge',item.category));
+  meta.appendChild(el('span','src',item.source));
+  body.appendChild(meta);
+  body.appendChild(el('h2','',item.title));
+  row.appendChild(body);
+  card.appendChild(row);
+
+  const summary=el('div','summaryBox'+(state.settings.summariesOpen?' open':''));
+  summary.appendChild(el('div','summaryLabel','記事の要約'));
+  summary.appendChild(el('div','',item.summary));
+  card.appendChild(summary);
+
+  const actions=el('div','cardActions');
+  const summaryBtn=el('button','plainBtn',state.settings.summariesOpen?'要約を閉じる':'要約を見る');
+  summaryBtn.addEventListener('click',()=>{
+    const open=summary.classList.toggle('open');
+    summaryBtn.textContent=open?'要約を閉じる':'要約を見る';
   });
-  const quick = el('section','quick');
-  quick.appendChild(el('b','', '30秒まとめ'));
-  quick.appendChild(el('p','',decodeUtf8Base64(data.quick)));
-  ui.app.appendChild(quick);
-  ui.app.appendChild(el('div','note','見出しとリンクはニュース配信元に基づきます。速報は更新される場合があります。'));
+  const saveBtn=el('button','saveBtn'+(isSaved(item)?' saved':''),isSaved(item)?'保存済み':'保存');
+  saveBtn.addEventListener('click',()=>toggleSaved(item));
+  const link=el('a','articleLink','元記事を開く');
+  link.href=item.link;link.target='_blank';link.rel='noopener noreferrer';
+  actions.append(summaryBtn,saveBtn,link);
+  card.appendChild(actions);
+  container.appendChild(card);
 }
-async function main(){
-  const ui = buildShell();
-  try {
-    const response = await fetch(DATA_URL, {cache:'no-store'});
-    if (!response.ok) throw new Error('HTTP '+response.status);
-    const data = await response.json();
-    if (!Array.isArray(data.items) || !data.items.length) throw new Error('No news');
-    render(data,ui);
-  } catch (err) {
-    ui.cards.textContent = '';
-    ui.cards.appendChild(el('div','status error','ニュースの取得に失敗しました。再読み込みしてください。'));
+function renderToday(app){
+  buildHero(app);
+  if(!state.current){
+    app.appendChild(el('div','status','最新ニュースを取得中です...'));
+    return;
+  }
+  const cards=el('section','cards');
+  state.current.items.forEach((item,i)=>buildCard(item,i,cards,true));
+  app.appendChild(cards);
+  const quick=el('section','quick');
+  quick.appendChild(el('b','', '30秒まとめ'));
+  quick.appendChild(el('p','',state.current.quick));
+  app.appendChild(quick);
+  app.appendChild(el('div','note','要約はニュース配信フィードの情報をもとに短く整理しています。速報では内容が更新される場合があります。'));
+}
+function renderArchive(app){
+  app.appendChild(el('div','sectionTitle',state.selectedArchive?'過去のニュース':'過去'));
+  if(state.selectedArchive){
+    const back=el('button','plainBtn','日付一覧に戻る');
+    back.addEventListener('click',()=>{state.selectedArchive=null;render()});
+    app.appendChild(back);
+    app.appendChild(el('p','sectionSub',state.selectedArchive));
+    const data=state.archive[state.selectedArchive];
+    const cards=el('section','cards');
+    data.items.forEach((item,i)=>buildCard(item,i,cards,true));
+    app.appendChild(cards);
+    return;
+  }
+  app.appendChild(el('p','sectionSub','この端末でTODAY 5を開いた日のニュースを最大31日分保存します。'));
+  const keys=Object.keys(state.archive).sort().reverse();
+  if(!keys.length){app.appendChild(el('div','status','まだ履歴がありません。'));return}
+  const list=el('div','archiveList');
+  keys.forEach(day=>{
+    const b=el('button','archiveBtn');
+    const left=el('b','',day);
+    const right=el('span','',state.archive[day].items.length+'本');
+    b.append(left,right);
+    b.addEventListener('click',()=>{state.selectedArchive=day;render();window.scrollTo({top:0})});
+    list.appendChild(b);
+  });
+  app.appendChild(list);
+}
+function renderSaved(app){
+  app.appendChild(el('div','sectionTitle','保存'));
+  app.appendChild(el('p','sectionSub','あとで読みたい記事をこの端末に保存できます。'));
+  if(!state.saved.length){app.appendChild(el('div','status','保存した記事はまだありません。'));return}
+  const cards=el('section','cards');
+  state.saved.forEach((item,i)=>buildCard(item,i,cards,false));
+  app.appendChild(cards);
+}
+function renderSettings(app){
+  app.appendChild(el('div','sectionTitle','設定'));
+  const wrap=el('div','settings');
+
+  const sumCard=el('div','settingCard');
+  const row=el('div','settingRow');
+  const txt=el('div');
+  txt.appendChild(el('b','', '要約を最初から開く'));
+  txt.appendChild(el('small','', 'オンにすると各記事の要約を常に表示します。'));
+  const toggle=el('button','toggle'+(state.settings.summariesOpen?' on':''));
+  toggle.setAttribute('aria-label','要約の初期表示');
+  toggle.addEventListener('click',()=>{
+    state.settings.summariesOpen=!state.settings.summariesOpen;
+    saveJson(SETTINGS_KEY,state.settings);
+    render();
+  });
+  row.append(txt,toggle);sumCard.appendChild(row);wrap.appendChild(sumCard);
+
+  const refresh=el('button','refreshBtn','最新ニュースを再取得');
+  refresh.addEventListener('click',async()=>{state.view='today';render();await fetchLatest(true)});
+  wrap.appendChild(refresh);
+
+  const clearArchive=el('button','dangerBtn','過去の履歴を削除');
+  clearArchive.addEventListener('click',()=>{
+    state.archive={};saveJson(ARCHIVE_KEY,state.archive);render();
+  });
+  wrap.appendChild(clearArchive);
+
+  const clearSaved=el('button','dangerBtn','保存記事をすべて削除');
+  clearSaved.addEventListener('click',()=>{
+    state.saved=[];saveJson(SAVED_KEY,state.saved);render();
+  });
+  wrap.appendChild(clearSaved);
+  app.appendChild(wrap);
+}
+function buildNav(root){
+  const nav=el('nav','nav');
+  [['today','今日'],['archive','過去'],['saved','保存'],['settings','設定']].forEach(([key,label])=>{
+    const b=el('button',state.view===key?'active':'',label);
+    b.addEventListener('click',()=>setView(key));
+    nav.appendChild(b);
+  });
+  root.appendChild(nav);
+}
+function render(){
+  const root=document.getElementById('root');
+  root.textContent='';
+  const app=el('main','app');root.appendChild(app);
+  buildHeader(app);
+  if(state.view==='today')renderToday(app);
+  if(state.view==='archive')renderArchive(app);
+  if(state.view==='saved')renderSaved(app);
+  if(state.view==='settings')renderSettings(app);
+  buildNav(root);
+}
+async function fetchLatest(force=false){
+  try{
+    const response=await fetch(DATA_URL+(force?'?t='+Date.now():''),{cache:'no-store'});
+    if(!response.ok)throw new Error('HTTP '+response.status);
+    const raw=await response.json();
+    const data=normalizePayload(raw);
+    if(!data.items.length)throw new Error('No news');
+    state.current=data;
+    saveArchive(data);
+    render();
+  }catch(err){
     console.error(err);
+    if(state.view==='today'){
+      const app=document.querySelector('.app');
+      const old=app.querySelector('.status');
+      if(old){old.className='status error';old.textContent='ニュースの取得に失敗しました。再読み込みしてください。'}
+    }
   }
 }
-main();
+render();
+fetchLatest();
 </script>
 </body>
 </html>
