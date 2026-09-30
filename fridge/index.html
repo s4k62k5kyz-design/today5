@@ -18,18 +18,18 @@
 <div class="field expiry-field"><label>賞味・消費期限</label><input id="expiry" type="date"></div>
 <div class="field"><label>数量</label><input id="quantity" type="number" min="0" step="0.1" value="1"></div>
 <div class="field full"><label>メモ</label><textarea id="memo" maxlength="500" placeholder="例：開封済み、夕食用"></textarea></div>
-</div><button class="save">保存する</button><button type="button" class="del" id="del" style="display:none">この食材を削除</button></form></div></div><div class="overlay" id="scannerOverlay"><div class="sheet scanSheet"><div class="sh"><h2>バーコードを読み取る</h2><button class="close" id="closeScanner">×</button></div><div id="barcodeReader"></div><div class="scanStatus" id="scanStatus">カメラをバーコードに向けてください。</div><div class="scanActions"><button type="button" class="primary" id="scanPhoto">📷 写真から読む</button><button type="button" id="scanManual">番号を入力する</button></div><input type="file" id="barcodeFile" accept="image/*" capture="environment" style="display:none"></div></div><div class="overlay" id="helpOverlay"><div class="sheet helpSheet"><div class="sh"><h2>冷蔵庫ノートの使い方</h2><button class="close" id="closeHelp">×</button></div>
+</div><button class="save">保存する</button><button type="button" class="del" id="del" style="display:none">この食材を削除</button></form></div></div><div class="overlay" id="scannerOverlay"><div class="sheet scanSheet"><div class="sh"><h2>バーコードを読み取る</h2><button class="close" id="closeScanner">×</button></div><div class="field" id="cameraChoiceWrap" style="display:none;margin-bottom:10px"><label>使用するカメラ</label><select id="cameraSelect"></select></div><div id="barcodeReader"></div><div class="scanStatus" id="scanStatus">カメラをバーコードに向けてください。</div><div class="scanActions"><button type="button" class="primary" id="scanPhoto">📷 写真から読む</button><button type="button" id="scanManual">番号を入力する</button></div><input type="file" id="barcodeFile" accept="image/*" capture="environment" style="display:none"></div></div><div class="overlay" id="helpOverlay"><div class="sheet helpSheet"><div class="sh"><h2>冷蔵庫ノートの使い方</h2><button class="close" id="closeHelp">×</button></div>
 <div class="helpIntro"><b>冷蔵庫の中身を家族で共有するための在庫ノートです。</b><br>食材を追加しておくと、期限・数量・保管場所をまとめて確認できます。</div>
 <div class="helpbody">
 <details class="helpsec" open><summary>➕ 食材を登録する</summary><div class="helpcontent"><ol><li>右下の<b>「＋ 食材を追加」</b>を押します。</li><li>食材名、カテゴリー、保管場所、数量などを入力します。</li><li>賞味・消費期限が分かる場合は日付も入れます。</li><li><b>「保存する」</b>で家族共通の一覧に反映されます。</li></ol><div class="helpnote">保管場所は現在「冷蔵庫上」「野菜室」の2種類です。</div></div></details>
-<details class="helpsec"><summary>📷 バーコードから登録する</summary><div class="helpcontent"><ol><li>食材追加画面で<b>「📷 カメラ」</b>を押します。</li><li>JANコードを枠の中央に合わせます。</li><li>商品が見つかると、商品名とカテゴリー候補が自動入力されます。</li></ol><p>カメラで読めない場合は、<b>「写真から読む」</b>か、JANコードを直接入力して<b>「検索」</b>を使えます。</p><div class="helpnote">商品データベースにない商品は自動入力できません。その場合も食材名を手入力すれば登録できます。同じ商品を一度登録した後は、次回から冷蔵庫ノート自身の履歴を優先して呼び出します。</div></div></details>
+<details class="helpsec"><summary>📷 バーコードから登録する</summary><div class="helpcontent"><ol><li>食材追加画面で<b>「📷 カメラ」</b>を押します。</li><li>JANコードを枠の中央に合わせます。</li><li>商品が見つかると、商品名とカテゴリー候補が自動入力されます。</li></ol><p>iPhone・Android・PCのカメラに対応しています。複数カメラがある端末では背面カメラを優先します。読めない場合は、<b>「写真から読む」</b>か、JANコードを直接入力して<b>「検索」</b>を使えます。</p><div class="helpnote">商品データベースにない商品は自動入力できません。その場合も食材名を手入力すれば登録できます。同じ商品を一度登録した後は、次回から冷蔵庫ノート自身の履歴を優先して呼び出します。</div></div></details>
 <details class="helpsec"><summary>🕘 以前の食材をもう一度登録する</summary><div class="helpcontent"><p>カテゴリーを選ぶと、<b>「以前の食材」</b>に過去の登録候補が表示されます。候補を選ぶと、食材名・前回の保管場所・単位・バーコードを呼び出せます。</p><div class="helpnote">「使い切り」で一覧から消しても、再登録用の履歴は残ります。</div></div></details>
 <details class="helpsec"><summary>🏷️ カテゴリーを追加する</summary><div class="helpcontent"><p>食材追加画面のカテゴリー横にある<b>「＋追加」</b>から自由にカテゴリーを増やせます。</p><p>追加時に「何日後にそろそろ使おうと表示するか」も設定できます。不要なカテゴリーは日数を空欄にしてください。</p></div></details>
 <details class="helpsec"><summary>🥬 野菜の「そろそろ使おう」</summary><div class="helpcontent"><p><b>「野菜・果物」は登録から3日</b>で「そろそろ使おう」と表示されます。さらに日数が経つと「早めに使おう」に変わります。</p><p>これは賞味・消費期限とは別の目安です。期限を入力している場合は、期限表示も同時に確認できます。</p><div class="helpLegend"><span class="expiry remind">🥬 そろそろ使おう</span><span class="expiry soon">あと3日</span><span class="expiry expired">期限切れ</span></div></div></details>
 <details class="helpsec"><summary>➖➕ 数量を変える・使い切る</summary><div class="helpcontent"><p>各食材カードの<b>「−」「＋」</b>で数量をすぐ変更できます。なくなったら<b>「使い切り」</b>を押すと一覧から削除されます。</p><p>内容を細かく直す場合は<b>「編集」</b>を使ってください。</p></div></details>
 <details class="helpsec"><summary>🔎 探す・絞り込む・並べ替える</summary><div class="helpcontent"><ul><li><b>冷蔵庫上／野菜室</b>タブ：保管場所で絞り込み</li><li><b>検索欄</b>：食材名・メモ・カテゴリーから検索</li><li><b>並べ替え</b>：期限が近い順／更新が新しい順／名前順</li><li><b>↻</b>：最新の家族共有データを再読み込み</li></ul></div></details>
 <details class="helpsec"><summary>👨‍👩‍👧 家族共有・ログイン</summary><div class="helpcontent"><p>同じ冷蔵庫ノートを開いている家族は、同じ在庫データを共有します。最初に家族共通の6桁暗証番号で認証します。</p><p>右上の<b>「⋯」</b>から、この端末の認証を解除できます。</p></div></details>
-<details class="helpsec"><summary>🛠️ 困ったとき</summary><div class="helpcontent"><ul><li>カメラが開かない → ブラウザのカメラ許可を確認し、写真読み取りか番号入力を使う</li><li>商品が見つからない → 食材名を手入力して登録する</li><li>家族の変更が見えない → <b>↻</b>で再読み込みする</li><li>画面表示がおかしい → ページを再読み込みする</li></ul></div></details>
+<details class="helpsec"><summary>🛠️ 困ったとき</summary><div class="helpcontent"><ul><li>カメラが開かない → ブラウザのカメラ許可を確認。Android/PCでは使用するカメラを選択し、だめなら写真読み取りか番号入力を使う</li><li>商品が見つからない → 食材名を手入力して登録する</li><li>家族の変更が見えない → <b>↻</b>で再読み込みする</li><li>画面表示がおかしい → ページを再読み込みする</li></ul></div></details>
 </div></div></div><div class="toast" id="toast"></div>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
@@ -76,10 +76,72 @@ async function adjust(id,n){var x=st.items.find(function(v){return v.id===id});i
 
 var barcodeScanner=null,scannerBusy=false;
 async function stopScanner(){try{if(barcodeScanner)await barcodeScanner.stop()}catch(e){}}
-async function closeScanner(){await stopScanner();$("scannerOverlay").classList.remove("show");$("scanStatus").textContent="カメラをバーコードに向けてください。"}
+async function closeScanner(){await stopScanner();$("scannerOverlay").classList.remove("show");$("cameraChoiceWrap").style.display="none";$("scanStatus").textContent="カメラをバーコードに向けてください。"}
 async function lookupBarcodeCode(code){code=String(code||"").replace(/\D/g,"");if(!(code.length>=8&&code.length<=14)){toast("JANコードを確認してください");return}$("barcode").value=code;$("scanStatus").textContent="商品情報を検索しています…";try{var d=await api("/api/barcode?code="+encodeURIComponent(code));if(!d.found){toast("商品が見つかりません。食材名を入力してください");$("scanStatus").textContent="商品データが見つかりませんでした。";return}if(d.name)$("name").value=d.name;if(d.suggested_category&&st.categories.some(function(x){return x.name===d.suggested_category})){$("category").value=d.suggested_category;refreshHistoryOptions()}if(d.last_storage&&["冷蔵庫上","野菜室"].includes(d.last_storage))$("storage").value=d.last_storage;if(d.default_unit)$("unit").value=d.default_unit;$("scanStatus").textContent="読み取りました： "+(d.name||code);toast(d.source==="history"?"前回の登録内容を呼び出しました":"商品情報を入力しました")}catch(e){$("scanStatus").textContent="商品検索に失敗しました。";toast(e.message)}}
 async function scanSuccess(decoded){if(scannerBusy)return;scannerBusy=true;try{await stopScanner();$("scannerOverlay").classList.remove("show");await lookupBarcodeCode(decoded)}finally{scannerBusy=false}}
-async function startScanner(){if(typeof Html5Qrcode!=="function"){toast("カメラ機能を読み込めません。番号入力を使ってください");return}$("scannerOverlay").classList.add("show");$("scanStatus").textContent="カメラの使用を許可してください。";try{await stopScanner();barcodeScanner=new Html5Qrcode("barcodeReader",{formatsToSupport:[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODE_128]});await barcodeScanner.start({facingMode:"environment"},{fps:10,qrbox:{width:280,height:130},aspectRatio:1.777},scanSuccess,function(){});$("scanStatus").textContent="バーコードを枠の中央に合わせてください。"}catch(e){$("scanStatus").textContent="カメラを開始できません。写真から読むか番号入力を使ってください。"}}
+async function startScanner(preferredId){
+  if(typeof Html5Qrcode!=="function"){toast("カメラ機能を読み込めません。写真か番号入力を使ってください");return}
+  $("scannerOverlay").classList.add("show");
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    $("scanStatus").textContent="このブラウザはライブカメラに対応していません。写真から読むか番号入力を使ってください。";
+    $("cameraChoiceWrap").style.display="none";
+    return;
+  }
+  $("scanStatus").textContent="利用できるカメラを確認しています…";
+  try{
+    await stopScanner();
+    var cameras=await Html5Qrcode.getCameras();
+    if(!cameras||!cameras.length)throw Error("camera_not_found");
+    var sel=$("cameraSelect");
+    sel.innerHTML=cameras.map(function(cam,i){
+      return '<option value="'+esc(cam.id)+'">'+esc(cam.label||("カメラ "+(i+1)))+"</option>"
+    }).join("");
+    $("cameraChoiceWrap").style.display=cameras.length>1?"grid":"none";
+    var pick=preferredId&&cameras.some(function(x){return x.id===preferredId})?preferredId:"";
+    if(!pick){
+      var rear=cameras.find(function(cam){return /back|rear|environment|背面|外側/i.test(cam.label||"")});
+      pick=(rear||cameras[cameras.length-1]||cameras[0]).id;
+    }
+    sel.value=pick;
+    barcodeScanner=new Html5Qrcode("barcodeReader",{formatsToSupport:[
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.UPC_E,
+      Html5QrcodeSupportedFormats.CODE_128
+    ]});
+    await barcodeScanner.start(
+      pick,
+      {fps:10,qrbox:{width:280,height:130},aspectRatio:1.777},
+      scanSuccess,
+      function(){}
+    );
+    var label=(cameras.find(function(x){return x.id===pick})||{}).label||"カメラ";
+    $("scanStatus").textContent="使用中："+label+"。バーコードを枠の中央に合わせてください。";
+  }catch(e){
+    try{
+      await stopScanner();
+      barcodeScanner=new Html5Qrcode("barcodeReader",{formatsToSupport:[
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_128
+      ]});
+      await barcodeScanner.start(
+        {facingMode:{ideal:"environment"}},
+        {fps:10,qrbox:{width:280,height:130},aspectRatio:1.777},
+        scanSuccess,
+        function(){}
+      );
+      $("cameraChoiceWrap").style.display="none";
+      $("scanStatus").textContent="バーコードを枠の中央に合わせてください。";
+    }catch(e2){
+      $("cameraChoiceWrap").style.display="none";
+      $("scanStatus").textContent="カメラを開始できません。ブラウザのカメラ許可を確認するか、写真・番号入力を使ってください。";
+    }
+  }
+}
 async function scanPhotoFile(file){if(!file)return;if(typeof Html5Qrcode!=="function"){toast("画像読み取り機能を読み込めません");return}try{await stopScanner();if(!barcodeScanner)barcodeScanner=new Html5Qrcode("barcodeReader");$("scannerOverlay").classList.add("show");$("scanStatus").textContent="写真を解析しています…";var decoded=await barcodeScanner.scanFile(file,true);await scanSuccess(decoded)}catch(e){$("scanStatus").textContent="バーコードを読み取れませんでした。もう一度撮影してください。"}}
 async function addCategory(){var name=prompt("追加するカテゴリー名を入力してください");if(name==null)return;name=name.trim();if(!name)return;var raw=prompt("何日後に「そろそろ使おう」と表示しますか？\n不要なら空欄のままOKです。","");if(raw==null)return;raw=raw.trim();var rd=raw===""?null:Number(raw);if(rd!==null&&(!Number.isInteger(rd)||rd<1||rd>365)){toast("日数は1〜365で入力してください");return}try{var d=await api("/api/categories",{method:"POST",body:JSON.stringify({name:name,reminder_days:rd})});var i=st.categories.findIndex(function(c){return c.name===d.category.name});if(i>=0)st.categories[i]=d.category;else st.categories.push(d.category);setCategoryOptions(d.category.name);toast("カテゴリーを追加しました")}catch(e){toast(e.message)}}
 
@@ -93,7 +155,7 @@ $("close").onclick=closeEditor;$("closeHelp").onclick=closeHelp;$("helpOverlay")
 $("overlay").onclick=function(e){if(e.target===$("overlay"))closeEditor()};
 $("category").onchange=refreshHistoryOptions;
 $("historyPick").onchange=pickHistory;
-$("addCategory").onclick=addCategory;$("scanBarcode").onclick=startScanner;$("lookupBarcode").onclick=function(){lookupBarcodeCode($("barcode").value)};$("closeScanner").onclick=closeScanner;$("scannerOverlay").onclick=function(e){if(e.target===$("scannerOverlay"))closeScanner()};$("scanPhoto").onclick=function(){$("barcodeFile").click()};$("barcodeFile").onchange=function(){var f=this.files&&this.files[0];this.value="";scanPhotoFile(f)};$("scanManual").onclick=async function(){await closeScanner();$("barcode").focus()};
+$("addCategory").onclick=addCategory;$("scanBarcode").onclick=function(){startScanner()};$("cameraSelect").onchange=function(){startScanner(this.value)};$("lookupBarcode").onclick=function(){lookupBarcodeCode($("barcode").value)};$("closeScanner").onclick=closeScanner;$("scannerOverlay").onclick=function(e){if(e.target===$("scannerOverlay"))closeScanner()};$("scanPhoto").onclick=function(){$("barcodeFile").click()};$("barcodeFile").onchange=function(){var f=this.files&&this.files[0];this.value="";scanPhotoFile(f)};$("scanManual").onclick=async function(){await closeScanner();$("barcode").focus()};
 
 $("form").onsubmit=async function(e){e.preventDefault();var id=$("id").value,o={name:$("name").value.trim(),barcode:$("barcode").value.replace(/\D/g,"")||null,storage:$("storage").value,category:$("category").value,expiry_date:$("expiry").value||null,quantity:Number($("quantity").value||0),unit:$("unit").value,memo:$("memo").value.trim()};try{if(id)await api("/api/items/"+id,{method:"PATCH",body:JSON.stringify(o)});else await api("/api/items",{method:"POST",body:JSON.stringify(o)});closeEditor();await loadAll();toast(id?"更新しました":"追加しました")}catch(e){toast(e.message)}};
 $("del").onclick=function(){var id=$("id").value;if(id&&confirm("この食材を削除しますか？"))remove(id)};
