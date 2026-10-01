@@ -110,8 +110,6 @@ const receiptRect=await ev(`(() => {
 await cmd('Input.dispatchMouseEvent',{type:'mousePressed',x:receiptRect.x,y:receiptRect.y,button:'left',clickCount:1});
 await cmd('Input.dispatchMouseEvent',{type:'mouseReleased',x:receiptRect.x,y:receiptRect.y,button:'left',clickCount:1});
 for(let i=0;i<25&&!chooserOpened;i++) await new Promise(r=>setTimeout(r,100));
-const receiptOpened=await ev("document.getElementById('receiptDialog').open");
-if(!receiptOpened) throw new Error('One-tap receipt button did not open receipt flow');
 if(!chooserOpened) throw new Error('One-tap receipt button did not open the browser file chooser');
 
 // Stub OCR engine and call the real file-change handler with a real File object.
@@ -132,6 +130,8 @@ await ev(`(async () => {
   return true;
 })()`);
 await waitFor("!document.getElementById('receiptResult').classList.contains('hidden')",10000);
+const receiptOpened=await ev("document.getElementById('receiptDialog').open");
+if(!receiptOpened) throw new Error('Receipt dialog did not open after photo selection');
 const filled=await ev(`(() => ({
   total:document.getElementById('receiptTotal').value,
   merchant:document.getElementById('receiptMerchant').value,
