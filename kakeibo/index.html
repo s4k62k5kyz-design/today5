@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f7fb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="くらし家計簿">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>くらし家計簿</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='30' fill='%233c6df0'/%3E%3Cpath d='M28 43h72v52H28z' fill='white' opacity='.95'/%3E%3Cpath d='M38 57h52M38 70h34M38 83h44' stroke='%233c6df0' stroke-width='7' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#718096;--line:#e7ebf2;--primary:#3c6df0;--primary2:#688cf6;--green:#11a36d;--red:#e45763;--orange:#e49a32;--soft:#edf2ff;--shadow:0 8px 28px rgba(23,32,51,.07);--r:20px;--nav:74px}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif}body{min-height:100vh}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}.hidden{display:none!important}
+.app{max-width:760px;margin:0 auto;padding:12px 14px calc(var(--nav) + 30px)}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:4px 2px 10px}.brand{display:flex;align-items:center;gap:10px}.brandIcon{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,var(--primary),#82a1ff);display:grid;place-items:center;color:#fff;font-size:21px;box-shadow:var(--shadow)}.brand b{font-size:18px}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.monthbar{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:7px 9px;margin-bottom:12px;box-shadow:var(--shadow)}.monthbar button{border:0;background:transparent;width:40px;height:34px;font-size:20px}.monthbar .month{font-weight:800;font-size:14px}.today{font-size:10px!important;color:var(--primary);width:auto!important;padding:0 7px!important}
+.page{display:none}.page.active{display:block}.hero{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border-radius:24px;padding:20px;box-shadow:0 14px 34px rgba(60,109,240,.22)}.hero small{opacity:.82}.heroAmount{font-size:34px;font-weight:900;letter-spacing:-1px;margin:4px 0}.heroSub{display:flex;justify-content:space-between;gap:12px;font-size:11px;opacity:.9}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}.metric{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:var(--shadow)}.metric small{display:block;color:var(--muted);font-size:10px;margin-bottom:4px}.metric b{font-size:16px}.green{color:var(--green)}.red{color:var(--red)}
+.section{margin-top:15px}.sectionHead{display:flex;align-items:center;justify-content:space-between;margin:0 2px 8px}.sectionHead h2{margin:0;font-size:15px}.sectionHead span{font-size:10px;color:var(--muted)}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px;box-shadow:var(--shadow)}
+.quick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.quick button{border:1px solid var(--line);background:var(--card);border-radius:16px;padding:13px 7px;min-height:78px}.quick .ico{display:block;font-size:23px;margin-bottom:5px}.quick .txt{font-size:11px;font-weight:750}.quick .sub{font-size:9px;color:var(--muted);margin-top:2px}.quick .receipt{background:linear-gradient(135deg,var(--soft),#fff);border-color:#cad7ff;color:var(--primary)}
+.progress{height:9px;border-radius:999px;background:#edf0f5;overflow:hidden}.progress i{display:block;height:100%;background:var(--primary);border-radius:999px;width:0}.budgetLine{display:flex;justify-content:space-between;gap:12px;font-size:11px;margin-bottom:7px}.budgetLine b{font-size:12px}.note{font-size:10px;color:var(--muted);line-height:1.6}
+.tx{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}.tx:last-child{border-bottom:0}.txIcon{width:40px;height:40px;border-radius:13px;background:#f3f5f9;display:grid;place-items:center}.txTitle{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.txMeta{font-size:9px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.txAmt{text-align:right;font-size:12px;font-weight:850}.txActions{margin-top:4px}.link{border:0;background:transparent;color:var(--muted);font-size:9px;padding:0 0 0 7px}.empty{text-align:center;color:var(--muted);font-size:11px;padding:20px 6px}
+.filterRow{display:grid;grid-template-columns:1fr auto;gap:8px}.search,.select,.input{width:100%;border:1px solid var(--line);background:var(--card);border-radius:13px;padding:11px 12px;outline:none}.select{max-width:145px}.field{margin-bottom:11px}.field label{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.primary{width:100%;border:0;background:var(--primary);color:#fff;border-radius:13px;padding:12px;font-weight:850}.secondary{width:100%;border:1px solid var(--line);background:var(--card);border-radius:13px;padding:11px;font-weight:750}.danger{color:var(--red)}
+.settingRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}.settingRow:last-child{border-bottom:0}.settingRow b{font-size:12px}.settingRow small{display:block;color:var(--muted);font-size:9px;margin-top:2px}.toggle{width:48px;height:28px;border:0;border-radius:999px;background:#cfd6e1;position:relative}.toggle:after{content:"";position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;left:3px;top:3px;transition:.18s}.toggle.on{background:var(--primary)}.toggle.on:after{left:23px}
+.planItem{border:1px solid var(--line);border-radius:14px;padding:11px;margin-bottom:8px}.planItem b{font-size:12px}.planItem .meta{font-size:9px;color:var(--muted);margin-top:4px}.smRow{display:flex;gap:7px;margin-top:8px}.smBtn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:7px 9px;font-size:9px}
+.bottom{position:fixed;left:0;right:0;bottom:0;height:var(--nav);background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-top:1px solid var(--line);z-index:30;padding-bottom:env(safe-area-inset-bottom)}.nav{max-width:760px;margin:0 auto;height:100%;display:grid;grid-template-columns:repeat(4,1fr)}.nav button{border:0;background:transparent;color:var(--muted);font-size:9px}.nav span{display:block;font-size:20px;margin-bottom:3px}.nav button.active{color:var(--primary);font-weight:800}
+dialog{border:0;border-radius:23px;padding:0;width:min(94vw,560px);max-height:90vh;background:var(--card);color:var(--text);box-shadow:0 30px 90px rgba(0,0,0,.26)}dialog::backdrop{background:rgba(10,15,25,.56)}.modalHead{position:sticky;top:0;z-index:2;background:var(--card);display:flex;align-items:center;justify-content:space-between;padding:16px 17px 8px}.modalHead h3{margin:0;font-size:16px}.close{width:35px;height:35px;border:0;border-radius:11px;background:#f2f4f8}.modalBody{padding:8px 17px 18px;overflow:auto}.typeToggle{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}.typeToggle button{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px;font-weight:750}.typeToggle button.active{background:var(--soft);color:var(--primary);border-color:#cad7ff}
+.receiptHero{border:1px dashed #b9c9f6;background:linear-gradient(135deg,#f2f6ff,#fff);border-radius:18px;padding:14px}.photoBtn{display:block;text-align:center;background:var(--primary);color:#fff;border-radius:14px;padding:14px;font-weight:850}.receiptPreview{width:100%;max-height:260px;object-fit:contain;border-radius:13px;border:1px solid var(--line);background:#fff;margin-top:10px}.scanState{font-size:10px;color:var(--muted);line-height:1.6;margin-top:9px}.scanBar{height:7px;background:#e8ecf3;border-radius:999px;overflow:hidden;margin-top:8px}.scanBar i{display:block;height:100%;background:var(--primary);width:0;transition:width .2s}.receiptItems{margin-top:10px}.receiptItem{display:grid;grid-template-columns:1fr auto;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:10px}.receiptItem:last-child{border-bottom:0}.warn{border:1px solid #f1d8aa;background:#fff9ef;color:#8b5b17;border-radius:12px;padding:9px 10px;font-size:10px;line-height:1.5;margin-top:9px}.ok{color:var(--green)}
+.pillList{display:flex;flex-wrap:wrap;gap:6px}.pill{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:#f7f8fb;border-radius:999px;padding:7px 9px;font-size:10px}.pill button{border:0;background:transparent;color:var(--muted);padding:0}.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--nav) + 18px);z-index:90;background:#1c2433;color:#fff;border-radius:13px;padding:10px 12px;font-size:10px;box-shadow:0 12px 30px rgba(0,0,0,.24)}
+@media(max-width:430px){.app{padding-left:11px;padding-right:11px}.heroAmount{font-size:30px}.grid3{gap:6px}.metric{padding:10px}.metric b{font-size:14px}.quick button{padding:11px 4px}.row2{grid-template-columns:1fr}.receiptHero{padding:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand"><div class="brandIcon">家</div><div><b>くらし家計簿</b><small>毎日つけやすい、シンプル家計簿</small></div></div></header>
+<div class="monthbar"><button id="prevMonth">‹</button><div class="month" id="monthLabel"></div><button class="today" id="todayBtn">今月</button><button id="nextMonth">›</button></div>
+
+<section class="page active" data-page="home">
+  <div class="hero"><small>今月あと使える目安</small><div class="heroAmount" id="remainingHero">—</div><div class="heroSub"><span id="budgetHero">予算未設定</span><span id="dailyHero">1日あたり —</span></div></div>
+  <div class="grid3"><div class="metric"><small>支出</small><b class="red" id="expenseMetric">¥0</b></div><div class="metric"><small>収入</small><b class="green" id="incomeMetric">¥0</b></div><div class="metric"><small>貯蓄見込み</small><b id="savingMetric">¥0</b></div></div>
+  <div class="section"><div class="quick">
+    <button id="quickExpense"><span class="ico">−</span><span class="txt">支出</span><div class="sub">すぐ記録</div></button>
+    <button id="quickIncome"><span class="ico">＋</span><span class="txt">収入</span><div class="sub">給与など</div></button>
+    <button id="quickReceipt" class="receipt"><span class="ico">📷</span><span class="txt">レシート登録</span><div class="sub">撮るだけ</div></button>
+  </div></div>
+  <div class="section"><div class="sectionHead"><h2>予算ペース</h2><span id="budgetCaption"></span></div><div class="card"><div class="budgetLine"><span id="budgetSpentText">今月の支出 ¥0</span><b id="budgetRemainText">残り —</b></div><div class="progress"><i id="budgetBar"></i></div></div></div>
+  <div class="section"><div class="sectionHead"><h2>最近の記録</h2><span>最新5件</span></div><div class="card" id="recentList"></div></div>
+</section>
+
+<section class="page" data-page="records">
+  <div class="section" style="margin-top:0"><div class="filterRow"><input id="recordSearch" class="search" placeholder="店名・メモで検索"><select id="recordCategory" class="select"></select></div></div>
+  <div class="section"><div class="sectionHead"><h2>記録</h2><span id="recordCount"></span></div><div class="card" id="recordList"></div></div>
+</section>
+
+<section class="page" data-page="plan">
+  <div class="section" style="margin-top:0"><div class="sectionHead"><h2>今月の予算</h2><span>使いすぎ防止</span></div><div class="card"><div class="field"><label>月の支出予算</label><input id="budgetInput" class="input" type="number" inputmode="numeric" min="0" placeholder="例：100000"></div><button id="saveBudget" class="primary">予算を保存</button></div></div>
+  <div class="section"><div class="sectionHead"><h2>月末の自動貯蓄</h2><span>余った分を記録</span></div><div class="card"><div class="settingRow"><div><b>余った予算を自動で貯蓄</b><small>翌月に前月分を自動確定します</small></div><button id="autoSaveToggle" class="toggle"></button></div><div class="note" id="autoSaveSummary" style="margin-top:10px"></div><div id="savingHistory"></div></div></div>
+  <div class="section"><div class="sectionHead"><h2>毎月の固定収支</h2><button id="addRecurring" class="link" style="font-size:10px;color:var(--primary)">＋追加</button></div><div id="recurringList"></div></div>
+</section>
+
+<section class="page" data-page="settings">
+  <div class="section" style="margin-top:0"><div class="sectionHead"><h2>カテゴリ</h2><span>必要なものだけ</span></div><div class="card"><div class="pillList" id="categoryPills"></div><button id="addCategory" class="secondary" style="margin-top:12px">カテゴリを追加</button></div></div>
+  <div class="section"><div class="sectionHead"><h2>データ</h2><span>端末内に保存</span></div><div class="card"><button id="exportData" class="secondary">バックアップを書き出す</button><label class="secondary" style="display:block;text-align:center;margin-top:8px">バックアップを読み込む<input id="importData" type="file" accept="application/json" hidden></label><button id="resetData" class="secondary danger" style="margin-top:8px">すべてのデータを消去</button></div></div>
+  <div class="section"><div class="card"><div class="note">レシートは、AIバックエンドが利用できる場合は画像理解を優先し、利用できない場合は端末内OCRへ自動で切り替えます。通常の操作では切り替えを意識する必要はありません。</div></div></div>
+</section>
+</div>
+
+<nav class="bottom"><div class="nav"><button class="active" data-nav="home"><span>⌂</span>ホーム</button><button data-nav="records"><span>▤</span>記録</button><button data-nav="plan"><span>◎</span>予算・貯蓄</button><button data-nav="settings"><span>⚙</span>設定</button></div></nav>
+
+<dialog id="entryDialog"><div class="modalHead"><h3 id="entryTitle">記録する</h3><button class="close" data-close="entryDialog">×</button></div><div class="modalBody"><div class="typeToggle"><button id="typeExpense" class="active">支出</button><button id="typeIncome">収入</button></div><form id="entryForm"><input id="entryId" type="hidden"><div class="field"><label>金額</label><input id="entryAmount" class="input" type="number" inputmode="numeric" min="0" required></div><div class="row2"><div class="field"><label>日付</label><input id="entryDate" class="input" type="date" required></div><div class="field"><label>カテゴリ</label><select id="entryCategory" class="input"></select></div></div><div class="field"><label>店名・メモ</label><input id="entryMemo" class="input" placeholder="例：スーパー、電気代"></div><button class="primary" type="submit">保存する</button><button id="deleteEntry" class="secondary danger hidden" type="button" style="margin-top:8px">この記録を削除</button></form></div></dialog>
+
+<dialog id="receiptDialog"><div class="modalHead"><h3>📷 レシート登録</h3><button class="close" data-close="receiptDialog">×</button></div><div class="modalBody"><div class="receiptHero"><label class="photoBtn">レシートを撮る・選ぶ<input id="receiptImage" type="file" accept="image/*" capture="environment" hidden></label><img id="receiptPreview" class="receiptPreview hidden"><div class="scanState" id="scanState">写真を選ぶと、自動で解析して入力します。</div><div class="scanBar hidden" id="scanBar"><i id="scanBarInner"></i></div></div><div id="receiptResult" class="hidden" style="margin-top:12px"><div class="row2"><div class="field"><label>店名</label><input id="receiptMerchant" class="input"></div><div class="field"><label>日付</label><input id="receiptDate" class="input" type="date"></div></div><div class="row2"><div class="field"><label>最終支払額</label><input id="receiptTotal" class="input" type="number" inputmode="numeric"></div><div class="field"><label>カテゴリ</label><select id="receiptCategory" class="input"></select></div></div><div id="receiptWarning"></div><details style="margin:8px 0"><summary class="note">読み取った商品を見る</summary><div class="receiptItems" id="receiptItems"></div></details><button id="saveReceipt" class="primary">この内容で登録</button></div></div></dialog>
+
+<dialog id="recurringDialog"><div class="modalHead"><h3>固定収支</h3><button class="close" data-close="recurringDialog">×</button></div><div class="modalBody"><form id="recurringForm"><input id="recurringId" type="hidden"><div class="typeToggle"><button id="recExpense" class="active" type="button">支出</button><button id="recIncome" type="button">収入</button></div><div class="field"><label>名前</label><input id="recName" class="input" required placeholder="例：家賃、給与"></div><div class="row2"><div class="field"><label>金額</label><input id="recAmount" class="input" type="number" min="0" required></div><div class="field"><label>毎月の日</label><select id="recDay" class="input"></select></div></div><div class="field"><label>カテゴリ</label><select id="recCategory" class="input"></select></div><button class="primary" type="submit">保存する</button></form></div></dialog>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+(()=>{
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const KEY='kurashi_kakeibo_v15';
+const LEGACY=['kurashi-kakeibo-v7','kurashi_kakeibo_v14','kurashi_kakeibo_v13'];
+const AI_ENDPOINT='https://rngmvobnxliegijzzdbg.supabase.co/functions/v1/receipt-analyzer';
+const DEFAULT_CATS=['食費','日用品','交通','住居','水道光熱','通信','医療','娯楽','衣服','教育','その他'];
+const INCOME_CATS=['給与','賞与','副業','臨時収入','その他'];
+const icons={'食費':'🍚','日用品':'🧴','交通':'🚃','住居':'🏠','水道光熱':'💡','通信':'📱','医療':'🏥','娯楽':'🎬','衣服':'👕','教育':'📚','その他':'📦','給与':'💴','賞与':'🎁','副業':'💻','臨時収入':'✨'};
+const uid=()=>crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const ym=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+const money=n=>'¥'+Math.round(Number(n)||0).toLocaleString('ja-JP');
+const clone=x=>JSON.parse(JSON.stringify(x));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let viewDate=new Date(); viewDate.setDate(1);
+let page='home', entryType='expense', recType='expense';
+let receiptFile=null, receiptPreviewUrl='', receiptParsed=null, aiReady=false;
+
+function fresh(){return{version:15,tx:[],budgets:{},recurring:[],autoSavings:{},settings:{autoSave:true},categories:clone(DEFAULT_CATS),incomeCategories:clone(INCOME_CATS)}}
+function load(){
+  let raw=localStorage.getItem(KEY);
+  if(!raw){for(const k of LEGACY){const x=localStorage.getItem(k);if(x){raw=x;break}}}
+  if(!raw)return fresh();
+  try{const x=JSON.parse(raw);const d=fresh();
+    if(Array.isArray(x.tx))d.tx=x.tx.map(t=>({id:t.id||uid(),type:t.type==='income'?'income':'expense',amount:Number(t.amount)||0,date:t.date||ymd(new Date()),category:t.category||'その他',memo:t.memo||'',merchant:t.merchant||'',items:Array.isArray(t.items)?t.items:[],source:t.source||'manual',recurringId:t.recurringId||'',createdAt:t.createdAt||Date.now()}));
+    if(x.overallBudgets&&typeof x.overallBudgets==='object')d.budgets={...x.overallBudgets}; else if(x.budgets&&typeof x.budgets==='object'){for(const [k,v] of Object.entries(x.budgets)){if(typeof v==='number')d.budgets[k]=v}}
+    if(Array.isArray(x.recurring))d.recurring=x.recurring.map(r=>({id:r.id||uid(),type:r.type==='income'?'income':'expense',name:r.name||'',amount:Number(r.amount)||0,day:Number(r.day)||1,category:r.category||'その他',active:r.active!==false}));
+    if(x.autoSavings&&typeof x.autoSavings==='object')d.autoSavings=x.autoSavings;
+    if(x.settings&&typeof x.settings==='object')d.settings={...d.settings,...x.settings};
+    if(Array.isArray(x.categories)){const names=x.categories.map(c=>Array.isArray(c)?c[0]:c).filter(Boolean);if(names.length)d.categories=[...new Set(names)]}
+    if(x.categories?.expense&&Array.isArray(x.categories.expense)){const names=x.categories.expense.map(c=>Array.isArray(c)?c[0]:c).filter(Boolean);if(names.length)d.categories=[...new Set(names)]}
+    if(x.categories?.income&&Array.isArray(x.categories.income)){const names=x.categories.income.map(c=>Array.isArray(c)?c[0]:c).filter(Boolean);if(names.length)d.incomeCategories=[...new Set(names)]}
+    return d;
+  }catch{return fresh()}
+}
+let db=load();
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function monthTx(key=ym(viewDate)){return db.tx.filter(t=>t.date?.startsWith(key))}
+function totals(key=ym(viewDate)){const a=monthTx(key);return{expense:a.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0),income:a.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0)}}
+function budget(key=ym(viewDate)){return Number(db.budgets[key]||0)}
+function daysInMonth(d){return new Date(d.getFullYear(),d.getMonth()+1,0).getDate()}
+function todayInView(){const n=new Date();return n.getFullYear()===viewDate.getFullYear()&&n.getMonth()===viewDate.getMonth()}
+function toast(msg){const e=$('#toast');e.textContent=msg;e.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.add('hidden'),2300)}
+function fillSelect(el,arr,val){el.innerHTML=arr.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');if(val&&arr.includes(val))el.value=val}
+function categoryIcon(c){return icons[c]||'📌'}
+
+function syncRecurring(){
+  const now=new Date(), current=ym(now); let added=0;
+  for(const r of db.recurring){if(r.active===false||!r.amount)continue;const day=Math.min(Number(r.day)||1,daysInMonth(now));const due=new Date(now.getFullYear(),now.getMonth(),day);if(due>now)continue;const marker=`${r.id}:${current}`;if(db.tx.some(t=>t.recurringId===marker))continue;db.tx.push({id:uid(),type:r.type,amount:r.amount,date:ymd(due),category:r.category,memo:r.name,merchant:'',items:[],source:'recurring',recurringId:marker,createdAt:Date.now()});added++}
+  if(added)save();return added;
+}
+function syncAutoSavings(){
+  if(!db.settings.autoSave)return false;const now=new Date();let changed=false;
+  const candidates=new Set([...Object.keys(db.budgets),...db.tx.map(t=>t.date?.slice(0,7)).filter(Boolean)]);
+  for(const key of candidates){if(key>=ym(now))continue;const t=totals(key),b=Number(db.budgets[key]||0);const amount=Math.max(0,b>0?b-t.expense:t.income-t.expense);const old=Number(db.autoSavings[key]?.amount||0);if(old!==amount){db.autoSavings[key]={amount,updatedAt:Date.now(),basis:b>0?'budget':'surplus'};changed=true}}
+  if(changed)save();return changed;
+}
+
+function render(){renderMonth();renderHome();renderRecords();renderPlan();renderSettings()}
+function renderMonth(){$('#monthLabel').textContent=`${viewDate.getFullYear()}年 ${viewDate.getMonth()+1}月`}
+function renderHome(){
+  const k=ym(viewDate),t=totals(k),b=budget(k),remain=b>0?Math.max(0,b-t.expense):null,forecast=b>0?Math.max(0,b-t.expense):Math.max(0,t.income-t.expense);
+  $('#remainingHero').textContent=remain==null?'—':money(remain);$('#budgetHero').textContent=b>0?`予算 ${money(b)}`:'予算未設定';
+  let daily='1日あたり —';if(remain!=null){const left=todayInView()?Math.max(1,daysInMonth(viewDate)-new Date().getDate()+1):daysInMonth(viewDate);daily=`1日あたり ${money(remain/left)}`}$('#dailyHero').textContent=daily;
+  $('#expenseMetric').textContent=money(t.expense);$('#incomeMetric').textContent=money(t.income);$('#savingMetric').textContent=money(forecast);
+  $('#budgetSpentText').textContent=`今月の支出 ${money(t.expense)}`;$('#budgetRemainText').textContent=b>0?`残り ${money(Math.max(0,b-t.expense))}`:'予算未設定';$('#budgetCaption').textContent=b>0?`${Math.round(t.expense/b*100)}%`:'計画で設定';$('#budgetBar').style.width=b>0?Math.min(100,t.expense/b*100)+'%':'0%';
+  const list=[...monthTx(k)].sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt).slice(0,5);$('#recentList').innerHTML=list.length?list.map(txHtml).join(''):'<div class="empty">まだ記録がありません</div>';
+}
+function txHtml(t){const title=t.merchant||t.memo||t.category;const meta=[t.date,t.category,t.source==='receipt'?'レシート':''].filter(Boolean).join(' ・ ');return `<div class="tx"><div class="txIcon">${categoryIcon(t.category)}</div><div><div class="txTitle">${esc(title)}</div><div class="txMeta">${esc(meta)}</div></div><div class="txAmt ${t.type==='income'?'green':'red'}">${t.type==='income'?'+':'−'}${money(t.amount)}<div class="txActions"><button class="link" onclick="window.editTx('${t.id}')">編集</button></div></div></div>`}
+function renderRecords(){fillSelect($('#recordCategory'),['すべて',...db.categories],$('#recordCategory').value||'すべて');const q=$('#recordSearch').value.trim().toLowerCase(),cat=$('#recordCategory').value;let list=[...monthTx()].filter(t=>cat==='すべて'||t.category===cat).filter(t=>!q||`${t.memo} ${t.merchant} ${t.category}`.toLowerCase().includes(q));list.sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt-a.createdAt);$('#recordCount').textContent=`${list.length}件`;$('#recordList').innerHTML=list.length?list.map(txHtml).join(''):'<div class="empty">条件に合う記録がありません</div>'}
+function renderPlan(){
+  $('#budgetInput').value=budget()||'';$('#autoSaveToggle').classList.toggle('on',!!db.settings.autoSave);const hist=Object.entries(db.autoSavings).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,6);const total=hist.reduce((s,[,v])=>s+Number(v.amount||0),0);$('#autoSaveSummary').textContent=hist.length?`直近${hist.length}か月の自動貯蓄 ${money(total)}`:'まだ自動貯蓄の履歴はありません';$('#savingHistory').innerHTML=hist.map(([k,v])=>`<div class="settingRow"><div><b>${k.replace('-','年')}月</b><small>${v.basis==='budget'?'予算の残り':'収入−支出'}</small></div><b class="green">${money(v.amount)}</b></div>`).join('');
+  $('#recurringList').innerHTML=db.recurring.length?db.recurring.map(r=>`<div class="planItem"><b>${esc(r.name)}</b><div class="meta">毎月${r.day===31?'月末':r.day+'日'} ・ ${r.type==='income'?'収入':'支出'} ・ ${esc(r.category)} ・ ${money(r.amount)}</div><div class="smRow"><button class="smBtn" onclick="window.editRecurring('${r.id}')">編集</button><button class="smBtn danger" onclick="window.deleteRecurring('${r.id}')">削除</button></div></div>`).join(''):'<div class="card empty">給与や家賃などを登録すると、期日に自動記録します</div>'
+}
+function renderSettings(){$('#categoryPills').innerHTML=db.categories.map(c=>`<span class="pill">${categoryIcon(c)} ${esc(c)}${c==='その他'?'':` <button onclick="window.removeCategory('${encodeURIComponent(c)}')">×</button>`}</span>`).join('')}
+
+function setPage(p){page=p;$$('.page').forEach(x=>x.classList.toggle('active',x.dataset.page===p));$$('[data-nav]').forEach(x=>x.classList.toggle('active',x.dataset.nav===p));render()}
+$$('[data-nav]').forEach(b=>b.onclick=()=>setPage(b.dataset.nav));$('#prevMonth').onclick=()=>{viewDate.setMonth(viewDate.getMonth()-1);render()};$('#nextMonth').onclick=()=>{viewDate.setMonth(viewDate.getMonth()+1);render()};$('#todayBtn').onclick=()=>{viewDate=new Date();viewDate.setDate(1);render()};
+
+function openEntry(type='expense',id=''){
+  entryType=type;const t=id?db.tx.find(x=>x.id===id):null;$('#entryId').value=t?.id||'';$('#entryAmount').value=t?.amount||'';$('#entryDate').value=t?.date||ymd(new Date());$('#entryMemo').value=t?.merchant||t?.memo||'';$('#deleteEntry').classList.toggle('hidden',!t);setEntryType(t?.type||type);fillSelect($('#entryCategory'),entryType==='income'?db.incomeCategories:db.categories,t?.category);$('#entryDialog').showModal();setTimeout(()=>$('#entryAmount').focus(),50)
+}
+function setEntryType(t){entryType=t;$('#typeExpense').classList.toggle('active',t==='expense');$('#typeIncome').classList.toggle('active',t==='income');fillSelect($('#entryCategory'),t==='income'?db.incomeCategories:db.categories)}
+$('#typeExpense').onclick=()=>setEntryType('expense');$('#typeIncome').onclick=()=>setEntryType('income');$('#quickExpense').onclick=()=>openEntry('expense');$('#quickIncome').onclick=()=>openEntry('income');
+$('#entryForm').onsubmit=e=>{e.preventDefault();const id=$('#entryId').value||uid(),old=db.tx.find(x=>x.id===id);const obj={id,type:entryType,amount:Number($('#entryAmount').value)||0,date:$('#entryDate').value,category:$('#entryCategory').value,memo:$('#entryMemo').value.trim(),merchant:'',items:old?.items||[],source:old?.source||'manual',recurringId:old?.recurringId||'',createdAt:old?.createdAt||Date.now()};if(!obj.amount||!obj.date)return;const i=db.tx.findIndex(x=>x.id===id);if(i>=0)db.tx[i]=obj;else db.tx.push(obj);save();syncAutoSavings();$('#entryDialog').close();render();toast('保存しました')};
+$('#deleteEntry').onclick=()=>{const id=$('#entryId').value;if(!id)return;if(confirm('この記録を削除しますか？')){db.tx=db.tx.filter(x=>x.id!==id);save();syncAutoSavings();$('#entryDialog').close();render();toast('削除しました')}};window.editTx=id=>openEntry('expense',id);
+$('#recordSearch').oninput=renderRecords;$('#recordCategory').onchange=renderRecords;
+
+$('#saveBudget').onclick=()=>{db.budgets[ym(viewDate)]=Number($('#budgetInput').value)||0;save();syncAutoSavings();render();toast('予算を保存しました')};$('#autoSaveToggle').onclick=()=>{db.settings.autoSave=!db.settings.autoSave;save();syncAutoSavings();render();toast(db.settings.autoSave?'自動貯蓄をONにしました':'自動貯蓄をOFFにしました')};
+function fillRecDay(v=1){$('#recDay').innerHTML=Array.from({length:31},(_,i)=>`<option value="${i+1}">${i===30?'月末':i+1+'日'}</option>`).join('');$('#recDay').value=String(Math.min(31,Math.max(1,Number(v)||1)))}
+function setRecType(t){recType=t;$('#recExpense').classList.toggle('active',t==='expense');$('#recIncome').classList.toggle('active',t==='income');fillSelect($('#recCategory'),t==='income'?db.incomeCategories:db.categories)}
+$('#recExpense').onclick=()=>setRecType('expense');$('#recIncome').onclick=()=>setRecType('income');function openRecurring(id=''){const r=id?db.recurring.find(x=>x.id===id):null;$('#recurringId').value=r?.id||'';$('#recName').value=r?.name||'';$('#recAmount').value=r?.amount||'';fillRecDay(r?.day||1);setRecType(r?.type||'expense');fillSelect($('#recCategory'),recType==='income'?db.incomeCategories:db.categories,r?.category);$('#recurringDialog').showModal()}$('#addRecurring').onclick=()=>openRecurring();window.editRecurring=openRecurring;window.deleteRecurring=id=>{if(confirm('削除しますか？')){db.recurring=db.recurring.filter(x=>x.id!==id);save();render()}};$('#recurringForm').onsubmit=e=>{e.preventDefault();const id=$('#recurringId').value||uid(),o={id,type:recType,name:$('#recName').value.trim(),amount:Number($('#recAmount').value)||0,day:Number($('#recDay').value)||1,category:$('#recCategory').value,active:true};const i=db.recurring.findIndex(x=>x.id===id);if(i>=0)db.recurring[i]=o;else db.recurring.push(o);save();syncRecurring();$('#recurringDialog').close();render();toast('固定収支を保存しました')};
+
+$('#addCategory').onclick=()=>{const n=prompt('追加するカテゴリ名');if(!n)return;const s=n.trim();if(!s||db.categories.includes(s))return;db.categories.push(s);save();render();};window.removeCategory=enc=>{const c=decodeURIComponent(enc);if(confirm(`${c} を削除しますか？\n既存の記録は「その他」へ移します。`)){db.tx.forEach(t=>{if(t.category===c)t.category='その他'});db.recurring.forEach(r=>{if(r.category===c)r.category='その他'});db.categories=db.categories.filter(x=>x!==c);save();render()}};
+function download(name,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),500)}$('#exportData').onclick=()=>download(`kakeibo_backup_${ymd(new Date())}.json`,JSON.stringify(db,null,2));$('#importData').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const x=JSON.parse(await f.text());if(!Array.isArray(x.tx))throw Error();if(confirm('現在のデータを置き換えますか？')){db={...fresh(),...x};save();render();toast('復元しました')}}catch{toast('バックアップ形式が正しくありません')}e.target.value=''};$('#resetData').onclick=()=>{if(confirm('すべての家計簿データを消去しますか？')){db=fresh();save();render();toast('消去しました')}};
+
+$$('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).close());
+
+async function checkAi(){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),2500);const r=await fetch(AI_ENDPOINT,{method:'GET',cache:'no-store',signal:c.signal});clearTimeout(t);const d=await r.json();aiReady=!!(r.ok&&d?.ok&&d?.configured)}catch{aiReady=false}}
+function normalizeDigits(s){return s.replace(/[０-９]/g,d=>String.fromCharCode(d.charCodeAt(0)-65248)).replace(/[，,]/g,'').replace(/[￥¥]/g,'¥').replace(/\s+/g,' ').trim()}
+function extractYen(line){const s=normalizeDigits(line);const ms=[...s.matchAll(/(?:¥\s*)?(-?\d{1,7})(?:\s*円)?/g)].map(m=>({n:Number(m[1]),i:m.index||0,raw:m[0]})).filter(x=>Math.abs(x.n)<10000000);return ms}
+function looksDateOrTime(line){return /\b20\d{2}[\/-]\d{1,2}[\/-]\d{1,2}\b|\b\d{1,2}:\d{2}\b|\d{4}年\s*\d{1,2}月\s*\d{1,2}日/.test(normalizeDigits(line))}
+function parseDate(text){const s=normalizeDigits(text);let m=s.match(/(20\d{2})[年\/.\-]\s*(\d{1,2})[月\/.\-]\s*(\d{1,2})/);if(m)return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;m=s.match(/(20\d{2})\s+(\d{1,2})\s+(\d{1,2})/);return m?`${m[1]}-${pad(m[2])}-${pad(m[3])}`:''}
+function isSummaryLine(line){return /(合計|小計|商品合計|税込|税抜|消費税|内税|外税|課税|お預|預り|お釣|釣銭|ポイント|現金|クレジット|電子マネー|支払|値引合計|割引合計|点数|買上)/.test(line)}
+function parseReceiptText(text){
+  const raw=String(text||'').replace(/\r/g,'');const lines=raw.split('\n').map(x=>normalizeDigits(x)).filter(Boolean);let merchant='';
+  const known=['ファミリーマート','FamilyMart','セブン-イレブン','セブンイレブン','ローソン','ミニストップ','イオン','西友','イトーヨーカドー','マツモトキヨシ','ウエルシア','ツルハ','サンドラッグ','ドン・キホーテ'];for(const k of known){const hit=lines.find(l=>l.toLowerCase().includes(k.toLowerCase()));if(hit){merchant=hit.replace(/領収書|レシート|店舗控え/g,'').trim();break}}
+  if(!merchant){merchant=lines.slice(0,8).find(l=>!/^(TEL|電話|住所|〒|No\.|レシート|領収書)/i.test(l)&&!looksDateOrTime(l)&&extractYen(l).length===0&&l.length>=2&&l.length<=40)||''}
+  const date=parseDate(raw);
+  let total=0,subtotal=0,tender=0,change=0,discountTotal=0,totalLine=-1,totalScore=-999;
+  lines.forEach((line,i)=>{const nums=extractYen(line);if(!nums.length)return;const val=Math.abs(nums.at(-1).n);let score=0;
+    if(/^(合計|合 計)\b/.test(line)||/お会計|お支払合計|支払額|領収金額/.test(line))score+=100;
+    else if(/合計/.test(line))score+=45;
+    if(/商品合計|値引合計|割引合計|税.*合計|合計点数/.test(line))score-=100;
+    if(/小計/.test(line)){subtotal=val;score-=40} if(/商品合計/.test(line))subtotal=val;
+    if(/お預|預り|受取/.test(line)){tender=val;score-=100} if(/お釣|釣銭/.test(line)){change=val;score-=100}
+    if(/値引合計|割引合計/.test(line))discountTotal=val;
+    score+=i/Math.max(1,lines.length)*20;
+    if(score>totalScore&&score>20){total=val;totalLine=i;totalScore=score}
+  });
+  if(!total&&subtotal&&discountTotal)total=Math.max(0,subtotal-discountTotal);if(!total&&tender&&change)total=Math.max(0,tender-change);
+  const items=[];let pendingDiscount=0;
+  for(let i=0;i<lines.length;i++){const line=lines[i];if(i===totalLine||looksDateOrTime(line)||isSummaryLine(line))continue;const nums=extractYen(line);if(!nums.length)continue;let amount=Math.abs(nums.at(-1).n);if(amount===0||amount>1000000)continue;
+    if(/値引|割引|クーポン|▲|−|-\s*¥?\d/.test(line)){const d=amount;if(items.length){items[items.length-1].discount=(items[items.length-1].discount||0)+d;items[items.length-1].amount=Math.max(0,items[items.length-1].amount-d)}else pendingDiscount+=d;continue}
+    let name=line.replace(/(?:¥\s*)?-?\d{1,7}(?:\s*円)?/g,' ').replace(/[*※◎●]/g,' ').replace(/\s+/g,' ').trim();if(name.length<1||/^(TEL|電話|No\.|レジ|責|店番|JAN)/i.test(name))continue;if(/^\d+$/.test(name))continue;
+    const item={name:name.slice(0,60),amount,original_amount:amount,discount:0};if(pendingDiscount){item.discount=pendingDiscount;item.amount=Math.max(0,amount-pendingDiscount);pendingDiscount=0}items.push(item);if(items.length>=30)break;
+  }
+  const itemSum=items.reduce((s,x)=>s+x.amount,0);let warning='';if(total&&itemSum&&Math.abs(total-itemSum)>1)warning=`明細合計 ${money(itemSum)} と最終合計 ${money(total)} に差があります。登録金額は最終合計を優先します。`;
+  const words=items.map(x=>x.name).join(' ')+ ' '+merchant;let category='その他';const rules=[['食費',/(弁当|おにぎり|パン|茶|コーヒー|飲料|食品|肉|魚|野菜|菓子|スーパー|ファミリーマート|ローソン|セブン)/i],['日用品',/(洗剤|ティッシュ|トイレット|歯ブラシ|シャンプー|ドラッグ|薬局)/i],['交通',/(ガソリン|駐車|高速|電車|バス|タクシー)/i],['医療',/(病院|クリニック|処方|薬)/i],['衣服',/(衣料|シャツ|パンツ|服|ユニクロ)/i],['娯楽',/(映画|カラオケ|ゲーム|書籍|チケット)/i]];for(const [c,re] of rules)if(re.test(words)){category=c;break}
+  let confidence=0;if(total)confidence+=.45;if(date)confidence+=.15;if(merchant)confidence+=.15;if(items.length)confidence+=.15;if(!warning)confidence+=.1;
+  return{merchant,date,total,subtotal,discount_total:discountTotal,payment_amount:tender,change,items,category,warning,confidence:Math.min(1,confidence),raw};
+}
+async function preprocessImage(file,threshold=false){const bmp=await createImageBitmap(file);const max=1900,scale=Math.min(1,max/Math.max(bmp.width,bmp.height));const w=Math.round(bmp.width*scale),h=Math.round(bmp.height*scale);const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bmp,0,0,w,h);const im=x.getImageData(0,0,w,h),d=im.data;for(let i=0;i<d.length;i+=4){let g=.299*d[i]+.587*d[i+1]+.114*d[i+2];g=(g-128)*1.45+128;if(threshold)g=g>175?255:0;g=Math.max(0,Math.min(255,g));d[i]=d[i+1]=d[i+2]=g}x.putImageData(im,0,0);return c}
+async function localOcr(file,progress){if(!window.Tesseract)throw new Error('OCRエンジンを読み込めませんでした');const canvas=await preprocessImage(file,false);const r=await Tesseract.recognize(canvas,'jpn+eng',{logger:m=>{if(m.status==='recognizing text'&&progress)progress(m.progress)}});let parsed=parseReceiptText(r.data.text);if((!parsed.total||parsed.confidence<.55)&&window.Tesseract){const c2=await preprocessImage(file,true);const r2=await Tesseract.recognize(c2,'jpn+eng',{logger:m=>{if(m.status==='recognizing text'&&progress)progress(.55+.45*m.progress)}});const p2=parseReceiptText(r2.data.text);if(p2.confidence>parsed.confidence)parsed=p2}return parsed}
+async function aiReceipt(file,progress){const data=await fileToDataUrl(file,1600,.82);progress?.(.35);const r=await fetch(AI_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_data_url:data,categories:db.categories})});const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.message||'AI解析に失敗しました');const x=d.receipt||{};return{merchant:x.merchant||'',date:x.date||'',total:Number(x.total)||0,items:Array.isArray(x.items)?x.items:[],category:(x.items?.[0]?.category&&db.categories.includes(x.items[0].category))?x.items[0].category:'その他',warning:(x.warnings||[]).join(' / '),confidence:Number(x.confidence)||.8,raw:''}}
+async function fileToDataUrl(file,max=1600,q=.82){const bmp=await createImageBitmap(file);const scale=Math.min(1,max/Math.max(bmp.width,bmp.height));const c=document.createElement('canvas');c.width=Math.round(bmp.width*scale);c.height=Math.round(bmp.height*scale);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);return c.toDataURL('image/jpeg',q)}
+function showReceipt(p){receiptParsed=p;$('#receiptMerchant').value=p.merchant||'';$('#receiptDate').value=p.date||ymd(new Date());$('#receiptTotal').value=p.total||'';fillSelect($('#receiptCategory'),db.categories,p.category||'その他');$('#receiptWarning').innerHTML=p.warning?`<div class="warn">${esc(p.warning)}</div>`:'';$('#receiptItems').innerHTML=p.items?.length?p.items.map(i=>`<div class="receiptItem"><span>${esc(i.name)}</span><b>${money(i.amount)}</b></div>`).join(''):'<div class="empty">商品明細は読み取れませんでした</div>';$('#receiptResult').classList.remove('hidden')}
+function openReceipt(){receiptFile=null;receiptParsed=null;$('#receiptImage').value='';$('#receiptPreview').classList.add('hidden');$('#receiptResult').classList.add('hidden');$('#scanBar').classList.add('hidden');$('#scanBarInner').style.width='0%';$('#scanState').textContent='写真を選ぶと、自動で解析して入力します。';$('#receiptDialog').showModal()}
+$('#quickReceipt').onclick=openReceipt;$('#receiptImage').onchange=async e=>{const f=e.target.files[0];if(!f)return;receiptFile=f;if(receiptPreviewUrl)URL.revokeObjectURL(receiptPreviewUrl);receiptPreviewUrl=URL.createObjectURL(f);$('#receiptPreview').src=receiptPreviewUrl;$('#receiptPreview').classList.remove('hidden');$('#receiptResult').classList.add('hidden');$('#scanBar').classList.remove('hidden');$('#scanBarInner').style.width='4%';$('#scanState').textContent='レシートを解析しています…';try{let p;if(aiReady){try{p=await aiReceipt(f,v=>$('#scanBarInner').style.width=Math.round(v*100)+'%')}catch{p=await localOcr(f,v=>$('#scanBarInner').style.width=Math.round(v*100)+'%')}}else p=await localOcr(f,v=>$('#scanBarInner').style.width=Math.round(v*100)+'%');$('#scanBarInner').style.width='100%';$('#scanState').innerHTML='<span class="ok">解析できました。内容を確認してください。</span>';showReceipt(p)}catch(err){$('#scanState').textContent='解析に失敗しました。写真を明るい場所で撮り直してください。';$('#scanBar').classList.add('hidden');toast(err.message||'レシート解析に失敗しました')}};
+$('#saveReceipt').onclick=()=>{const total=Number($('#receiptTotal').value)||0,date=$('#receiptDate').value,merchant=$('#receiptMerchant').value.trim(),category=$('#receiptCategory').value;if(!total||!date)return toast('金額と日付を確認してください');const items=receiptParsed?.items||[];db.tx.push({id:uid(),type:'expense',amount:total,date,category,memo:items.slice(0,5).map(x=>x.name).join(' / '),merchant,items,source:'receipt',recurringId:'',createdAt:Date.now()});save();syncAutoSavings();viewDate=new Date(date+'T00:00:00');viewDate.setDate(1);$('#receiptDialog').close();render();toast('レシートを登録しました')};
+
+checkAi();const n=syncRecurring();syncAutoSavings();render();if(n)toast(`${n}件の固定収支を自動記録しました`);
+window.__appTest={parseReceiptText,totals,db:()=>db,reset:()=>{db=fresh();save();render()},showReceipt,openReceipt};
+})();
+</script>
+</body>
+</html>
