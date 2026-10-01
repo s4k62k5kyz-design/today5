@@ -27,10 +27,12 @@ await new Promise((resolve,reject)=>{ ws.onopen=resolve; ws.onerror=reject; });
 let id=0;
 const pending=new Map();
 const exceptions=[];
+let chooserOpened=false;
 ws.onmessage=(e)=>{
   const m=JSON.parse(e.data);
   if(m.id && pending.has(m.id)){ pending.get(m.id)(m); pending.delete(m.id); return; }
   if(m.method==='Runtime.exceptionThrown') exceptions.push(m.params?.exceptionDetails?.text || 'runtime exception');
+  if(m.method==='Page.fileChooserOpened') chooserOpened=true;
 };
 function cmd(method,params={}){return new Promise(res=>{const n=++id;pending.set(n,res);ws.send(JSON.stringify({id:n,method,params}))})}
 async function ev(expression){
@@ -99,15 +101,17 @@ await ev(`(() => {
 })()`);
 if((await ev('window.__appTest.db().budgets['+JSON.stringify(manual.key)+']'))!==10000) throw new Error('Budget did not save');
 
-// One-tap receipt button must open receipt modal.
+// One-tap receipt button must open the modal AND the browser file chooser.
 const receiptOpened=await ev(`(() => {
   document.querySelector('[data-nav="home"]').click();
   document.getElementById('quickReceipt').click();
   return document.getElementById('receiptDialog').open;
 })()`);
 if(!receiptOpened) throw new Error('One-tap receipt button did not open receipt flow');
+for(let i=0;i<20&&!chooserOpened;i++) await new Promise(r=>setTimeout(r,100));
+if(!chooserOpened) throw new Error('One-tap receipt button did not open the browser file chooser');
 
-// Stub OCR engine, then select an image through the actual file input.
+// Stub OCR engine and call the real file-change handler with a real File object.
 await ev(`(() => {
   window.Tesseract={
     recognize:async(_c,_l,o={})=>{
@@ -118,15 +122,12 @@ await ev(`(() => {
   };
   return true;
 })()`);
-const doc=await cmd('DOM.getDocument',{depth:-1,pierce:true});
-const q=await cmd('DOM.querySelector',{nodeId:doc.result.root.nodeId,selector:'#receiptImage'});
-if(!q.result.nodeId) throw new Error('Receipt file input missing');
-await cmd('DOM.setFileInputFiles',{nodeId:q.result.nodeId,files:['/tmp/receipt.png']});
-await new Promise(r=>setTimeout(r,300));
-let shown=await ev("!document.getElementById('receiptResult').classList.contains('hidden')");
-if(!shown){
-  await ev("document.getElementById('receiptImage').dispatchEvent(new Event('change',{bubbles:true})); true");
-}
+await ev(`(async () => {
+  const bytes=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlNfWQAAAAASUVORK5CYII='),c=>c.charCodeAt(0));
+  const file=new File([bytes], 'receipt.png', {type:'image/png'});
+  await document.getElementById('receiptImage').onchange({target:{files:[file]}});
+  return true;
+})()`);
 await waitFor("!document.getElementById('receiptResult').classList.contains('hidden')",10000);
 const filled=await ev(`(() => ({
   total:document.getElementById('receiptTotal').value,
