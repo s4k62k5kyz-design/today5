@@ -1,0 +1,30 @@
+name: Verify Kakeibo in Chrome
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "kakeibo/index.html"
+      - ".github/tests/kakeibo-live.mjs"
+      - ".github/workflows/kakeibo-browser-check.yml"
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Wait for Pages publish
+        run: sleep 35
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Verify live mobile app
+        shell: bash
+        run: |
+          google-chrome --headless=new --no-sandbox --disable-gpu --remote-debugging-address=127.0.0.1 --remote-debugging-port=9222 about:blank >/tmp/chrome.log 2>&1 &
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:9222/json/version >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:9222/json/version >/dev/null || { cat /tmp/chrome.log; exit 1; }
+          node .github/tests/kakeibo-live.mjs
