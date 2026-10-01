@@ -1,0 +1,35 @@
+name: Test Kakeibo
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "kakeibo/**"
+      - ".github/tests/kakeibo.mjs"
+      - ".github/workflows/kakeibo-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 >/tmp/kakeibo-server.log 2>&1 &
+          sleep 2
+      - name: Run end-to-end tests
+        run: node .github/tests/kakeibo.mjs
