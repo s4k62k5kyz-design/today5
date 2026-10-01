@@ -28,11 +28,15 @@ let id=0;
 const pending=new Map();
 const exceptions=[];
 let chooserOpened=false;
+let chooserBackendNodeId=null;
 ws.onmessage=(e)=>{
   const m=JSON.parse(e.data);
   if(m.id && pending.has(m.id)){ pending.get(m.id)(m); pending.delete(m.id); return; }
   if(m.method==='Runtime.exceptionThrown') exceptions.push(m.params?.exceptionDetails?.text || 'runtime exception');
-  if(m.method==='Page.fileChooserOpened') chooserOpened=true;
+  if(m.method==='Page.fileChooserOpened'){
+    chooserOpened=true;
+    chooserBackendNodeId=m.params?.backendNodeId ?? null;
+  }
 };
 function cmd(method,params={}){return new Promise(res=>{const n=++id;pending.set(n,res);ws.send(JSON.stringify({id:n,method,params}))})}
 async function ev(expression){
@@ -112,7 +116,7 @@ await cmd('Input.dispatchMouseEvent',{type:'mouseReleased',x:receiptRect.x,y:rec
 for(let i=0;i<25&&!chooserOpened;i++) await new Promise(r=>setTimeout(r,100));
 if(!chooserOpened) throw new Error('One-tap receipt button did not open the browser file chooser');
 
-// Stub OCR engine and call the real file-change handler with a real File object.
+// Stub OCR engine, then attach a real file to the input that opened the chooser.
 await ev(`(() => {
   window.Tesseract={
     recognize:async(_c,_l,o={})=>{
@@ -123,12 +127,8 @@ await ev(`(() => {
   };
   return true;
 })()`);
-await ev(`(async () => {
-  const bytes=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlNfWQAAAAASUVORK5CYII='),c=>c.charCodeAt(0));
-  const file=new File([bytes], 'receipt.png', {type:'image/png'});
-  await document.getElementById('receiptImage').onchange({target:{files:[file]}});
-  return true;
-})()`);
+if(!chooserBackendNodeId) throw new Error('File chooser did not expose its input node');
+await cmd('DOM.setFileInputFiles',{backendNodeId:chooserBackendNodeId,files:['/tmp/receipt.png']});
 await waitFor("!document.getElementById('receiptResult').classList.contains('hidden')",10000);
 const receiptOpened=await ev("document.getElementById('receiptDialog').open");
 if(!receiptOpened) throw new Error('Receipt dialog did not open after photo selection');
