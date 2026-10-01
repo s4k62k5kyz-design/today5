@@ -101,14 +101,17 @@ await ev(`(() => {
 })()`);
 if((await ev('window.__appTest.db().budgets['+JSON.stringify(manual.key)+']'))!==10000) throw new Error('Budget did not save');
 
-// One-tap receipt button must open the modal AND the browser file chooser.
-const receiptOpened=await ev(`(() => {
-  document.querySelector('[data-nav="home"]').click();
-  document.getElementById('quickReceipt').click();
-  return document.getElementById('receiptDialog').open;
+// One-tap receipt button: use real CDP pointer events so Chrome treats it as a user gesture.
+await ev("document.querySelector('[data-nav=home]').click(); true");
+const receiptRect=await ev(`(() => {
+  const r=document.getElementById('quickReceipt').getBoundingClientRect();
+  return {x:r.left+r.width/2,y:r.top+r.height/2};
 })()`);
+await cmd('Input.dispatchMouseEvent',{type:'mousePressed',x:receiptRect.x,y:receiptRect.y,button:'left',clickCount:1});
+await cmd('Input.dispatchMouseEvent',{type:'mouseReleased',x:receiptRect.x,y:receiptRect.y,button:'left',clickCount:1});
+for(let i=0;i<25&&!chooserOpened;i++) await new Promise(r=>setTimeout(r,100));
+const receiptOpened=await ev("document.getElementById('receiptDialog').open");
 if(!receiptOpened) throw new Error('One-tap receipt button did not open receipt flow');
-for(let i=0;i<20&&!chooserOpened;i++) await new Promise(r=>setTimeout(r,100));
 if(!chooserOpened) throw new Error('One-tap receipt button did not open the browser file chooser');
 
 // Stub OCR engine and call the real file-change handler with a real File object.
