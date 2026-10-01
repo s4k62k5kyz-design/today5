@@ -82,6 +82,7 @@ await page.click('#saveBudget');
 assert.equal(await page.evaluate(k => window.__appTest.db().budgets[k], currentYM), 10000);
 
 // receipt one-tap flow: quick button -> file chooser -> auto analyze -> filled fields
+await page.click('[data-nav=home]');
 const chooserPromise = page.waitForEvent('filechooser');
 await page.click('#quickReceipt');
 const chooser = await chooserPromise;
