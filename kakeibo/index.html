@@ -104,7 +104,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v25-receipt-items';
+const APP_BUILD='v26-receipt-consensus';
 const KEY='kakeibo_pro_v2',AI='https://rngmvobnxliegijzzdbg.supabase.co/functions/v1/receipt-analyzer';
 const cats={expense:[['食費','🍚'],['日用品','🧻'],['交通','🚃'],['住居','🏠'],['水道光熱','💡'],['通信','📱'],['娯楽','🎮'],['医療','🏥'],['衣服','👕'],['交際費','🍻'],['教育','📚'],['その他','📦']],income:[['給与','💰'],['賞与','✨'],['副収入','💼'],['臨時収入','🎁'],['その他','📥']]};
 const $=x=>document.getElementById(x),$$=q=>[...document.querySelectorAll(q)],pad=n=>String(n).padStart(2,'0'),uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36),money=n=>'¥'+Math.round(Number(n||0)).toLocaleString('ja-JP'),mk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1),today=()=>{let d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
@@ -233,7 +233,7 @@ function saveBatchEntry(){
 }
 
 function receiptCategory(name,merchant=''){
-  let s=String(name||'').toLowerCase(),rules=[[/洗剤|柔軟剤|ティッシュ|トイレット|キッチンペーパー|シャンプー|リンス|石けん|石鹸|歯ブラシ|歯磨|スポンジ|ラップ|アルミホイル|ゴミ袋|電池/,'日用品'],[/薬|錠|カプセル|湿布|目薬|マスク|絆創膏|ばんそうこう/,'医療'],[/シャツ|パンツ|靴下|衣類|服|ジャケット|コート|靴/,'衣服'],[/茶|水|コーヒー|ジュース|パン|米|弁当|惣菜|肉|魚|野菜|果物|ベーコン|茶碗蒸し|菓子|牛乳|卵|ヨーグルト|食品/,'食費']];
+  let s=String(name||'').toLowerCase(),rules=[[/洗剤|柔軟剤|ティッシュ|トイレット|キッチンペーパー|シャンプー|リンス|石けん|石鹸|歯ブラシ|歯磨|スポンジ|ラップ|アルミホイル|ゴミ袋|電池/,'日用品'],[/薬|錠|カプセル|湿布|目薬|マスク|絆創膏|ばんそうこう/,'医療'],[/シャツ|パンツ|靴下|衣類|服|ジャケット|コート|靴/,'衣服'],[/茶|十六|水|コーヒー|ジュース|パン|米|弁当|惣菜|肉|魚|野菜|果物|ベーコン|茶碗蒸し|菓子|牛乳|卵|ヨーグルト|食品/,'食費']];
   for(let [re,c] of rules)if(re.test(s)&&db.categories.expense.some(x=>x[0]===c))return c;
   return guess(merchant,[name])
 }
@@ -268,31 +268,78 @@ function parseDate(t){
 }
 function yen(s){let a=amountInfo(s,true);return a?Math.abs(a.amount):0}
 function knownMerchant(lines){let j=lines.slice(0,12).join(' '),known=[[/family\s*mart|ファミリーマート/i,'FamilyMart'],[/セブン[\s\-・]*イレブン/i,'セブン-イレブン'],[/ローソン/i,'ローソン'],[/西友/i,'西友'],[/イオン/i,'イオン'],[/マルエツ/i,'マルエツ'],[/ライフ/i,'ライフ'],[/イトー.?ヨーカドー/i,'イトーヨーカドー'],[/ドン.?キホーテ/i,'ドン・キホーテ'],[/マツモトキヨシ/i,'マツモトキヨシ'],[/ウエルシア/i,'ウエルシア'],[/スギ薬局/i,'スギ薬局']];for(let [re,n] of known)if(re.test(j))return n;for(let s of lines.slice(0,8)){let x=s.trim();if(x.length<3||x.length>32||/tel|電話|〒|住所|領収|receipt|\d{3,}/i.test(x))continue;let c=(x.match(/[A-Za-zぁ-んァ-ヶ一-龯]/g)||[]).length;if(c/Math.max(1,x.length)>.6)return x.replace(/^[^A-Za-zぁ-んァ-ヶ一-龯]+/,'').trim()}return ''}
+function cleanReceiptName(name){
+  let s=String(name||'').replace(/^[^A-Za-zぁ-んァ-ヶ一-龯]+/,'').replace(/[■□▮▯]+$/,'').trim();
+  s=s.replace(/^ぷ(?=吊るし)/,'').replace(/\s{2,}/g,' ');
+  return s
+}
+function receiptNameQuality(name){
+  let s=cleanReceiptName(name);if(!s)return 0;
+  let jp=(s.match(/[ぁ-んァ-ヶ一-龯]/g)||[]).length,latin=(s.match(/[A-Za-z]/g)||[]).length,digits=(s.match(/[0-9]/g)||[]).length;
+  if(jp>=2)return 3;if(jp>=1)return 2;if(latin>=3&&digits===0)return 1;return 0
+}
+function reconcileReceiptItems(items,total,productTotal=0,discountTotal=0){
+  let out=(items||[]).map(x=>({name:cleanReceiptName(x.name),amount:Number(x.amount||0),original_amount:Number(x.original_amount||x.amount||0),discount:Number(x.discount||0)}));
+  let bad=[];out.forEach((x,i)=>{if(!(x.amount>0)||x.amount>Math.max(total||0,productTotal||0,1000))bad.push(i)});
+  let goodSum=out.reduce((a,x,i)=>a+(bad.includes(i)?0:Number(x.amount||0)),0);
+  if(total>0&&bad.length===1&&goodSum<total){let missing=total-goodSum;if(missing>0&&missing<=total){let x=out[bad[0]];x.amount=missing;x.original_amount=Math.max(missing,x.original_amount>0&&x.original_amount<=Math.max(productTotal,total)?x.original_amount:missing);x.discount=Math.max(0,x.original_amount-x.amount)}}
+  let itemSum=out.reduce((a,x)=>a+Number(x.amount||0),0);
+  let expectedDiscount=productTotal>0&&total>0&&productTotal>=total?productTotal-total:Math.abs(Number(discountTotal||0));
+  if(total>0&&itemSum!==total&&expectedDiscount>0){
+    let originalSum=out.reduce((a,x)=>a+Number(x.original_amount||x.amount||0),0);
+    if(Math.abs(originalSum-productTotal)<=1){let target=out.findIndex(x=>Number(x.original_amount||0)>expectedDiscount);if(target<0)target=0;if(target>=0){out[target].amount=Math.max(0,Number(out[target].original_amount||out[target].amount)-expectedDiscount);out[target].discount=expectedDiscount}}
+  }
+  itemSum=out.reduce((a,x)=>a+Number(x.amount||0),0);
+  return {items:out,itemSum,ok:total>0&&out.length>0&&Math.abs(itemSum-total)<=1}
+}
 function parseOCR(t){
-  let l=String(t||'').split(/\n/).map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean),merchant=knownMerchant(l),items=[],summary=false,productTotal=0,discountTotal=0,tender=0,change=0,cands=[];
+  let l=String(t||'').split(/\n/).map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean),merchant=knownMerchant(l),items=[],summary=false,productTotal=0,discountTotal=0,tender=0,change=0,cands=[],lastItem=-1;
   for(let line of l){
     let compact=line.replace(/\s+/g,''),a=amountInfo(line,true);
     if(/商品合計/.test(compact)){if(a)productTotal=Math.abs(a.amount);summary=true;continue}
     if(/値引合計|割引合計/.test(compact)){if(a)discountTotal=-Math.abs(a.amount);continue}
     if(/小計/.test(compact)){if(a)cands.push({v:Math.abs(a.amount),w:4});summary=true;continue}
-    if(/合計/.test(compact)&&!/商品合計|値引合計|割引合計|内消費税|消費税/.test(compact)){if(a)cands.push({v:Math.abs(a.amount),w:6});summary=true;continue}
+    if(/合計/.test(compact)&&!/商品合計|値引合計|割引合計|内消費税|消費税/.test(compact)){if(a)cands.push({v:Math.abs(a.amount),w:8});summary=true;continue}
     if(/お預|預り/.test(compact)){if(a)tender=Math.abs(a.amount);continue}
     if(/お釣|釣銭/.test(compact)){if(a)change=Math.abs(a.amount);continue}
     if(summary)continue;
-    if(/値引き|割引/.test(compact)){if(a&&items.length){let d=Math.abs(a.amount);if(d>0&&d<items.at(-1).amount)items.at(-1).amount-=d}continue}
+    if(/値引き|割引/.test(compact)){if(a&&lastItem>=0){let d=Math.abs(a.amount);if(d>0&&d<items[lastItem].amount){items[lastItem].original_amount=items[lastItem].amount;items[lastItem].discount=d;items[lastItem].amount-=d}}continue}
     if(/電話|住所|領収|receipt|レジ|担当|取引|No\.?/i.test(compact)||/20\d{2}.*\d{1,2}:\d{2}/.test(line))continue;
-    let ai=amountInfo(line,false);if(!ai||!(ai.amount>0)||ai.amount>1000000)continue;
-    let name=normalizeMoneyChars(line).slice(0,ai.index).trim().replace(/^[◎○●@＊*※・.\s]+/,'').replace(/[（(]+$/,'').trim();
-    if(!name||/family\s*mart|ファミリーマート/i.test(name))continue;items.push({name,amount:ai.amount})
+    let ai=amountInfo(line,false);if(!ai||!(ai.amount>0)||ai.amount>99999)continue;
+    let name=cleanReceiptName(normalizeMoneyChars(line).slice(0,ai.index));if(!name||/family\s*mart|ファミリーマート/i.test(name))continue;
+    items.push({name,amount:ai.amount,original_amount:ai.amount,discount:0});lastItem=items.length-1
   }
-  let itemSum=items.reduce((s,x)=>s+Number(x.amount||0),0);if(productTotal)cands.push({v:Math.max(0,productTotal+discountTotal),w:6});if(tender&&change&&tender>=change)cands.push({v:tender-change,w:5});if(itemSum)cands.push({v:itemSum,w:6});
+  let rawSum=items.reduce((s,x)=>s+Number(x.amount||0),0);if(productTotal)cands.push({v:Math.max(0,productTotal+discountTotal),w:10});if(tender&&change&&tender>=change)cands.push({v:tender-change,w:7});if(rawSum)cands.push({v:rawSum,w:3});
   let score=new Map();for(let c of cands){if(!(c.v>0))continue;score.set(c.v,(score.get(c.v)||0)+c.w)}let total=[...score.entries()].sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0]?.[0]||0;
-  return {merchant,date:parseDate(t),total,items}
+  let rec=reconcileReceiptItems(items,total,productTotal,discountTotal);
+  return {merchant,date:parseDate(t),total,items:rec.items,itemSum:rec.itemSum,itemMathOk:rec.ok,productTotal,discountTotal,rawText:String(t||'')}
+}
+function scoreReceiptParse(r){
+  let s=0;if(r.total>0)s+=5;if(r.date)s+=2;if(r.merchant)s+=2;if(r.itemMathOk)s+=8;
+  for(let x of r.items||[]){s+=receiptNameQuality(x.name);if(x.amount>0&&x.amount<=Math.max(1,r.total))s+=2}
+  if(r.items?.length>=2)s+=2;if(r.items?.length>8)s-=5;return s
 }
 function guess(m,it){let s=(m+' '+it.join(' ')).toLowerCase(),r=[[/薬局|ドラッグ|マツキヨ|ウエルシア/,'日用品'],[/病院|医院|歯科/,'医療'],[/jr|鉄道|バス|タクシー/,'交通'],[/ユニクロ|gu|しまむら/,'衣服'],[/コンビニ|ファミリーマート|familymart|セブン|ローソン|スーパー|食品|弁当|飲料|パン|肉|野菜|茶|ベーコン|茶碗蒸し/,'食費']];for(let [re,c] of r)if(re.test(s)&&db.categories.expense.some(x=>x[0]===c))return c;return db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]}
-function applyR(r,src){let merchant=String(r.merchant||r.store||'').trim(),items=Array.isArray(r.items)?r.items:[];$('merchant').value=merchant;$('rDate').value=r.date||today();receiptExpectedTotal=Number(r.total||0);$('rTotal').value=receiptExpectedTotal||'';receiptRowsData=items.map(x=>{if(typeof x==='string')return {id:uid(),name:x,amount:0,category:receiptCategory(x,merchant)};let name=String(x.name||'').trim(),amount=Number(x.amount||0),category=x.category&&db.categories.expense.some(v=>v[0]===x.category)?x.category:receiptCategory(name,merchant);return {id:uid(),name,amount,category}}).filter(x=>x.name||x.amount>0);if(!receiptRowsData.length&&receiptExpectedTotal>0)receiptRowsData=[{id:uid(),name:merchant||'レシート',amount:receiptExpectedTotal,category:receiptCategory('',merchant)}];renderReceiptRows();let sum=receiptRowsData.reduce((a,x)=>a+Number(x.amount||0),0),ok=receiptExpectedTotal>0&&receiptRowsData.length&&Math.abs(sum-receiptExpectedTotal)<=1;$('rStatus').className='status '+(ok?'ok':'');$('rStatus').textContent=ok?'読み取りました。商品ごとのカテゴリを確認してください。':'一部読み取れませんでした。明細を確認・修正してください。';$('rProg').style.width='100%'}
-async function dataURL(f){return new Promise((ok,no)=>{let i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{try{let target=i.width<900?Math.min(1200,i.width*3):Math.min(1800,i.width),sc=target/i.width,c=document.createElement('canvas');c.width=Math.max(1,Math.round(i.width*sc));c.height=Math.max(1,Math.round(i.height*sc));let ctx=c.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(i,0,0,c.width,c.height);let im=ctx.getImageData(0,0,c.width,c.height),d=im.data;for(let p=0;p<d.length;p+=4){let y=.299*d[p]+.587*d[p+1]+.114*d[p+2];y=Math.max(0,Math.min(255,(y-128)*1.12+128));d[p]=d[p+1]=d[p+2]=y}ctx.putImageData(im,0,0);URL.revokeObjectURL(u);ok(c.toDataURL('image/png'))}catch(e){URL.revokeObjectURL(u);no(e)}};i.onerror=no;i.src=u})}
-async function analyze(f){$('receipt').showModal();$('preview').src=URL.createObjectURL(f);$('rStatus').textContent='レシートを解析しています…';$('rProg').style.width='20%';receiptRowsData=[];receiptExpectedTotal=0;renderReceiptRows();$('merchant').value='';$('rDate').value=today();$('rTotal').value='';let d=await dataURL(f);try{let c=new AbortController(),tm=setTimeout(()=>c.abort(),5000),health=await fetch(AI,{method:'GET',signal:c.signal,cache:'no-store'});clearTimeout(tm);let h=await health.json().catch(()=>({}));if(h?.configured){let ctl=new AbortController(),tm2=setTimeout(()=>ctl.abort(),25000),res=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_data_url:d,categories:db.categories.expense.map(x=>x[0])}),signal:ctl.signal});clearTimeout(tm2);let j=await res.json().catch(()=>({}));if(res.ok&&j.ok&&j.receipt){applyR(j.receipt,'AI');return}}}catch{}$('rStatus').textContent='レシート文字を読み取っています…';let worker=null;try{worker=await Tesseract.createWorker('jpn+eng',1,{logger:m=>{if(m.status==='recognizing text')$('rProg').style.width=(30+Math.round((m.progress||0)*65))+'%'}});await worker.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});let out=await worker.recognize(d);applyR(parseOCR(out.data?.text||''),'OCR')}catch{$('rStatus').textContent='解析できませんでした。明細を入力してください。';$('rDate').value=today();receiptRowsData=[{id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]}];renderReceiptRows()}finally{if(worker)await worker.terminate().catch(()=>{})}}
+function applyR(r,src){let merchant=String(r.merchant||r.store||'').trim(),items=Array.isArray(r.items)?r.items:[];$('merchant').value=merchant;$('rDate').value=r.date||today();receiptExpectedTotal=Number(r.total||0);$('rTotal').value=receiptExpectedTotal||'';receiptRowsData=items.map(x=>{if(typeof x==='string')return {id:uid(),name:x,amount:0,category:receiptCategory(x,merchant)};let name=cleanReceiptName(String(x.name||'')),amount=Number(x.amount||0),category=x.category&&db.categories.expense.some(v=>v[0]===x.category)?x.category:receiptCategory(name,merchant);if(receiptNameQuality(name)===0)name='商品名を確認';return {id:uid(),name,amount,category}}).filter(x=>x.name||x.amount>0);if(!receiptRowsData.length&&receiptExpectedTotal>0)receiptRowsData=[{id:uid(),name:merchant||'レシート',amount:receiptExpectedTotal,category:receiptCategory('',merchant)}];renderReceiptRows();let sum=receiptRowsData.reduce((a,x)=>a+Number(x.amount||0),0),ok=receiptExpectedTotal>0&&receiptRowsData.length&&Math.abs(sum-receiptExpectedTotal)<=1;$('rStatus').className='status '+(ok?'ok':'');$('rStatus').textContent=ok?'読み取りました。商品ごとのカテゴリを確認してください。':'一部読み取れませんでした。明細を確認・修正してください。';$('rProg').style.width='100%'}
+async function receiptImageVariants(f){return new Promise((ok,no)=>{let i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{try{let target=i.width<900?Math.min(1800,i.width*4):Math.min(2400,i.width*1.5),sc=target/i.width,c=document.createElement('canvas');c.width=Math.max(1,Math.round(i.width*sc));c.height=Math.max(1,Math.round(i.height*sc));let ctx=c.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(i,0,0,c.width,c.height);let raw=c.toDataURL('image/jpeg',.92),im=ctx.getImageData(0,0,c.width,c.height),d=im.data;for(let p=0;p<d.length;p+=4){let y=.299*d[p]+.587*d[p+1]+.114*d[p+2];y=Math.max(0,Math.min(255,(y-128)*1.35+128));d[p]=d[p+1]=d[p+2]=y}ctx.putImageData(im,0,0);let gray=c.toDataURL('image/png');let th=ctx.getImageData(0,0,c.width,c.height),td=th.data;for(let p=0;p<td.length;p+=4){let y=td[p];let v=y>172?255:y<92?0:Math.round((y-92)/(172-92)*255);td[p]=td[p+1]=td[p+2]=v}ctx.putImageData(th,0,0);let threshold=c.toDataURL('image/png');URL.revokeObjectURL(u);ok({raw,gray,threshold})}catch(e){URL.revokeObjectURL(u);no(e)}};i.onerror=no;i.src=u})}
+async function analyze(f){
+  $('receipt').showModal();$('preview').src=URL.createObjectURL(f);$('rStatus').textContent='レシートを解析しています…';$('rProg').style.width='12%';receiptRowsData=[];receiptExpectedTotal=0;renderReceiptRows();$('merchant').value='';$('rDate').value=today();$('rTotal').value='';
+  let imgs=await receiptImageVariants(f);
+  try{let c=new AbortController(),tm=setTimeout(()=>c.abort(),5000),health=await fetch(AI,{method:'GET',signal:c.signal,cache:'no-store'});clearTimeout(tm);let h=await health.json().catch(()=>({}));if(h?.configured){let ctl=new AbortController(),tm2=setTimeout(()=>ctl.abort(),30000),res=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_data_url:imgs.raw,categories:db.categories.expense.map(x=>x[0])}),signal:ctl.signal});clearTimeout(tm2);let j=await res.json().catch(()=>({}));if(res.ok&&j.ok&&j.receipt){applyR(j.receipt,'AI');return}}}catch{}
+  $('rStatus').textContent='レシートを読み取っています…';let worker=null;
+  try{
+    worker=await Tesseract.createWorker('jpn+eng',1,{logger:m=>{if(m.status==='recognizing text')$('rProg').style.width=(20+Math.round((m.progress||0)*22))+'%'}});
+    let parses=[];
+    for(let pass of [{img:imgs.gray,psm:'6'},{img:imgs.threshold,psm:'6'},{img:imgs.gray,psm:'11'}]){
+      await worker.setParameters({tessedit_pageseg_mode:pass.psm,preserve_interword_spaces:'1'});
+      let out=await worker.recognize(pass.img);let parsed=parseOCR(out.data?.text||'');parses.push(parsed)
+    }
+    parses.sort((a,b)=>scoreReceiptParse(b)-scoreReceiptParse(a));let best=parses[0]||{merchant:'',date:'',total:0,items:[]};
+    let sum=(best.items||[]).reduce((a,x)=>a+Number(x.amount||0),0);
+    if(best.total>0&&best.items?.length&&Math.abs(sum-best.total)<=1)applyR(best,'OCR');
+    else{applyR(best,'OCR');$('rStatus').className='status';$('rStatus').textContent='一部の読み取りに自信がありません。金額・商品名を確認してください。'}
+  }catch{$('rStatus').textContent='解析できませんでした。明細を入力してください。';$('rDate').value=today();receiptRowsData=[{id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]}];renderReceiptRows()}finally{if(worker)await worker.terminate().catch(()=>{})}
+}
 $$('.app-number').forEach(el=>el.onclick=()=>openNumpad(el.id));$$('.app-date').forEach(el=>el.onclick=()=>openCalendar(el.id));
 $$('[data-num]').forEach(b=>b.onclick=()=>{if(numberBuffer.length>=10)return;let add=b.dataset.num;if(!numberBuffer&&add==='00')add='0';numberBuffer=(numberBuffer+add).replace(/^0+(?=\d)/,'');updateNumpad()});$('numBack').onclick=()=>{numberBuffer=numberBuffer.slice(0,-1);updateNumpad()};$('numClear').onclick=()=>{numberBuffer='';updateNumpad()};$('numDone').onclick=()=>{if(numberTarget){$(numberTarget).value=numberBuffer;if(numberTarget.startsWith('batchAmount-'))syncBatchRowsFromDom();if(numberTarget.startsWith('receiptAmount-'))syncReceiptRowsFromDom()}$('numpadDialog').close()};
 $('calPrev').onclick=()=>{calView=new Date(calView.getFullYear(),calView.getMonth()-1,1);renderCalendar()};$('calNext').onclick=()=>{calView=new Date(calView.getFullYear(),calView.getMonth()+1,1);renderCalendar()};$('calToday').onclick=()=>{let v=today();if(dateTarget)$(dateTarget).value=v;$('calendarDialog').close()};
