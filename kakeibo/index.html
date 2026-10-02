@@ -104,7 +104,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v27-receipt-hard-guard';
+const APP_BUILD='v28-receipt-boundary';
 const KEY='kakeibo_pro_v2',AI='https://rngmvobnxliegijzzdbg.supabase.co/functions/v1/receipt-analyzer';
 const cats={expense:[['食費','🍚'],['日用品','🧻'],['交通','🚃'],['住居','🏠'],['水道光熱','💡'],['通信','📱'],['娯楽','🎮'],['医療','🏥'],['衣服','👕'],['交際費','🍻'],['教育','📚'],['その他','📦']],income:[['給与','💰'],['賞与','✨'],['副収入','💼'],['臨時収入','🎁'],['その他','📥']]};
 const $=x=>document.getElementById(x),$$=q=>[...document.querySelectorAll(q)],pad=n=>String(n).padStart(2,'0'),uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36),money=n=>'¥'+Math.round(Number(n||0)).toLocaleString('ja-JP'),mk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1),today=()=>{let d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
@@ -271,13 +271,27 @@ function knownMerchant(lines){let j=lines.slice(0,12).join(' '),known=[[/family\
 function cleanReceiptName(name){
   let s=String(name||'').replace(/^[^A-Za-zぁ-んァ-ヶ一-龯]+/,'').replace(/[■□▮▯]+$/,'').trim();
   s=s.replace(/^ぷ(?=吊るし)/,'').replace(/\s{2,}/g,' ');
+  s=s.replace(/(?:値引(?:き)?品?|割引(?:品)?|値下げ(?:品)?|特価(?:品)?|お買得(?:品)?|セール(?:品)?|半額(?:品)?|見切り(?:品)?)$/g,'').trim();
   return s
 }
-function receiptNameQuality(name){
-  let s=cleanReceiptName(name);if(!s)return 0;
-  let jp=(s.match(/[ぁ-んァ-ヶ一-龯]/g)||[]).length,latin=(s.match(/[A-Za-z]/g)||[]).length,digits=(s.match(/[0-9]/g)||[]).length;
+function simplifyReceiptName(name){
+  let s=cleanReceiptName(name);if(!s)return '';
+  const keys=[
+    ['コロッケパン',/コロッケ[^\s]{0,8}パン|コロッケパン/],['カレーパン',/カレー[^\s]{0,6}パン|カレーパン/],['メロンパン',/メロンパン/],['クリームパン',/クリームパン/],['あんぱん',/あんぱん|アンパン/],['食パン',/食パン/],
+    ['茶碗蒸し',/茶碗蒸/],['ベーコン',/ベーコン/],['十六茶',/十六茶/],['おにぎり',/おにぎり|おむすび/],['弁当',/弁当/],['サラダ',/サラダ/],
+    ['牛乳',/牛乳/],['ヨーグルト',/ヨーグルト/],['卵',/\b卵\b|たまご|玉子/],['豆腐',/豆腐/],['納豆',/納豆/],['コーヒー',/コーヒー/],['ジュース',/ジュース/]
+  ];
+  for(const [label,re] of keys)if(re.test(s))return label;
+  s=s.replace(/^[①-⑳❶-❿⑴-⒇\d]+[.)、・\s]*/,'').trim();
+  if(receiptNameQualityRaw(s)===0)return '';
+  if(s.length>18)s=s.slice(0,18);
+  return s
+}
+function receiptNameQualityRaw(s){
+  s=String(s||'');let jp=(s.match(/[ぁ-んァ-ヶ一-龯]/g)||[]).length,latin=(s.match(/[A-Za-z]/g)||[]).length,digits=(s.match(/[0-9]/g)||[]).length;
   if(jp>=2)return 3;if(jp>=1)return 2;if(latin>=3&&digits===0)return 1;return 0
 }
+function receiptNameQuality(name){return receiptNameQualityRaw(simplifyReceiptName(name))}
 function reconcileReceiptItems(items,total,productTotal=0,discountTotal=0){
   let out=(items||[]).map(x=>({name:cleanReceiptName(x.name),amount:Math.round(Number(x.amount||0)),original_amount:Math.round(Number(x.original_amount||x.amount||0)),discount:Math.round(Number(x.discount||0))}));
   // Hard rule: a single final item price can never exceed the receipt final total.
@@ -295,26 +309,38 @@ function reconcileReceiptItems(items,total,productTotal=0,discountTotal=0){
   return {items:out,itemSum,ok:total>0&&out.length>0&&Math.abs(itemSum-total)<=1}
 }
 function parseOCR(t){
-  let l=String(t||'').split(/\n/).map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean),merchant=knownMerchant(l),items=[],summary=false,productTotal=0,discountTotal=0,tender=0,change=0,cands=[],lastItem=-1;
-  for(let line of l){
-    let compact=line.replace(/\s+/g,''),a=amountInfo(line,true);
-    if(/商品合計/.test(compact)){if(a)productTotal=Math.abs(a.amount);summary=true;continue}
-    if(/値引合計|割引合計/.test(compact)){if(a)discountTotal=-Math.abs(a.amount);continue}
-    if(/小計/.test(compact)){if(a)cands.push({v:Math.abs(a.amount),w:4});summary=true;continue}
-    if(/合計/.test(compact)&&!/商品合計|値引合計|割引合計|内消費税|消費税/.test(compact)){if(a)cands.push({v:Math.abs(a.amount),w:8});summary=true;continue}
-    if(/お預|預り/.test(compact)){if(a)tender=Math.abs(a.amount);continue}
-    if(/お釣|釣銭/.test(compact)){if(a)change=Math.abs(a.amount);continue}
-    if(summary)continue;
-    if(/値引き|割引/.test(compact)){if(a&&lastItem>=0){let d=Math.abs(a.amount);if(d>0&&d<items[lastItem].amount){items[lastItem].original_amount=items[lastItem].amount;items[lastItem].discount=d;items[lastItem].amount-=d}}continue}
+  let l=String(t||'').split(/\n/).map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean),merchant=knownMerchant(l),items=[],productTotal=0,discountTotal=0,cands=[],lastItem=-1;
+  // First locate the accounting summary. Anything below the final-total line is never used.
+  const isProductTotal=s=>/商品合計|品代合計/.test(s);
+  const isDiscountTotal=s=>/値引合計|割引合計/.test(s);
+  const isSubtotal=s=>/小計/.test(s);
+  const isFinalTotal=s=>/(?:^|[^商品小税])(?:総?合計|お会計|現計)/.test(s)&&!/商品合計|品代合計|値引合計|割引合計|内消費税|消費税|税合計/.test(s);
+  let summaryStart=-1,finalTotalIndex=-1;
+  for(let i=0;i<l.length;i++){let c=l[i].replace(/\s+/g,'');if(summaryStart<0&&(isProductTotal(c)||isDiscountTotal(c)||isSubtotal(c)||isFinalTotal(c)))summaryStart=i;if(isFinalTotal(c))finalTotalIndex=i}
+  // Product lines are allowed only above the first summary line. This prevents tax/tender/change below total from ever becoming items.
+  let itemEnd=summaryStart>=0?summaryStart:(finalTotalIndex>=0?finalTotalIndex:l.length);
+  for(let i=0;i<itemEnd;i++){
+    let line=l[i],compact=line.replace(/\s+/g,''),a=amountInfo(line,true);
     if(/電話|住所|領収|receipt|レジ|担当|取引|No\.?/i.test(compact)||/20\d{2}.*\d{1,2}:\d{2}/.test(line))continue;
+    if((a&&a.amount<0)||/^(?:値引き?|割引|値下げ|クーポン)/.test(compact)){if(a&&lastItem>=0){let d=Math.abs(a.amount);if(d>0&&d<items[lastItem].amount){items[lastItem].original_amount=items[lastItem].amount;items[lastItem].discount=d;items[lastItem].amount-=d}}continue}
     let ai=amountInfo(line,false);if(!ai||!(ai.amount>0)||ai.amount>99999)continue;
-    let name=cleanReceiptName(normalizeMoneyChars(line).slice(0,ai.index));if(!name||/family\s*mart|ファミリーマート/i.test(name))continue;
+    let name=simplifyReceiptName(normalizeMoneyChars(line).slice(0,ai.index));if(!name||/family\s*mart|ファミリーマート/i.test(name))continue;
     items.push({name,amount:ai.amount,original_amount:ai.amount,discount:0});lastItem=items.length-1
   }
-  let rawSum=items.reduce((s,x)=>s+Number(x.amount||0),0);if(productTotal)cands.push({v:Math.max(0,productTotal+discountTotal),w:10});if(tender&&change&&tender>=change)cands.push({v:tender-change,w:7});if(rawSum)cands.push({v:rawSum,w:3});
+  // Read totals only from the summary area and stop at the final-total line. Nothing below it participates in calculation.
+  let summaryEnd=finalTotalIndex>=0?finalTotalIndex:Math.min(l.length-1,(summaryStart>=0?summaryStart+8:l.length-1));
+  if(summaryStart<0)summaryStart=0;
+  for(let i=summaryStart;i<=summaryEnd&&i<l.length;i++){
+    let line=l[i],compact=line.replace(/\s+/g,''),a=amountInfo(line,true);if(!a)continue;
+    if(isProductTotal(compact)){productTotal=Math.abs(a.amount);continue}
+    if(isDiscountTotal(compact)){discountTotal=-Math.abs(a.amount);continue}
+    if(isSubtotal(compact)){cands.push({v:Math.abs(a.amount),w:4});continue}
+    if(isFinalTotal(compact)){cands.push({v:Math.abs(a.amount),w:12});continue}
+  }
+  if(productTotal>0)cands.push({v:Math.max(0,productTotal+discountTotal),w:9});
   let score=new Map();for(let c of cands){if(!(c.v>0))continue;score.set(c.v,(score.get(c.v)||0)+c.w)}let total=[...score.entries()].sort((a,b)=>b[1]-a[1]||a[0]-b[0])[0]?.[0]||0;
   let rec=reconcileReceiptItems(items,total,productTotal,discountTotal);
-  return {merchant,date:parseDate(t),total,items:rec.items,itemSum:rec.itemSum,itemMathOk:rec.ok,productTotal,discountTotal,rawText:String(t||'')}
+  return {merchant,date:parseDate(t),total,items:rec.items,itemSum:rec.itemSum,itemMathOk:rec.ok,productTotal,discountTotal,rawText:String(t||''),finalTotalIndex}
 }
 function scoreReceiptParse(r){
   let s=0;if(r.total>0)s+=5;if(r.date)s+=2;if(r.merchant)s+=2;if(r.itemMathOk)s+=8;
@@ -334,7 +360,7 @@ function exactReceiptSubset(items,total){
 }
 function sanitizeReceiptForUi(r,merchant=''){
   let total=Math.max(0,Math.round(Number(r?.total||0))),raw=Array.isArray(r?.items)?r.items:[],rejected=0;
-  let items=raw.map(x=>{let name=cleanReceiptName(String(typeof x==='string'?x:x?.name||'')),amount=Math.max(0,Math.round(Number(typeof x==='string'?0:x?.amount||0))),category=(typeof x==='object'&&x?.category&&db.categories.expense.some(v=>v[0]===x.category))?x.category:receiptCategory(name,merchant);if(receiptNameQuality(name)===0)name='商品名を確認';return {name,amount,category}});
+  let items=raw.map(x=>{let name=simplifyReceiptName(String(typeof x==='string'?x:x?.name||'')),amount=Math.max(0,Math.round(Number(typeof x==='string'?0:x?.amount||0))),category=(typeof x==='object'&&x?.category&&db.categories.expense.some(v=>v[0]===x.category))?x.category:receiptCategory(name,merchant);if(receiptNameQuality(name)===0)name='商品名を確認';return {name,amount,category}});
   if(!(total>0))return {total,items:items.map(x=>({...x,amount:0})),corrected:true,reason:'total_unknown'};
   let possible=[],bad=[];for(let x of items){if(x.amount>0&&x.amount<=total)possible.push(x);else{bad.push(x);rejected++}}
   let sum=possible.reduce((a,x)=>a+x.amount,0);
@@ -345,7 +371,7 @@ function sanitizeReceiptForUi(r,merchant=''){
 }
 function guess(m,it){let s=(m+' '+it.join(' ')).toLowerCase(),r=[[/薬局|ドラッグ|マツキヨ|ウエルシア/,'日用品'],[/病院|医院|歯科/,'医療'],[/jr|鉄道|バス|タクシー/,'交通'],[/ユニクロ|gu|しまむら/,'衣服'],[/コンビニ|ファミリーマート|familymart|セブン|ローソン|スーパー|食品|弁当|飲料|パン|肉|野菜|茶|ベーコン|茶碗蒸し/,'食費']];for(let [re,c] of r)if(re.test(s)&&db.categories.expense.some(x=>x[0]===c))return c;return db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]}
 function applyR(r,src){
-  let merchant=String(r?.merchant||r?.store||'').trim(),safe=sanitizeReceiptForUi(r,merchant);$('merchant').value=merchant;$('rDate').value=r?.date||today();receiptExpectedTotal=safe.total;$('rTotal').value=receiptExpectedTotal||'';receiptRowsData=safe.items.map(x=>({id:uid(),name:x.name,amount:x.amount,category:x.category,uncertain:!!x.uncertain}));if(!receiptRowsData.length&&receiptExpectedTotal>0)receiptRowsData=[{id:uid(),name:'未判定（要確認）',amount:receiptExpectedTotal,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0],uncertain:true}];renderReceiptRows();let sum=receiptRowsData.reduce((a,x)=>a+Number(x.amount||0),0),ok=receiptExpectedTotal>0&&receiptRowsData.length&&Math.abs(sum-receiptExpectedTotal)<=1;$('rStatus').className='status '+(ok&&!safe.corrected?'ok':'');$('rStatus').textContent=safe.corrected?'OCRの矛盾した金額を除外しました。「未判定」を確認してください。':(ok?'読み取りました。商品ごとのカテゴリを確認してください。':'一部読み取れませんでした。明細を確認・修正してください。');$('rProg').style.width='100%'
+  let merchant=String(r?.merchant||r?.store||'').trim(),safe=sanitizeReceiptForUi(r,merchant);$('merchant').value=merchant;$('rDate').value=r?.date||today();receiptExpectedTotal=safe.total;$('rTotal').value=receiptExpectedTotal||'';receiptRowsData=safe.items.map(x=>({id:uid(),name:x.name,amount:x.amount,category:x.category,uncertain:!!x.uncertain}));if(!receiptRowsData.length&&receiptExpectedTotal>0)receiptRowsData=[{id:uid(),name:'未判定（要確認）',amount:receiptExpectedTotal,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0],uncertain:true}];renderReceiptRows();let sum=receiptRowsData.reduce((a,x)=>a+Number(x.amount||0),0),ok=receiptExpectedTotal>0&&receiptRowsData.length&&Math.abs(sum-receiptExpectedTotal)<=1;$('rStatus').className='status '+(ok&&!safe.corrected?'ok':'');$('rStatus').textContent=safe.corrected?'合計より下の会計情報と矛盾した金額を除外しました。「未判定」を確認してください。':(ok?'読み取りました。商品ごとのカテゴリを確認してください。':'一部読み取れませんでした。明細を確認・修正してください。');$('rProg').style.width='100%'
 }
 async function receiptImageVariants(f){return new Promise((ok,no)=>{let i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{try{let target=i.width<900?Math.min(1800,i.width*4):Math.min(2400,i.width*1.5),sc=target/i.width,c=document.createElement('canvas');c.width=Math.max(1,Math.round(i.width*sc));c.height=Math.max(1,Math.round(i.height*sc));let ctx=c.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(i,0,0,c.width,c.height);let raw=c.toDataURL('image/jpeg',.92),im=ctx.getImageData(0,0,c.width,c.height),d=im.data;for(let p=0;p<d.length;p+=4){let y=.299*d[p]+.587*d[p+1]+.114*d[p+2];y=Math.max(0,Math.min(255,(y-128)*1.35+128));d[p]=d[p+1]=d[p+2]=y}ctx.putImageData(im,0,0);let gray=c.toDataURL('image/png');let th=ctx.getImageData(0,0,c.width,c.height),td=th.data;for(let p=0;p<td.length;p+=4){let y=td[p];let v=y>172?255:y<92?0:Math.round((y-92)/(172-92)*255);td[p]=td[p+1]=td[p+2]=v}ctx.putImageData(th,0,0);let threshold=c.toDataURL('image/png');URL.revokeObjectURL(u);ok({raw,gray,threshold})}catch(e){URL.revokeObjectURL(u);no(e)}};i.onerror=no;i.src=u})}
 async function analyze(f){
