@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=36">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -105,7 +105,34 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v35-extra-income-savings';
+const APP_BUILD='v36-pwa-auto-update';
+let updateCheckBusy=false;
+async function checkAppUpdate(){
+  if(updateCheckBusy)return;
+  updateCheckBusy=true;
+  try{
+    const r=await fetch('./version.json?t='+Date.now(),{cache:'no-store'});
+    if(r.ok){
+      const v=await r.json();
+      if(v?.build&&v.build!==APP_BUILD){
+        const key='kakeibo_reload_'+v.build;
+        if(!sessionStorage.getItem(key)){
+          sessionStorage.setItem(key,'1');
+          location.replace('./?app='+encodeURIComponent(v.build));
+          return;
+        }
+      }
+    }
+  }catch{}
+  finally{updateCheckBusy=false}
+}
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js?v=36',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+}
+window.addEventListener('pageshow',()=>checkAppUpdate());
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
+setTimeout(checkAppUpdate,500);
+
 const KEY='kakeibo_pro_v2',BACKUP_KEY='kakeibo_pro_v2_last_good',RECOVERY_KEY='kakeibo_recovery_v31',SNAP_PREFIX='kakeibo_pro_v2_snapshot_',META_KEY='kakeibo_pro_v2_meta',VAULT_DB='kakeibo-data-v1',AI='https://rngmvobnxliegijzzdbg.supabase.co/functions/v1/receipt-analyzer';
 const cats={expense:[['食費','🍚'],['日用品','🧻'],['交通','🚃'],['住居','🏠'],['水道光熱','💡'],['通信','📱'],['娯楽','🎮'],['医療','🏥'],['衣服','👕'],['交際費','🍻'],['教育','📚'],['その他','📦']],income:[['給与','💰'],['賞与','✨'],['副収入','💼'],['臨時収入','🎁'],['その他','📥']]};
 const $=x=>document.getElementById(x),$$=q=>[...document.querySelectorAll(q)],pad=n=>String(n).padStart(2,'0'),uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36),money=n=>'¥'+Math.round(Number(n||0)).toLocaleString('ja-JP'),mk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1),today=()=>{let d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
