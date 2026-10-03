@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=37">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=38">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -106,7 +106,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v37-force-update';
+const APP_BUILD='v38-receipt-consensus';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -136,7 +136,7 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=37',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=38',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 window.addEventListener('pageshow',()=>checkAppUpdate());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
@@ -568,6 +568,71 @@ function scoreReceiptParse(r){
   for(let x of r.items||[]){s+=receiptNameQuality(x.name);if(r.total>0&&x.amount>0&&x.amount<=r.total)s+=2}
   if(r.items?.length>=1)s+=2;if(r.items?.length>30)s-=20;return s
 }
+
+function receiptConsensusValue(values){
+  const map=new Map();
+  values.filter(v=>v!==''&&v!=null&&v!==0).forEach(v=>{let k=String(v);map.set(k,(map.get(k)||0)+1)});
+  let best=null,count=0;
+  for(const [k,n] of map){if(n>count){best=k;count=n}}
+  return {value:best==null?null:best,count}
+}
+function receiptConsensusName(names){
+  const map=new Map();
+  for(const raw of names){
+    const n=simplifyReceiptName(raw);
+    if(!n||n==='商品名を確認')continue;
+    map.set(n,(map.get(n)||0)+1)
+  }
+  let best='',count=0;
+  for(const [n,c] of map){if(c>count){best=n;count=c}}
+  return count>=2?best:'商品名を確認'
+}
+function buildReceiptConsensus(parses){
+  const ranked=(parses||[]).slice().sort((a,b)=>scoreReceiptParse(b)-scoreReceiptParse(a));
+  const totalVote=receiptConsensusValue(ranked.map(p=>Math.round(Number(p.total||0))));
+  const totalReliable=totalVote.count>=2&&Number(totalVote.value)>0;
+  const total=totalReliable?Number(totalVote.value):Math.max(0,Math.round(Number(ranked[0]?.total||0)));
+  const dateVote=receiptConsensusValue(ranked.map(p=>p.date||''));
+  const merchantVote=receiptConsensusValue(ranked.map(p=>String(p.merchant||'').trim()));
+  const date=(dateVote.count>=2?dateVote.value:(ranked.find(p=>p.date)?.date||''));
+  const merchant=(merchantVote.count>=2?merchantVote.value:(ranked.find(p=>p.merchant)?.merchant||''));
+  if(!totalReliable){
+    return {merchant,date,total,items:[],ocrConsensus:true,totalReliable:false,confirmedItemCount:0,rawParses:ranked}
+  }
+
+  const byAmount=new Map();
+  ranked.forEach((p,passIndex)=>{
+    const local=new Map();
+    (p.items||[]).forEach((x,itemIndex)=>{
+      const amount=Math.round(Number(x.amount||0));
+      if(!(amount>0)||amount>total)return;
+      if(!local.has(amount))local.set(amount,[]);
+      local.get(amount).push({name:x.name||'',itemIndex})
+    });
+    for(const [amount,list] of local){
+      if(!byAmount.has(amount))byAmount.set(amount,{counts:Array(ranked.length).fill(0),perPass:Array.from({length:ranked.length},()=>[])});
+      const rec=byAmount.get(amount);rec.counts[passIndex]=list.length;rec.perPass[passIndex]=list
+    }
+  });
+
+  let confirmed=[];
+  for(const [amount,rec] of byAmount){
+    const sortedCounts=rec.counts.slice().sort((a,b)=>b-a);
+    const count=sortedCounts[1]||0; // each occurrence must appear in at least 2 OCR passes
+    for(let occ=0;occ<count;occ++){
+      const names=[],orders=[];
+      rec.perPass.forEach(list=>{if(list[occ]){names.push(list[occ].name);orders.push(list[occ].itemIndex)}});
+      const order=orders.length?orders.reduce((a,b)=>a+b,0)/orders.length:999;
+      confirmed.push({name:receiptConsensusName(names),amount,order,category:''})
+    }
+  }
+  confirmed.sort((a,b)=>a.order-b.order||a.amount-b.amount);
+
+  // Never let consensus items exceed the receipt total.
+  const kept=[];let sum=0;
+  for(const x of confirmed){if(sum+x.amount<=total){kept.push(x);sum+=x.amount}}
+  return {merchant,date,total,items:kept,itemSum:sum,itemMathOk:sum===total,ocrConsensus:true,totalReliable:true,confirmedItemCount:kept.length,rawParses:ranked}
+}
 function sanitizeReceiptForUi(r,merchant=''){
   let total=Math.max(0,Math.round(Number(r?.total||0))),raw=Array.isArray(r?.items)?r.items:[],items=[];
   for(let x of raw){let name=simplifyReceiptName(String(typeof x==='string'?x:x?.name||'')),amount=Math.max(0,Math.round(Number(typeof x==='string'?0:x?.amount||0)));if(!name)name='商品名を確認';if(!(amount>0)||!total||amount>total)continue;items.push({name,amount,category:(typeof x==='object'&&x?.category&&db.categories.expense.some(v=>v[0]===x.category))?x.category:receiptCategory(name,merchant)})}
@@ -595,10 +660,18 @@ async function analyze(f){
       await worker.setParameters({tessedit_pageseg_mode:pass.psm,preserve_interword_spaces:'1'});
       let out=await worker.recognize(pass.img);let parsed=parseOCR(out.data?.text||'');parses.push(parsed)
     }
-    parses.sort((a,b)=>scoreReceiptParse(b)-scoreReceiptParse(a));let best=parses[0]||{merchant:'',date:'',total:0,items:[]};
-    let sum=(best.items||[]).reduce((a,x)=>a+Number(x.amount||0),0);
-    if(best.total>0&&best.items?.length&&Math.abs(sum-best.total)<=1)applyR(best,'OCR');
-    else{applyR(best,'OCR');$('rStatus').className='status';$('rStatus').textContent='一部の読み取りに自信がありません。金額・商品名を確認してください。'}
+    let combined=buildReceiptConsensus(parses);
+    applyR(combined,'OCR');
+    $('rStatus').className='status '+(combined.totalReliable&&combined.itemMathOk?'ok':'');
+    if(!combined.totalReliable){
+      $('rStatus').textContent='合計金額が複数回一致しませんでした。誤入力を避けるため明細は自動入力していません。合計を確認してください。';
+    }else if(!combined.confirmedItemCount){
+      $('rStatus').textContent='合計は確認できましたが、明細は確信できないため「未判定」にしました。';
+    }else if(!combined.itemMathOk){
+      $('rStatus').textContent='複数回一致した明細だけ入力しました。読み切れない差額は「未判定」です。';
+    }else{
+      $('rStatus').textContent='複数回一致した金額だけ入力しました。商品名・カテゴリを確認してください。';
+    }
   }catch{$('rStatus').textContent='解析できませんでした。明細を入力してください。';$('rDate').value=today();receiptRowsData=[{id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]}];renderReceiptRows()}finally{if(worker)await worker.terminate().catch(()=>{})}
 }
 $$('.app-number').forEach(el=>el.onclick=()=>openNumpad(el.id));$$('.app-date').forEach(el=>el.onclick=()=>openCalendar(el.id));
