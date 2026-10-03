@@ -63,6 +63,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 </div>
 </div>
 </div>
+<div class="section"><div class="head"><h2>データ復旧</h2><span>旧データを検索</span></div><div class="card"><div class="note" id="recoveryStatus">ブラウザ内の過去データを自動検索します。</div><button class="secondary" id="recoverData" type="button" style="margin-top:9px">過去データをもう一度探す</button></div></div>
 <div class="section"><div class="head"><h2>データ</h2><span>バックアップ</span></div><div class="card"><button class="secondary" id="export">バックアップを書き出す</button><label class="secondary" style="display:inline-block;margin-top:8px">バックアップを読み込む<input id="import" type="file" accept="application/json" hidden></label><div class="note" style="margin-top:10px">データはこのブラウザ内に保存されます。</div></div></div></section>
 </div>
 
@@ -104,20 +105,81 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v30-data-safe';
-const KEY='kakeibo_pro_v2',BACKUP_KEY='kakeibo_pro_v2_last_good',AI='https://rngmvobnxliegijzzdbg.supabase.co/functions/v1/receipt-analyzer';
+const APP_BUILD='v31-data-recovery';
+const KEY='kakeibo_pro_v2',BACKUP_KEY='kakeibo_pro_v2_last_good',RECOVERY_KEY='kakeibo_recovery_v31',AI='https://rngmvobnxliegijzzdbg.supabase.co/functions/v1/receipt-analyzer';
 const cats={expense:[['食費','🍚'],['日用品','🧻'],['交通','🚃'],['住居','🏠'],['水道光熱','💡'],['通信','📱'],['娯楽','🎮'],['医療','🏥'],['衣服','👕'],['交際費','🍻'],['教育','📚'],['その他','📦']],income:[['給与','💰'],['賞与','✨'],['副収入','💼'],['臨時収入','🎁'],['その他','📥']]};
 const $=x=>document.getElementById(x),$$=q=>[...document.querySelectorAll(q)],pad=n=>String(n).padStart(2,'0'),uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36),money=n=>'¥'+Math.round(Number(n||0)).toLocaleString('ja-JP'),mk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1),today=()=>{let d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
 const def=()=>({version:7,tx:[],categories:JSON.parse(JSON.stringify(cats)),overallBudgets:{},savings:[],recurring:[],settings:{autoSavings:true}});
 function norm(x){let d=def(),s=x&&typeof x==='object'?x:{},cs=s.categories&&Array.isArray(s.categories.expense)&&Array.isArray(s.categories.income)?s.categories:d.categories;return {...d,...s,tx:Array.isArray(s.tx)?s.tx:[],categories:cs,overallBudgets:s.overallBudgets||{},savings:Array.isArray(s.savings)?s.savings:[],recurring:Array.isArray(s.recurring)?s.recurring:[],settings:{...d.settings,...(s.settings||{}),autoSavings:s.settings?.autoSavings!==false}}}
-let db;
-try{
-  const raw=localStorage.getItem(KEY);
-  if(raw)localStorage.setItem(BACKUP_KEY,raw);
-  db=norm(JSON.parse(raw||'null'));
-}catch{
-  try{db=norm(JSON.parse(localStorage.getItem(BACKUP_KEY)||'null'))}catch{db=def()}
+function stateSigTx(x){
+  if(x?.id)return 'id:'+x.id;
+  return ['tx',x?.date||'',x?.type||'',Number(x?.amount||0),x?.category||'',x?.memo||'',x?.merchant||'',x?.itemName||''].join('|')
 }
+function stateSigRec(x){
+  if(x?.id)return 'id:'+x.id;
+  return ['rec',x?.type||'',x?.name||'',Number(x?.amount||0),Number(x?.day||0),x?.category||''].join('|')
+}
+function mergeCategories(base,extra){
+  const out={expense:[...(base?.expense||[])],income:[...(base?.income||[])]};
+  for(const t of ['expense','income']){
+    const seen=new Set(out[t].map(x=>String(x?.[0]||'')));
+    for(const x of (extra?.[t]||[])){
+      const n=String(x?.[0]||'').trim();if(!n||seen.has(n))continue;
+      out[t].push([n,String(x?.[1]||'📌')]);seen.add(n)
+    }
+  }
+  return out
+}
+function mergeStates(states){
+  if(!states.length)return def();
+  const ranked=states.slice().sort((a,b)=>(b.tx?.length||0)-(a.tx?.length||0)||(b.recurring?.length||0)-(a.recurring?.length||0));
+  let out=norm(ranked[0]);
+  const txMap=new Map((out.tx||[]).map(x=>[stateSigTx(x),x]));
+  const recMap=new Map((out.recurring||[]).map(x=>[stateSigRec(x),x]));
+  const savMap=new Map((out.savings||[]).map(x=>[x?.id||('sav|'+(x?.month||'')+'|'+Number(x?.amount||0)),x]));
+  for(const s0 of ranked.slice(1)){
+    const s=norm(s0);
+    for(const x of s.tx||[]){const k=stateSigTx(x);if(!txMap.has(k))txMap.set(k,x)}
+    for(const x of s.recurring||[]){const k=stateSigRec(x);if(!recMap.has(k))recMap.set(k,x)}
+    for(const x of s.savings||[]){const k=x?.id||('sav|'+(x?.month||'')+'|'+Number(x?.amount||0));if(!savMap.has(k))savMap.set(k,x)}
+    out.categories=mergeCategories(out.categories,s.categories);
+    out.overallBudgets={...(s.overallBudgets||{}),...(out.overallBudgets||{})}
+  }
+  out.tx=[...txMap.values()];
+  out.recurring=[...recMap.values()];
+  out.savings=[...savMap.values()];
+  return norm(out)
+}
+function scanKakeiboStates(){
+  const found=[];
+  const keys=new Set([KEY,BACKUP_KEY,RECOVERY_KEY,'kakeibo_v1','kakeibo_pro_v1','kakeibo_pro_v2_backup']);
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&/kakeibo|家計簿/i.test(k))keys.add(k)}
+  for(const k of keys){
+    try{
+      const raw=localStorage.getItem(k);if(!raw)continue;
+      const x=JSON.parse(raw);
+      if(x&&typeof x==='object'&&(Array.isArray(x.tx)||x.categories||x.overallBudgets||Array.isArray(x.recurring))){
+        found.push({key:k,state:norm(x),raw})
+      }
+    }catch{}
+  }
+  return found
+}
+function recoverKakeiboData(){
+  const found=scanKakeiboStates();
+  if(!found.length)return {found:0,recovered:0,state:def(),keys:[]};
+  const merged=mergeStates(found.map(x=>x.state));
+  const current=found.find(x=>x.key===KEY)?.state;
+  const before=current?.tx?.length||0,after=merged.tx?.length||0;
+  try{
+    const currentRaw=localStorage.getItem(KEY);if(currentRaw)localStorage.setItem(BACKUP_KEY,currentRaw);
+    localStorage.setItem(RECOVERY_KEY,JSON.stringify(merged));
+    localStorage.setItem(KEY,JSON.stringify(merged));
+  }catch{}
+  return {found:found.length,recovered:Math.max(0,after-before),state:merged,keys:found.map(x=>x.key)}
+}
+const recoveryResult=recoverKakeiboData();
+let db=recoveryResult.state;
 let view=new Date(),type='expense',edit='';
 const save=()=>{
   const prev=localStorage.getItem(KEY);
@@ -387,7 +449,17 @@ $('memo').oninput=renderMemoSuggestions;$('memo').onkeyup=renderMemoSuggestions;
 function setCategoryFold(open){let wrap=$('categorySettingsFold'),body=$('categoryFoldBody'),btn=$('categoryFoldToggle');if(!wrap||!body||!btn)return;wrap.classList.toggle('open',!!open);body.classList.toggle('hide',!open);btn.setAttribute('aria-expanded',open?'true':'false')}
 $('categoryFoldToggle').onclick=()=>setCategoryFold($('categoryFoldBody').classList.contains('hide'));
 $('addExpenseCat').onclick=()=>openCategoryDialog('expense');$('addIncomeCat').onclick=()=>openCategoryDialog('income');$('saveCategory').onclick=()=>{let t=$('categoryType').value,old=$('categoryOriginal').value,name=$('categoryName').value.trim(),ic=$('categoryIcon').value.trim()||'📌';if(!name)return toast('カテゴリ名を入力してください');if(db.categories[t].some(x=>x[0]===name&&x[0]!==old))return toast('同名カテゴリがあります');if(old){let item=db.categories[t].find(x=>x[0]===old);if(item){item[0]=name;item[1]=ic}if(name!==old)replaceCategoryRefs(t,old,name)}else db.categories[t].push([name,ic]);save();refreshCategorySelects();$('categoryDialog').close();render();toast(old?'カテゴリを変更しました':'カテゴリを追加しました')};$('deleteCategory').onclick=()=>{let t=$('categoryType').value,n=$('categoryOriginal').value;$('categoryDialog').close();deleteCategoryNow(t,n)};
-$$('.nav button').forEach(b=>b.onclick=()=>{$$('.page').forEach(x=>x.classList.toggle('on',x.id===b.dataset.p));$$('.nav button').forEach(x=>x.classList.toggle('on',x===b));if(b.dataset.p==='settings')setCategoryFold(false);render()});$('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};$('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};$('addExp').onclick=()=>openEntry('expense');$('addInc').onclick=()=>openEntry('income');$('openBatch').onclick=openBatchEntry;$('addBatchRow').onclick=()=>{syncBatchRowsFromDom();addBatchItem()};$('saveBatch').onclick=saveBatchEntry;$('saveEntry').onclick=()=>{let a=Number($('amount').value),d=$('date').value;if(!(a>0)||!d)return toast('金額と日付を入力してください');let o={type,amount:a,date:d,category:$('cat').value,memo:$('memo').value.trim(),createdAt:Date.now()};if(edit){let i=db.tx.findIndex(x=>x.id===edit);db.tx[i]={...db.tx[i],...o}}else db.tx.push({id:uid(),...o});save();$('entry').close();render();toast('登録しました')};$('deleteEntry').onclick=()=>{if(edit&&confirm('削除しますか？')){db.tx=db.tx.filter(x=>x.id!==edit);save();$('entry').close();render()}};$('q').oninput=renderHist;$('qcat').onchange=renderHist;$('catClear').onclick=()=>{$('qcat').value='';$('q').value='';renderHist()};$('saveBudget').onclick=()=>{db.overallBudgets[mk(view)]=Number($('budget').value||0);save();render();toast('予算を保存しました')};$('autoSav').onclick=()=>{db.settings.autoSavings=!db.settings.autoSavings;save();syncSav();render()};$('addRecurring').onclick=()=>openRecurring();$('recType').onchange=fillRecCats;$('recAuto').onclick=()=>$('recAuto').classList.toggle('on');$('saveRec').onclick=()=>{let id=$('recurring').dataset.id,name=$('recName').value.trim(),amount=Number($('recAmount').value),day=Number($('recDay').value),rt=$('recType').value;if(!name||!(amount>0))return toast('名前と金額を入力してください');let obj={id:id||uid(),type:rt,amount,name,day,category:$('recCat').value,autoPost:$('recAuto').classList.contains('on'),active:id?(db.recurring.find(x=>x.id===id)?.active!==false):true,freq:'monthly'};let i=db.recurring.findIndex(x=>x.id===obj.id);if(i>=0)db.recurring[i]={...db.recurring[i],...obj};else db.recurring.push(obj);save();autoRecurring();$('recurring').close();render();toast('固定収支を保存しました')};$('receiptFile').onchange=e=>{let f=e.target.files[0];if(f)analyze(f);e.target.value=''};$('addReceiptRow').onclick=()=>{syncReceiptRowsFromDom();receiptRowsData.push({id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]});renderReceiptRows()};$('saveReceipt').onclick=saveReceiptEntries;$('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.download='kakeibo_backup_'+today()+'.json';a.click()};$('import').onchange=async e=>{try{let x=JSON.parse(await e.target.files[0].text());if(!Array.isArray(x.tx))throw 0;if(confirm('現在のデータを置き換えますか？')){db=norm(x);save();syncSav();render()}}catch{toast('読み込めませんでした')}e.target.value=''};$$('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
+$$('.nav button').forEach(b=>b.onclick=()=>{$$('.page').forEach(x=>x.classList.toggle('on',x.id===b.dataset.p));$$('.nav button').forEach(x=>x.classList.toggle('on',x===b));if(b.dataset.p==='settings')setCategoryFold(false);render()});$('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};$('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};$('addExp').onclick=()=>openEntry('expense');$('addInc').onclick=()=>openEntry('income');$('openBatch').onclick=openBatchEntry;$('addBatchRow').onclick=()=>{syncBatchRowsFromDom();addBatchItem()};$('saveBatch').onclick=saveBatchEntry;$('saveEntry').onclick=()=>{let a=Number($('amount').value),d=$('date').value;if(!(a>0)||!d)return toast('金額と日付を入力してください');let o={type,amount:a,date:d,category:$('cat').value,memo:$('memo').value.trim(),createdAt:Date.now()};if(edit){let i=db.tx.findIndex(x=>x.id===edit);db.tx[i]={...db.tx[i],...o}}else db.tx.push({id:uid(),...o});save();$('entry').close();render();toast('登録しました')};$('deleteEntry').onclick=()=>{if(edit&&confirm('削除しますか？')){db.tx=db.tx.filter(x=>x.id!==edit);save();$('entry').close();render()}};$('q').oninput=renderHist;$('qcat').onchange=renderHist;$('catClear').onclick=()=>{$('qcat').value='';$('q').value='';renderHist()};$('saveBudget').onclick=()=>{db.overallBudgets[mk(view)]=Number($('budget').value||0);save();render();toast('予算を保存しました')};$('autoSav').onclick=()=>{db.settings.autoSavings=!db.settings.autoSavings;save();syncSav();render()};$('addRecurring').onclick=()=>openRecurring();$('recType').onchange=fillRecCats;$('recAuto').onclick=()=>$('recAuto').classList.toggle('on');$('saveRec').onclick=()=>{let id=$('recurring').dataset.id,name=$('recName').value.trim(),amount=Number($('recAmount').value),day=Number($('recDay').value),rt=$('recType').value;if(!name||!(amount>0))return toast('名前と金額を入力してください');let obj={id:id||uid(),type:rt,amount,name,day,category:$('recCat').value,autoPost:$('recAuto').classList.contains('on'),active:id?(db.recurring.find(x=>x.id===id)?.active!==false):true,freq:'monthly'};let i=db.recurring.findIndex(x=>x.id===obj.id);if(i>=0)db.recurring[i]={...db.recurring[i],...obj};else db.recurring.push(obj);save();autoRecurring();$('recurring').close();render();toast('固定収支を保存しました')};$('receiptFile').onchange=e=>{let f=e.target.files[0];if(f)analyze(f);e.target.value=''};$('addReceiptRow').onclick=()=>{syncReceiptRowsFromDom();receiptRowsData.push({id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]});renderReceiptRows()};$('saveReceipt').onclick=saveReceiptEntries;if($('recoveryStatus')){
+  $('recoveryStatus').textContent=recoveryResult.recovered>0
+    ? '過去データから '+recoveryResult.recovered+'件を復旧しました。'
+    : '保存データ '+(db.tx?.length||0)+'件を確認しています。';
+}
+if($('recoverData'))$('recoverData').onclick=()=>{
+  const r=recoverKakeiboData();db=r.state;render();
+  $('recoveryStatus').textContent=r.recovered>0?'さらに '+r.recovered+'件を復旧しました。':'追加で復旧できるデータは見つかりませんでした（現在 '+(db.tx?.length||0)+'件）。';
+  toast(r.recovered>0?r.recovered+'件を復旧しました':'追加データはありませんでした')
+};
+$('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.download='kakeibo_backup_'+today()+'.json';a.click()};$('import').onchange=async e=>{try{let x=JSON.parse(await e.target.files[0].text());if(!Array.isArray(x.tx))throw 0;if(confirm('現在のデータを置き換えますか？')){db=norm(x);save();syncSav();render()}}catch{toast('読み込めませんでした')}e.target.value=''};$$('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 refreshCategorySelects();setCategoryFold(false);autoRecurring();syncSav();render();
 })();
 </script></body></html>
