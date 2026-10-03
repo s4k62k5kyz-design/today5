@@ -1,0 +1,9 @@
+{
+  "name":"くらし家計簿",
+  "short_name":"家計簿",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#f5f7fb",
+  "theme_color":"#f5f7fb"
+}
