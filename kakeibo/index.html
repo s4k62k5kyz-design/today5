@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=39">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=40">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -72,7 +72,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 </div>
 </div>
 <div class="section"><div class="head"><h2>アプリ更新</h2><span>最新版を確認</span></div><div class="card"><div class="row"><div><b style="font-size:12px">現在のバージョン</b><div class="note" id="appVersion">確認中…</div></div><button class="secondary" id="forceUpdate" type="button">更新</button></div><div class="note" style="margin-top:8px">更新しても家計簿データは消しません。</div></div></div>
-<div class="section"><div class="head"><h2>データ保護</h2><span>自動バックアップ</span></div><div class="card"><div class="note" id="recoveryStatus">現在のデータを保護しています。</div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px"><button class="secondary" id="snapshotNow" type="button">今の状態をバックアップ</button><button class="secondary" id="recoverData" type="button">過去データから復元</button></div><div class="note" style="margin-top:9px">通常は現行データだけを使用します。過去データは自動で混ぜません。</div></div></div>
+<div class="section"><div class="head"><h2>データ保護</h2><span>長期保存モード</span></div><div class="card"><div class="note" id="recoveryStatus">長期保存領域を確認しています。</div><div class="note" id="storageStatus" style="margin-top:5px">容量を確認中…</div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px"><button class="secondary" id="snapshotNow" type="button">今の状態をバックアップ</button><button class="secondary" id="recoverData" type="button">過去データから復元</button></div><div class="note" style="margin-top:9px">家計簿本体は大容量の保存領域へ保存し、レシート画像は別保存します。古いバックアップは一定数だけ残します。</div></div></div>
 <div class="section"><div class="head"><h2>データ</h2><span>バックアップ</span></div><div class="card"><button class="secondary" id="export">バックアップを書き出す</button><label class="secondary" style="display:inline-block;margin-top:8px">バックアップを読み込む<input id="import" type="file" accept="application/json" hidden></label><div class="note" style="margin-top:10px">データはこのブラウザ内に保存されます。</div></div></div></section>
 </div>
 
@@ -115,7 +115,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v39-calendar-receipts';
+const APP_BUILD='v40-longterm-storage';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -145,13 +145,13 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=39',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=40',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 window.addEventListener('pageshow',()=>checkAppUpdate());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
 setTimeout(checkAppUpdate,500);
 
-const KEY='kakeibo_pro_v2',BACKUP_KEY='kakeibo_pro_v2_last_good',RECOVERY_KEY='kakeibo_recovery_v31',SNAP_PREFIX='kakeibo_pro_v2_snapshot_',META_KEY='kakeibo_pro_v2_meta',VAULT_DB='kakeibo-data-v1',AI='https://rngmvobnxliegijzzdbg.supabase.co/functions/v1/receipt-analyzer';
+const KEY='kakeibo_pro_v2',BACKUP_KEY='kakeibo_pro_v2_last_good',RECOVERY_KEY='kakeibo_recovery_v31',SNAP_PREFIX='kakeibo_pro_v2_snapshot_',META_KEY='kakeibo_pro_v2_meta',BOOT_KEY='kakeibo_boot_v1',VAULT_DB='kakeibo-data-v1',LOCAL_MIRROR_LIMIT=1000000,VAULT_SNAPSHOT_LIMIT=5,AI='https://rngmvobnxliegijzzdbg.supabase.co/functions/v1/receipt-analyzer';
 const cats={expense:[['食費','🍚'],['日用品','🧻'],['交通','🚃'],['住居','🏠'],['水道光熱','💡'],['通信','📱'],['娯楽','🎮'],['医療','🏥'],['衣服','👕'],['交際費','🍻'],['教育','📚'],['その他','📦']],income:[['給与','💰'],['賞与','✨'],['副収入','💼'],['臨時収入','🎁'],['その他','📥']]};
 const $=x=>document.getElementById(x),$$=q=>[...document.querySelectorAll(q)],pad=n=>String(n).padStart(2,'0'),uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36),money=n=>'¥'+Math.round(Number(n||0)).toLocaleString('ja-JP'),mk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1),today=()=>{let d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
 const def=()=>({version:7,tx:[],categories:JSON.parse(JSON.stringify(cats)),overallBudgets:{},savings:[],recurring:[],settings:{autoSavings:true}});
@@ -231,7 +231,7 @@ function readLocalFallback(){
   for(const k of [BACKUP_KEY,RECOVERY_KEY,'kakeibo_v1','kakeibo_pro_v1','kakeibo_pro_v2_backup']){
     const s=parseStoredState(localStorage.getItem(k));if(s)candidates.push({key:k,state:s,savedAt:0})
   }
-  for(let i=0;i<8;i++){
+  for(let i=0;i<2;i++){
     const raw=localStorage.getItem(SNAP_PREFIX+i);if(!raw)continue;
     try{
       const x=JSON.parse(raw),s=validStateObject(x?.state)?norm(x.state):parseStoredState(raw);
@@ -241,17 +241,30 @@ function readLocalFallback(){
   candidates.sort((a,b)=>b.savedAt-a.savedAt||(b.state.tx?.length||0)-(a.state.tx?.length||0));
   return candidates[0]||null
 }
-function rotateLocalBackup(prevRaw){
-  if(!prevRaw)return;
+function cleanupLegacyLocalBackups(){
   try{
-    const prev=parseStoredState(prevRaw);if(!prev)return;
-    for(let i=7;i>=1;i--){
-      const older=localStorage.getItem(SNAP_PREFIX+(i-1));
-      if(older)localStorage.setItem(SNAP_PREFIX+i,older)
-    }
-    localStorage.setItem(SNAP_PREFIX+'0',JSON.stringify({savedAt:Date.now(),build:APP_BUILD,state:prev}));
-    localStorage.setItem(BACKUP_KEY,prevRaw)
+    for(let i=0;i<8;i++)localStorage.removeItem(SNAP_PREFIX+i);
+    localStorage.removeItem(RECOVERY_KEY);
+    localStorage.removeItem('kakeibo_pro_v2_backup');
   }catch{}
+}
+function writeLocalMirror(state,savedAt=Date.now()){
+  let raw='';
+  try{raw=JSON.stringify(state)}catch{return false}
+  try{
+    localStorage.setItem(BOOT_KEY,JSON.stringify({savedAt,txCount:state.tx?.length||0,idbPrimary:raw.length>LOCAL_MIRROR_LIMIT,build:APP_BUILD}));
+    if(raw.length<=LOCAL_MIRROR_LIMIT){
+      const prev=localStorage.getItem(KEY);
+      if(prev&&prev.length<=LOCAL_MIRROR_LIMIT)localStorage.setItem(BACKUP_KEY,prev);
+      localStorage.setItem(KEY,raw);
+    }else{
+      localStorage.removeItem(BACKUP_KEY);
+    }
+    return true
+  }catch{return false}
+}
+function readBootMeta(){
+  try{return JSON.parse(localStorage.getItem(BOOT_KEY)||'null')}catch{return null}
 }
 function openDataVault(){
   return new Promise((resolve,reject)=>{
@@ -271,6 +284,38 @@ function openDataVault(){
   })
 }
 
+
+async function getVaultLatest(){
+  try{
+    const idb=await openDataVault();
+    const rec=await new Promise((resolve,reject)=>{
+      const tx=idb.transaction('state','readonly'),req=tx.objectStore('state').get('latest');
+      req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error)
+    });
+    idb.close();return rec
+  }catch{return null}
+}
+async function getLatestVaultSnapshot(){
+  try{
+    const idb=await openDataVault();
+    const rec=await new Promise((resolve,reject)=>{
+      const tx=idb.transaction('snapshots','readonly'),store=tx.objectStore('snapshots'),req=store.openCursor(null,'prev');
+      req.onsuccess=e=>resolve(e.target.result?.value||null);req.onerror=()=>reject(req.error)
+    });
+    idb.close();return rec
+  }catch{return null}
+}
+async function storageEstimateText(){
+  try{
+    if(!navigator.storage?.estimate)return '長期保存モードで保護中';
+    const e=await navigator.storage.estimate(),used=Number(e.usage||0),quota=Number(e.quota||0);
+    const mb=n=>(n/1024/1024).toFixed(n>=100*1024*1024?0:1)+'MB';
+    return quota?('使用量 約'+mb(used)+' / 利用可能枠 約'+mb(quota)):('使用量 約'+mb(used));
+  }catch{return '長期保存モードで保護中'}
+}
+async function refreshStorageStatus(){
+  if($('storageStatus'))$('storageStatus').textContent=await storageEstimateText()
+}
 async function saveReceiptImage(groupId,blob,meta={}){
   if(!groupId||!blob)return false;
   try{
@@ -311,10 +356,10 @@ function archiveReceiptImage(file){
     const img=new Image(),url=URL.createObjectURL(file);
     img.onload=()=>{
       try{
-        const maxSide=1600,scale=Math.min(1,maxSide/Math.max(img.width,img.height)),canvas=document.createElement('canvas');
+        const maxSide=1400,scale=Math.min(1,maxSide/Math.max(img.width,img.height)),canvas=document.createElement('canvas');
         canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));
         const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);
-        canvas.toBlob(blob=>{URL.revokeObjectURL(url);blob?resolve(blob):reject(new Error('image encode failed'))},'image/jpeg',0.76)
+        canvas.toBlob(blob=>{URL.revokeObjectURL(url);blob?resolve(blob):reject(new Error('image encode failed'))},'image/jpeg',0.70)
       }catch(e){URL.revokeObjectURL(url);reject(e)}
     };
     img.onerror=e=>{URL.revokeObjectURL(url);reject(e)};img.src=url
@@ -339,33 +384,34 @@ async function vaultSnapshot(state,reason='save'){
       tx.objectStore('snapshots').add({savedAt,build:APP_BUILD,reason,state:clean});
       tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)
     });
-    try{localStorage.setItem(META_KEY,JSON.stringify({lastBackupAt:savedAt,build:APP_BUILD,txCount:clean.tx.length}))}catch{}
-    // Keep only the most recent 50 IndexedDB snapshots.
     await new Promise((resolve,reject)=>{
       const tx=idb.transaction('snapshots','readwrite'),store=tx.objectStore('snapshots'),req=store.openCursor(null,'prev');
       let seen=0;
-      req.onsuccess=e=>{const cur=e.target.result;if(!cur)return;if(++seen>50)cur.delete();cur.continue()};
+      req.onsuccess=e=>{const cur=e.target.result;if(!cur)return;if(++seen>VAULT_SNAPSHOT_LIMIT)cur.delete();cur.continue()};
       tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)
     }).catch(()=>{});
-    idb.close()
-  }catch{}
-}
-async function restoreVaultLatestIfPrimaryMissing(){
-  if(readPrimaryState())return false;
-  try{
-    const idb=await openDataVault();
-    const rec=await new Promise((resolve,reject)=>{
-      const tx=idb.transaction('state','readonly'),req=tx.objectStore('state').get('latest');
-      req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error)
-    });
     idb.close();
-    if(rec?.state&&validStateObject(rec.state)){
-      db=norm(rec.state);
-      localStorage.setItem(KEY,JSON.stringify(db));
-      return true
-    }
-  }catch{}
-  return false
+    try{localStorage.setItem(META_KEY,JSON.stringify({lastBackupAt:savedAt,build:APP_BUILD,txCount:clean.tx.length,mode:'indexeddb'}))}catch{}
+    writeLocalMirror(clean,savedAt);
+    return true
+  }catch{return false}
+}
+async function hydrateFromLongTermStorage(){
+  const local=readPrimaryState(),boot=readBootMeta(),vault=await getVaultLatest();
+  if(vault?.state&&validStateObject(vault.state)){
+    const useVault=!local||boot?.idbPrimary||Number(vault.savedAt||0)>=Number(boot?.savedAt||0);
+    if(useVault)db=norm(vault.state);
+    else db=norm(local);
+  }else if(local){
+    db=norm(local);
+  }else{
+    const fallback=readLocalFallback();
+    if(fallback?.state)db=norm(fallback.state)
+  }
+  lastPersistedTxCount=db.tx.length;
+  const ok=await vaultSnapshot(db,'migration-v40');
+  if(ok)cleanupLegacyLocalBackups();
+  return ok
 }
 function currentProtectionStatus(){
   let meta=null;try{meta=JSON.parse(localStorage.getItem(META_KEY)||'null')}catch{}
@@ -386,26 +432,18 @@ function recoverKakeiboData(){
 }
 const primaryAtStartup=readPrimaryState();
 const fallbackAtStartup=primaryAtStartup?null:readLocalFallback();
-const recoveryResult={
-  recovered:fallbackAtStartup?.state?.tx?.length||0,
-  source:primaryAtStartup?'primary':(fallbackAtStartup?.key||'new')
-};
+const recoveryResult={recovered:fallbackAtStartup?.state?.tx?.length||0,source:primaryAtStartup?'primary':(fallbackAtStartup?.key||'new')};
 let db=primaryAtStartup||fallbackAtStartup?.state||def();
-if(!primaryAtStartup&&fallbackAtStartup?.state){
-  try{localStorage.setItem(KEY,JSON.stringify(db))}catch{}
-}
 let view=new Date(),type='expense',edit='';
 let lastPersistedTxCount=db.tx.length;
 const save=(opts={})=>{
-  const prevRaw=localStorage.getItem(KEY),prev=parseStoredState(prevRaw);
-  if(prev&&prev.tx.length>0&&db.tx.length===0&&!opts.allowEmpty){
+  if(lastPersistedTxCount>0&&db.tx.length===0&&!opts.allowEmpty){
     console.error('Blocked unexpected empty-state write');
     return false
   }
-  rotateLocalBackup(prevRaw);
-  localStorage.setItem(KEY,JSON.stringify(db));
-  lastPersistedTxCount=db.tx.length;
-  vaultSnapshot(db,opts.reason||'save');
+  const clean=norm(JSON.parse(JSON.stringify(db)));
+  lastPersistedTxCount=clean.tx.length;
+  vaultSnapshot(clean,opts.reason||'save');
   return true
 },rows=(d=view)=>db.tx.filter(x=>(x.date||'').slice(0,7)===mk(d)),tot=(d=view)=>({inc:rows(d).filter(x=>x.type==='income').reduce((a,x)=>a+Number(x.amount||0),0),exp:rows(d).filter(x=>x.type==='expense').reduce((a,x)=>a+Number(x.amount||0),0)}),budget=(d=view)=>Number(db.overallBudgets[mk(d)]||0),pendingRecurringExpense=(d=view)=>{
   const month=mk(d),currentMonth=mk(new Date());
@@ -785,32 +823,38 @@ $$('.nav button').forEach(b=>b.onclick=()=>{$$('.page').forEach(x=>x.classList.t
 if($('forceUpdate'))$('forceUpdate').onclick=()=>checkAppUpdate(true);
 if($('recoveryStatus')){
   const meta=currentProtectionStatus();
-  $('recoveryStatus').textContent='現在 '+(db.tx?.length||0)+'件を保持中'+(meta?.lastBackupAt?' ・ 最終保護 '+new Date(meta.lastBackupAt).toLocaleString('ja-JP'):'');
+  $('recoveryStatus').textContent='長期保存モード・現在 '+(db.tx?.length||0)+'件'+(meta?.lastBackupAt?' ・ 最終保護 '+new Date(meta.lastBackupAt).toLocaleString('ja-JP'):'');
 }
-if($('snapshotNow'))$('snapshotNow').onclick=()=>{
-  const raw=localStorage.getItem(KEY);
-  if(raw)rotateLocalBackup(raw);
-  vaultSnapshot(db,'manual');
-  try{localStorage.setItem(KEY,JSON.stringify(db))}catch{}
-  $('recoveryStatus').textContent='現在の '+(db.tx?.length||0)+'件をバックアップしました。';
-  toast('現在のデータを保護しました')
+refreshStorageStatus();
+if($('snapshotNow'))$('snapshotNow').onclick=async()=>{
+  const ok=await vaultSnapshot(db,'manual');
+  if($('recoveryStatus'))$('recoveryStatus').textContent=ok?'現在の '+(db.tx?.length||0)+'件を長期保存領域へバックアップしました。':'バックアップに失敗しました。';
+  await refreshStorageStatus();
+  toast(ok?'現在のデータを保護しました':'バックアップに失敗しました')
 };
-if($('recoverData'))$('recoverData').onclick=()=>{
-  const candidate=readLocalFallback();
-  if(!candidate)return toast('復元できる過去データがありません');
-  if(!confirm('過去のバックアップ（'+(candidate.state.tx?.length||0)+'件）へ戻しますか？\n現在のデータは先にバックアップします。'))return;
-  const raw=localStorage.getItem(KEY);if(raw)rotateLocalBackup(raw);vaultSnapshot(db,'before-restore');
+if($('recoverData'))$('recoverData').onclick=async()=>{
+  const candidate=await getLatestVaultSnapshot();
+  if(!candidate?.state)return toast('復元できるバックアップがありません');
+  if(!confirm('直前の安全バックアップ（'+(candidate.state.tx?.length||0)+'件）へ戻しますか？\n現在のデータは先に保護します。'))return;
+  await vaultSnapshot(db,'before-restore');
   db=norm(candidate.state);
-  localStorage.setItem(KEY,JSON.stringify(db));vaultSnapshot(db,'restore');render();
-  $('recoveryStatus').textContent='過去バックアップから '+(db.tx?.length||0)+'件を復元しました。';
+  await vaultSnapshot(db,'restore');
+  refreshCategorySelects();syncSav();render();await refreshStorageStatus();
+  if($('recoveryStatus'))$('recoveryStatus').textContent='安全バックアップから '+(db.tx?.length||0)+'件を復元しました。';
   toast('バックアップから復元しました')
 };
 $('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:'application/json'}));a.download='kakeibo_backup_'+today()+'.json';a.click()};$('import').onchange=async e=>{try{let x=JSON.parse(await e.target.files[0].text());if(!Array.isArray(x.tx))throw 0;if(confirm('現在のデータを置き換えますか？')){db=norm(x);save({allowEmpty:true,reason:'import'});syncSav();render()}}catch{toast('読み込めませんでした')}e.target.value=''};$$('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
-refreshCategorySelects();setCategoryFold(false);
-vaultSnapshot(db,'startup');
-restoreVaultLatestIfPrimaryMissing().then(restored=>{
-  if(restored){refreshCategorySelects();syncSav();render();if($('recoveryStatus'))$('recoveryStatus').textContent='安全バックアップから '+(db.tx?.length||0)+'件を復元しました。'}
-});
-autoRecurring();syncSav();render();
+async function startLongTermApp(){
+  setCategoryFold(false);
+  await hydrateFromLongTermStorage();
+  refreshCategorySelects();
+  autoRecurring();syncSav();render();
+  if($('recoveryStatus')){
+    const meta=currentProtectionStatus();
+    $('recoveryStatus').textContent='長期保存モード・現在 '+(db.tx?.length||0)+'件'+(meta?.lastBackupAt?' ・ 最終保護 '+new Date(meta.lastBackupAt).toLocaleString('ja-JP'):'');
+  }
+  await refreshStorageStatus()
+}
+startLongTermApp();
 })();
 </script></body></html>
