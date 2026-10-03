@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=36">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=37">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -63,6 +63,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 </div>
 </div>
 </div>
+<div class="section"><div class="head"><h2>アプリ更新</h2><span>最新版を確認</span></div><div class="card"><div class="row"><div><b style="font-size:12px">現在のバージョン</b><div class="note" id="appVersion">確認中…</div></div><button class="secondary" id="forceUpdate" type="button">更新</button></div><div class="note" style="margin-top:8px">更新しても家計簿データは消しません。</div></div></div>
 <div class="section"><div class="head"><h2>データ保護</h2><span>自動バックアップ</span></div><div class="card"><div class="note" id="recoveryStatus">現在のデータを保護しています。</div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px"><button class="secondary" id="snapshotNow" type="button">今の状態をバックアップ</button><button class="secondary" id="recoverData" type="button">過去データから復元</button></div><div class="note" style="margin-top:9px">通常は現行データだけを使用します。過去データは自動で混ぜません。</div></div></div>
 <div class="section"><div class="head"><h2>データ</h2><span>バックアップ</span></div><div class="card"><button class="secondary" id="export">バックアップを書き出す</button><label class="secondary" style="display:inline-block;margin-top:8px">バックアップを読み込む<input id="import" type="file" accept="application/json" hidden></label><div class="note" style="margin-top:10px">データはこのブラウザ内に保存されます。</div></div></div></section>
 </div>
@@ -105,29 +106,37 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v36-pwa-auto-update';
+const APP_BUILD='v37-force-update';
 let updateCheckBusy=false;
-async function checkAppUpdate(){
+async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
   updateCheckBusy=true;
   try{
-    const r=await fetch('./version.json?t='+Date.now(),{cache:'no-store'});
+    const r=await fetch('./version.json?t='+Date.now(),{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
     if(r.ok){
       const v=await r.json();
-      if(v?.build&&v.build!==APP_BUILD){
-        const key='kakeibo_reload_'+v.build;
-        if(!sessionStorage.getItem(key)){
-          sessionStorage.setItem(key,'1');
-          location.replace('./?app='+encodeURIComponent(v.build));
-          return;
-        }
+      if(v?.build&&($('appVersion'))) $('appVersion').textContent=APP_BUILD+(v.build!==APP_BUILD?' → '+v.build+' あり':'（最新）');
+      if(force || (v?.build&&v.build!==APP_BUILD)){
+        try{
+          if('serviceWorker' in navigator){
+            const regs=await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(x=>x.unregister()));
+          }
+          if('caches' in window){
+            const ks=await caches.keys();
+            await Promise.all(ks.map(k=>caches.delete(k)));
+          }
+        }catch{}
+        const target='./?fresh='+encodeURIComponent(v?.build||Date.now())+'&t='+Date.now();
+        location.replace(target);
+        return;
       }
     }
   }catch{}
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=36',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=37',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 window.addEventListener('pageshow',()=>checkAppUpdate());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
@@ -599,7 +608,9 @@ $('memo').oninput=renderMemoSuggestions;$('memo').onkeyup=renderMemoSuggestions;
 function setCategoryFold(open){let wrap=$('categorySettingsFold'),body=$('categoryFoldBody'),btn=$('categoryFoldToggle');if(!wrap||!body||!btn)return;wrap.classList.toggle('open',!!open);body.classList.toggle('hide',!open);btn.setAttribute('aria-expanded',open?'true':'false')}
 $('categoryFoldToggle').onclick=()=>setCategoryFold($('categoryFoldBody').classList.contains('hide'));
 $('addExpenseCat').onclick=()=>openCategoryDialog('expense');$('addIncomeCat').onclick=()=>openCategoryDialog('income');$('saveCategory').onclick=()=>{let t=$('categoryType').value,old=$('categoryOriginal').value,name=$('categoryName').value.trim(),ic=$('categoryIcon').value.trim()||'📌';if(!name)return toast('カテゴリ名を入力してください');if(db.categories[t].some(x=>x[0]===name&&x[0]!==old))return toast('同名カテゴリがあります');if(old){let item=db.categories[t].find(x=>x[0]===old);if(item){item[0]=name;item[1]=ic}if(name!==old)replaceCategoryRefs(t,old,name)}else db.categories[t].push([name,ic]);save();refreshCategorySelects();$('categoryDialog').close();render();toast(old?'カテゴリを変更しました':'カテゴリを追加しました')};$('deleteCategory').onclick=()=>{let t=$('categoryType').value,n=$('categoryOriginal').value;$('categoryDialog').close();deleteCategoryNow(t,n)};
-$$('.nav button').forEach(b=>b.onclick=()=>{$$('.page').forEach(x=>x.classList.toggle('on',x.id===b.dataset.p));$$('.nav button').forEach(x=>x.classList.toggle('on',x===b));if(b.dataset.p==='settings')setCategoryFold(false);render()});$('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};$('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};$('addExp').onclick=()=>openEntry('expense');$('addInc').onclick=()=>openEntry('income');$('openBatch').onclick=openBatchEntry;$('addBatchRow').onclick=()=>{syncBatchRowsFromDom();addBatchItem()};$('saveBatch').onclick=saveBatchEntry;$('saveEntry').onclick=()=>{let a=Number($('amount').value),d=$('date').value;if(!(a>0)||!d)return toast('金額と日付を入力してください');let o={type,amount:a,date:d,category:$('cat').value,memo:$('memo').value.trim(),createdAt:Date.now()};if(edit){let i=db.tx.findIndex(x=>x.id===edit);db.tx[i]={...db.tx[i],...o}}else db.tx.push({id:uid(),...o});save();$('entry').close();render();toast('登録しました')};$('deleteEntry').onclick=()=>{if(edit&&confirm('削除しますか？')){db.tx=db.tx.filter(x=>x.id!==edit);save();$('entry').close();render()}};$('q').oninput=renderHist;$('qcat').onchange=renderHist;$('catClear').onclick=()=>{$('qcat').value='';$('q').value='';renderHist()};$('saveBudget').onclick=()=>{db.overallBudgets[mk(view)]=Number($('budget').value||0);save();render();toast('予算を保存しました')};$('autoSav').onclick=()=>{db.settings.autoSavings=!db.settings.autoSavings;save();syncSav();render()};$('addRecurring').onclick=()=>openRecurring();$('recType').onchange=fillRecCats;$('recAuto').onclick=()=>$('recAuto').classList.toggle('on');$('saveRec').onclick=()=>{let id=$('recurring').dataset.id,name=$('recName').value.trim(),amount=Number($('recAmount').value),day=Number($('recDay').value),rt=$('recType').value;if(!name||!(amount>0))return toast('名前と金額を入力してください');let obj={id:id||uid(),type:rt,amount,name,day,category:$('recCat').value,autoPost:$('recAuto').classList.contains('on'),active:id?(db.recurring.find(x=>x.id===id)?.active!==false):true,freq:'monthly'};let i=db.recurring.findIndex(x=>x.id===obj.id);if(i>=0)db.recurring[i]={...db.recurring[i],...obj};else db.recurring.push(obj);save();autoRecurring();$('recurring').close();render();toast('固定収支を保存しました')};$('receiptFile').onchange=e=>{let f=e.target.files[0];if(f)analyze(f);e.target.value=''};$('addReceiptRow').onclick=()=>{syncReceiptRowsFromDom();receiptRowsData.push({id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]});renderReceiptRows()};$('saveReceipt').onclick=saveReceiptEntries;if($('recoveryStatus')){
+$$('.nav button').forEach(b=>b.onclick=()=>{$$('.page').forEach(x=>x.classList.toggle('on',x.id===b.dataset.p));$$('.nav button').forEach(x=>x.classList.toggle('on',x===b));if(b.dataset.p==='settings')setCategoryFold(false);render()});$('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};$('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};$('addExp').onclick=()=>openEntry('expense');$('addInc').onclick=()=>openEntry('income');$('openBatch').onclick=openBatchEntry;$('addBatchRow').onclick=()=>{syncBatchRowsFromDom();addBatchItem()};$('saveBatch').onclick=saveBatchEntry;$('saveEntry').onclick=()=>{let a=Number($('amount').value),d=$('date').value;if(!(a>0)||!d)return toast('金額と日付を入力してください');let o={type,amount:a,date:d,category:$('cat').value,memo:$('memo').value.trim(),createdAt:Date.now()};if(edit){let i=db.tx.findIndex(x=>x.id===edit);db.tx[i]={...db.tx[i],...o}}else db.tx.push({id:uid(),...o});save();$('entry').close();render();toast('登録しました')};$('deleteEntry').onclick=()=>{if(edit&&confirm('削除しますか？')){db.tx=db.tx.filter(x=>x.id!==edit);save();$('entry').close();render()}};$('q').oninput=renderHist;$('qcat').onchange=renderHist;$('catClear').onclick=()=>{$('qcat').value='';$('q').value='';renderHist()};$('saveBudget').onclick=()=>{db.overallBudgets[mk(view)]=Number($('budget').value||0);save();render();toast('予算を保存しました')};$('autoSav').onclick=()=>{db.settings.autoSavings=!db.settings.autoSavings;save();syncSav();render()};$('addRecurring').onclick=()=>openRecurring();$('recType').onchange=fillRecCats;$('recAuto').onclick=()=>$('recAuto').classList.toggle('on');$('saveRec').onclick=()=>{let id=$('recurring').dataset.id,name=$('recName').value.trim(),amount=Number($('recAmount').value),day=Number($('recDay').value),rt=$('recType').value;if(!name||!(amount>0))return toast('名前と金額を入力してください');let obj={id:id||uid(),type:rt,amount,name,day,category:$('recCat').value,autoPost:$('recAuto').classList.contains('on'),active:id?(db.recurring.find(x=>x.id===id)?.active!==false):true,freq:'monthly'};let i=db.recurring.findIndex(x=>x.id===obj.id);if(i>=0)db.recurring[i]={...db.recurring[i],...obj};else db.recurring.push(obj);save();autoRecurring();$('recurring').close();render();toast('固定収支を保存しました')};$('receiptFile').onchange=e=>{let f=e.target.files[0];if(f)analyze(f);e.target.value=''};$('addReceiptRow').onclick=()=>{syncReceiptRowsFromDom();receiptRowsData.push({id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]});renderReceiptRows()};$('saveReceipt').onclick=saveReceiptEntries;if($('appVersion'))$('appVersion').textContent=APP_BUILD;
+if($('forceUpdate'))$('forceUpdate').onclick=()=>checkAppUpdate(true);
+if($('recoveryStatus')){
   const meta=currentProtectionStatus();
   $('recoveryStatus').textContent='現在 '+(db.tx?.length||0)+'件を保持中'+(meta?.lastBackupAt?' ・ 最終保護 '+new Date(meta.lastBackupAt).toLocaleString('ja-JP'):'');
 }
