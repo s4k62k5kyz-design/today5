@@ -94,10 +94,11 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
 .vertical .rname{position:absolute;left:5mm;top:14mm;height:82mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:7mm;letter-spacing:.4mm;white-space:nowrap;font-weight:650}
 .horizontal .raddr{position:absolute;left:0;top:0;width:52mm;font-size:3.7mm;line-height:1.45;white-space:pre-wrap}
 .horizontal .rname{position:absolute;left:0;top:33mm;width:52mm;font-size:6mm;font-weight:650;white-space:pre-wrap}
-.sender{position:absolute;left:0;top:0;transform:translate(var(--sender-x),var(--sender-y));width:42mm;height:8mm;cursor:move;user-select:none;overflow:visible}
+.sender{position:absolute;left:0;top:0;transform:translate(var(--sender-x),var(--sender-y));width:41.2mm;height:8mm;cursor:move;user-select:none;overflow:visible}
 .szip-digits{position:absolute;left:0;top:0;display:flex;gap:.8mm;height:8mm}
-.sender-address{position:absolute;left:27mm;bottom:9mm;width:14mm;height:25mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:3.1mm;line-height:1.35;white-space:pre-wrap}
-.sender-name{position:absolute;left:12mm;bottom:9mm;width:10mm;height:23mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:3.8mm;font-weight:650;white-space:nowrap}
+.sender-address{position:absolute;left:27mm;bottom:9.2mm;max-height:34mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:3.15mm;line-height:1.28;white-space:pre-line;font-weight:500}
+.sender-name{position:absolute;left:8mm;bottom:9.2mm;display:flex;flex-direction:row-reverse;gap:1.2mm;align-items:flex-end}
+.sender-name .name-part{writing-mode:vertical-rl;text-orientation:mixed;font-size:4mm;line-height:1;white-space:nowrap;font-weight:700}
 .a4{width:297mm!important;height:210mm!important;background:#fff!important}
 .a4 .a4frame{position:absolute;left:10mm;top:4.5mm;width:277mm;height:201mm;border:.3mm solid #333}
 .a4 .canvas{left:10mm;top:4.5mm;width:277mm;height:201mm;inset:auto}
@@ -139,7 +140,7 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
       <h1>ミニレター宛名プリンター</h1>
       <div class="sub">開いたミニレター（201×277mm）の外側を実物に近い位置関係で再現し、宛名・差出人だけを重ねて印刷します。</div>
     </div>
-    <div class="badge">実物位置合わせ版 v3</div>
+    <div class="badge">実物位置合わせ版 v4</div>
   </div>
 
   <div class="notice"><b>重要：</b>画面の青・赤の線は位置合わせ用ガイドです。本体印刷ではガイドは印刷せず、宛名・郵便番号・差出人だけを出します。最初は「A4実寸テスト」を100%で印刷し、開いたミニレターを上から重ねて郵便番号枠が合うことを確認してください。</div>
@@ -172,7 +173,7 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
 
       <h2>微調整</h2>
       <div class="section">
-        <div class="mini">裏面の差出人欄は、郵便番号のすぐ上に住所を縦書き、その左側に氏名を縦書きで配置しています。実物差や給紙ズレはドラッグまたはmm単位で調整できます。</div>
+        <div class="mini">参考画像に合わせ、裏面の郵便番号枠を基準に、そのすぐ上の右側へ住所、左側へ氏名を縦書きで配置しています。氏名は「姓 名」と入力すると2列に分かれます。</div>
         <div class="row" style="margin-top:9px">
           <div><label>宛名 X (mm)</label><input id="rx" type="number" step=".5" value="39"></div>
           <div><label>宛名 Y (mm)</label><input id="ry" type="number" step=".5" value="54"></div>
@@ -308,7 +309,28 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
     sender.classList.toggle("hidden",!$("senderOn").checked);
     renderDigits($("szipDigits"),$("szipIn").value);
     $("saddrOut").textContent=$("saddrIn").value;
-    $("snameOut").textContent=$("snameIn").value;
+    (function(){
+      var box=$("snameOut");
+      var raw=$("snameIn").value.trim();
+      box.innerHTML="";
+      if(!raw)return;
+      var parts=raw.split(/[\s　]+/).filter(Boolean);
+      if(parts.length===1){
+        var one=document.createElement("span");
+        one.className="name-part";
+        one.textContent=parts[0];
+        box.appendChild(one);
+      }else{
+        var family=document.createElement("span");
+        family.className="name-part";
+        family.textContent=parts.shift();
+        var given=document.createElement("span");
+        given.className="name-part";
+        given.textContent=parts.join("");
+        box.appendChild(family);
+        box.appendChild(given);
+      }
+    })();
 
     root.setProperty("--addr-x",+$("rx").value+"mm");
     root.setProperty("--addr-y",+$("ry").value+"mm");
@@ -391,12 +413,12 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
   $("save").onclick=function(){
     var o={};
     ids.forEach(function(id){o[id]=$(id).type==="checkbox"?$(id).checked:$(id).value});
-    localStorage.setItem("miniLetterPrinterV3",JSON.stringify(o));
+    localStorage.setItem("miniLetterPrinterV4",JSON.stringify(o));
     $("status").textContent="この端末に位置設定を保存しました。";
     setTimeout(function(){$("status").textContent=""},2200);
   };
   try{
-    var o=JSON.parse(localStorage.getItem("miniLetterPrinterV3")||"null");
+    var o=JSON.parse(localStorage.getItem("miniLetterPrinterV4")||"null");
     if(o)ids.forEach(function(id){
       if(o[id]!==undefined){
         if($(id).type==="checkbox")$(id).checked=!!o[id]; else $(id).value=o[id];
