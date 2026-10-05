@@ -96,9 +96,12 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
 .horizontal .rname{position:absolute;left:0;top:33mm;width:52mm;font-size:6mm;font-weight:650;white-space:pre-wrap}
 .sender{position:absolute;left:0;top:0;transform:translate(var(--sender-x),var(--sender-y));width:41.2mm;height:8mm;cursor:move;user-select:none;overflow:visible}
 .szip-digits{position:absolute;left:0;top:0;display:flex;gap:.8mm;height:8mm}
-.sender-address{position:absolute;left:27mm;bottom:9.2mm;max-height:34mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:3.15mm;line-height:1.28;white-space:pre-line;font-weight:500}
-.sender-name{position:absolute;left:8mm;bottom:9.2mm;display:flex;flex-direction:row-reverse;gap:1.2mm;align-items:flex-end}
-.sender-name .name-part{writing-mode:vertical-rl;text-orientation:mixed;font-size:4mm;line-height:1;white-space:nowrap;font-weight:700}
+.sender-address{position:absolute;left:25mm;bottom:9.2mm;display:flex;flex-direction:row-reverse;gap:1.1mm;align-items:flex-end}
+.sender-address .vcol{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:.1mm}
+.sender-address .vchar{display:block;font-size:3.15mm;line-height:3.65mm;font-weight:500;white-space:nowrap}
+.sender-name{position:absolute;left:7mm;bottom:9.2mm;display:flex;flex-direction:row;gap:1.2mm;align-items:flex-end}
+.sender-name .vcol{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:.15mm}
+.sender-name .vchar{display:block;font-size:4mm;line-height:4.4mm;font-weight:700;white-space:nowrap}
 .a4{width:297mm!important;height:210mm!important;background:#fff!important}
 .a4 .a4frame{position:absolute;left:10mm;top:4.5mm;width:277mm;height:201mm;border:.3mm solid #333}
 .a4 .canvas{left:10mm;top:4.5mm;width:277mm;height:201mm;inset:auto}
@@ -140,7 +143,7 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
       <h1>ミニレター宛名プリンター</h1>
       <div class="sub">開いたミニレター（201×277mm）の外側を実物に近い位置関係で再現し、宛名・差出人だけを重ねて印刷します。</div>
     </div>
-    <div class="badge">実物位置合わせ版 v4</div>
+    <div class="badge">実物位置合わせ版 v5</div>
   </div>
 
   <div class="notice"><b>重要：</b>画面の青・赤の線は位置合わせ用ガイドです。本体印刷ではガイドは印刷せず、宛名・郵便番号・差出人だけを出します。最初は「A4実寸テスト」を100%で印刷し、開いたミニレターを上から重ねて郵便番号枠が合うことを確認してください。</div>
@@ -173,7 +176,7 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
 
       <h2>微調整</h2>
       <div class="section">
-        <div class="mini">参考画像に合わせ、裏面の郵便番号枠を基準に、そのすぐ上の右側へ住所、左側へ氏名を縦書きで配置しています。氏名は「姓 名」と入力すると2列に分かれます。</div>
+        <div class="mini">参考画像に合わせ、裏面の郵便番号枠のすぐ上へ住所、その左へ氏名を配置します。縦書きは1文字ずつ積んで描画するため、ブラウザで横書きに崩れません。氏名は「姓 名」と入力すると2列になります。</div>
         <div class="row" style="margin-top:9px">
           <div><label>宛名 X (mm)</label><input id="rx" type="number" step=".5" value="39"></div>
           <div><label>宛名 Y (mm)</label><input id="ry" type="number" step=".5" value="54"></div>
@@ -308,27 +311,40 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
     $("senderFields").classList.toggle("hidden",!$("senderOn").checked);
     sender.classList.toggle("hidden",!$("senderOn").checked);
     renderDigits($("szipDigits"),$("szipIn").value);
-    $("saddrOut").textContent=$("saddrIn").value;
     (function(){
-      var box=$("snameOut");
+      function makeVerticalColumn(text){
+        var col=document.createElement("span");
+        col.className="vcol";
+        Array.from(text).forEach(function(ch){
+          var c=document.createElement("span");
+          c.className="vchar";
+          c.textContent=ch;
+          col.appendChild(c);
+        });
+        return col;
+      }
+
+      var addrBox=$("saddrOut");
+      var addr=$("saddrIn").value.replace(/[\r\n]+/g,"").trim();
+      addrBox.innerHTML="";
+      if(addr){
+        var maxChars=15;
+        var chunks=[];
+        for(var i=0;i<addr.length;i+=maxChars)chunks.push(addr.slice(i,i+maxChars));
+        chunks.forEach(function(chunk){addrBox.appendChild(makeVerticalColumn(chunk));});
+      }
+
+      var nameBox=$("snameOut");
       var raw=$("snameIn").value.trim();
-      box.innerHTML="";
-      if(!raw)return;
-      var parts=raw.split(/[\s　]+/).filter(Boolean);
-      if(parts.length===1){
-        var one=document.createElement("span");
-        one.className="name-part";
-        one.textContent=parts[0];
-        box.appendChild(one);
-      }else{
-        var family=document.createElement("span");
-        family.className="name-part";
-        family.textContent=parts.shift();
-        var given=document.createElement("span");
-        given.className="name-part";
-        given.textContent=parts.join("");
-        box.appendChild(family);
-        box.appendChild(given);
+      nameBox.innerHTML="";
+      if(raw){
+        var parts=raw.split(/[\s　]+/).filter(Boolean);
+        if(parts.length===1){
+          nameBox.appendChild(makeVerticalColumn(parts[0]));
+        }else{
+          nameBox.appendChild(makeVerticalColumn(parts[0]));
+          nameBox.appendChild(makeVerticalColumn(parts.slice(1).join("")));
+        }
       }
     })();
 
@@ -413,12 +429,12 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
   $("save").onclick=function(){
     var o={};
     ids.forEach(function(id){o[id]=$(id).type==="checkbox"?$(id).checked:$(id).value});
-    localStorage.setItem("miniLetterPrinterV4",JSON.stringify(o));
+    localStorage.setItem("miniLetterPrinterV5",JSON.stringify(o));
     $("status").textContent="この端末に位置設定を保存しました。";
     setTimeout(function(){$("status").textContent=""},2200);
   };
   try{
-    var o=JSON.parse(localStorage.getItem("miniLetterPrinterV4")||"null");
+    var o=JSON.parse(localStorage.getItem("miniLetterPrinterV5")||"null");
     if(o)ids.forEach(function(id){
       if(o[id]!==undefined){
         if($(id).type==="checkbox")$(id).checked=!!o[id]; else $(id).value=o[id];
