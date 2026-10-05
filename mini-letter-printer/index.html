@@ -5,82 +5,405 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>ミニレター宛名プリンター</title>
 <style>
-:root{--pw:277mm;--ph:201mm;--mainTop:18mm;--panelW:92mm;--mainH:165mm;--rx:26mm;--ry:50mm;--sx:101mm;--sy:130mm}
-*{box-sizing:border-box}html,body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif}body{min-height:100vh}button,input,textarea,select{font:inherit}.app{max-width:1180px;margin:auto;padding:18px}.hero{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}h1{font-size:clamp(21px,3vw,30px);margin:0 0 5px}.sub{font-size:13px;color:#5e6872;line-height:1.55}.badge{background:#eaf4ff;border:1px solid #b9d4ee;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:700;color:#245d87;white-space:nowrap}.notice{background:#fff7df;border:1px solid #ead39a;border-radius:13px;padding:12px 14px;font-size:13px;line-height:1.55;margin-bottom:14px}.grid{display:grid;grid-template-columns:390px minmax(0,1fr);gap:16px;align-items:start}.panel{background:#fff;border:1px solid #e2e6ea;border-radius:16px;box-shadow:0 6px 22px rgba(0,0,0,.05);overflow:hidden}.panel h2{font-size:15px;margin:0;padding:13px 15px;border-bottom:1px solid #eef0f2;background:#fafbfc}.section{padding:13px 15px;border-bottom:1px solid #eef0f2}.section:last-child{border-bottom:0}label{display:block;font-size:12px;color:#57616b;margin:0 0 5px;font-weight:650}input,textarea,select{width:100%;border:1px solid #d8dde2;border-radius:9px;padding:9px 10px;background:#fff;outline:none}textarea{min-height:58px;resize:vertical}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.switch{display:flex;align-items:center;gap:8px;font-size:13px}.switch input{width:auto}.mini{font-size:11px;color:#6c7680;line-height:1.5;margin-top:6px}.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:pointer}.primary{background:#1f6fae;color:#fff}.secondary{background:#edf2f6;color:#27323c}.mode{background:#eef2f5;color:#34404a;padding:8px 11px;font-size:12px}.mode.active{background:#243442;color:white}.preview{padding:14px}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}.toolbar .left{display:flex;gap:8px;flex-wrap:wrap}.viewport{overflow:auto;background:#dfe4e8;border-radius:12px;padding:18px;min-height:500px;display:flex;justify-content:center}.scale{transform-origin:top left}#paper{position:relative;width:var(--pw);height:var(--ph);background:transparent;box-shadow:0 3px 18px rgba(0,0,0,.18);overflow:visible;flex:none}.sheet{position:absolute;left:0;top:var(--mainTop);width:277mm;height:165mm;background:#fff}.topFlap,.bottomFlap{position:absolute;left:0;width:92mm;height:18mm;background:#fff}.topFlap{top:0;clip-path:polygon(12% 100%,18% 15%,82% 15%,100% 100%)}.bottomFlap{bottom:0;clip-path:polygon(0 0,100% 0,82% 85%,18% 85%)}.sideFlap{position:absolute;left:0;top:18mm;width:9mm;height:165mm;background:#fff;clip-path:polygon(0 8%,100% 0,100% 100%,0 92%)}.fold{position:absolute;top:18mm;height:165mm;border-left:1px dashed #8fb0c8;pointer-events:none}.f1{left:92mm}.f2{left:184mm}.panelMark{position:absolute;top:18mm;height:165mm;border:1px dashed rgba(73,122,156,.42);pointer-events:none}.p1{left:0;width:92mm}.p2{left:92mm;width:92mm}.p3{left:184mm;width:93mm}.panelMark span{position:absolute;left:3mm;bottom:2mm;font-size:3mm;color:#6f8ba0}.stamp{position:absolute;left:8mm;top:27mm;width:18mm;height:22mm;border:1px dashed #8ba8ba;color:#7d96a7;font-size:3mm;display:flex;align-items:center;justify-content:center;text-align:center}.zipFront{position:absolute;left:43mm;top:29mm;width:42mm;height:8mm;border:1px dashed #cf9d9d;color:#ac7e7e;font-size:3mm;display:flex;align-items:center;justify-content:center}.zipBack{position:absolute;left:99mm;top:145mm;width:38mm;height:7mm;border:1px dashed #cf9d9d;color:#ac7e7e;font-size:2.8mm;display:flex;align-items:center;justify-content:center}.guideText{position:absolute;left:96mm;top:26mm;font-size:3mm;color:#7d96a7}.recipient,.sender{position:absolute;left:0;top:0;cursor:move;user-select:none;outline:1px dashed rgba(49,106,152,.35);outline-offset:2mm}.recipient{transform:translate(var(--rx),var(--ry));width:55mm;height:112mm}.sender{transform:translate(var(--sx),var(--sy));width:70mm;height:38mm;font-size:3.1mm;line-height:1.45;white-space:pre-wrap}.rzip{position:absolute;left:15mm;top:-19mm;font-size:4mm;letter-spacing:.7mm;white-space:nowrap}.vertical .raddr{position:absolute;right:0;top:0;height:92mm;max-width:21mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:4.1mm;line-height:1.45;white-space:pre-wrap}.vertical .rname{position:absolute;left:6mm;top:14mm;height:84mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:7mm;letter-spacing:.4mm;white-space:nowrap;font-weight:650}.horizontal .raddr{position:absolute;left:0;top:0;width:55mm;font-size:3.7mm;line-height:1.45;white-space:pre-wrap}.horizontal .rname{position:absolute;left:0;top:34mm;width:55mm;font-size:6mm;font-weight:650;white-space:pre-wrap}.sender .szip{font-size:3mm;letter-spacing:.35mm;margin-bottom:1mm}.sender .sname{font-size:3.5mm;font-weight:650;margin-top:1mm}.hidden{display:none!important}.a4{width:297mm!important;height:210mm!important;background:#fff!important}.a4 .a4frame{position:absolute;left:10mm;top:4.5mm;width:277mm;height:201mm;border:1px solid #222}.a4 .canvas{position:absolute;left:10mm;top:4.5mm;width:277mm;height:201mm}.tip{font-size:12px;color:#59636d;line-height:1.55;margin-top:8px}.status{font-size:12px;color:#337047;min-height:18px;margin-top:8px}
-@media(max-width:930px){.grid{grid-template-columns:1fr}.hero{display:block}.badge{display:inline-block;margin-top:8px}.viewport{min-height:380px}}
-@media print{html,body{margin:0!important;background:#fff!important}.app>*:not(.grid),.controls,.toolbar{display:none!important}.grid{display:block!important}.preview{padding:0!important;border:0!important;box-shadow:none!important}.viewport{padding:0!important;background:#fff!important;overflow:visible!important;min-height:0!important}.scale{transform:none!important}#paper{box-shadow:none!important;margin:0!important}.recipient,.sender{outline:none!important}.printclean .fold,.printclean .panelMark,.printclean .stamp,.printclean .zipFront,.printclean .zipBack,.printclean .guideText,.printclean .topFlap,.printclean .bottomFlap,.printclean .sideFlap,.printclean .sheet{background:transparent!important;border-color:transparent!important;color:transparent!important}.printclean .topFlap,.printclean .bottomFlap,.printclean .sideFlap{display:none!important}.printclean .sheet{display:none!important}.printclean.a4 .a4frame{display:none!important}}
+:root{
+  --paper-w:277mm; --paper-h:201mm;
+  --body-top:18mm; --body-h:165mm;
+  --glue-w:9mm; --front-x:9mm; --front-w:92mm;
+  --back-x:101mm; --back-w:92mm; --letter-x:193mm; --letter-w:84mm;
+  --addr-x:39mm; --addr-y:54mm;
+  --sender-x:108mm; --sender-y:150mm;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:#f4f6f8;color:#17202a;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif}
+body{min-height:100vh}
+button,input,textarea,select{font:inherit}
+.app{max-width:1200px;margin:auto;padding:18px}
+.hero{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+h1{font-size:clamp(21px,3vw,30px);margin:0 0 5px}
+.sub{font-size:13px;color:#5f6973;line-height:1.55}
+.badge{background:#eaf4ff;border:1px solid #bdd6ec;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:700;color:#245d87;white-space:nowrap}
+.notice{background:#fff7df;border:1px solid #ead39a;border-radius:13px;padding:12px 14px;font-size:13px;line-height:1.58;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:390px minmax(0,1fr);gap:16px;align-items:start}
+.panel{background:#fff;border:1px solid #e2e6ea;border-radius:16px;box-shadow:0 6px 22px rgba(0,0,0,.05);overflow:hidden}
+.panel h2{font-size:15px;margin:0;padding:13px 15px;border-bottom:1px solid #eef0f2;background:#fafbfc}
+.section{padding:13px 15px;border-bottom:1px solid #eef0f2}
+.section:last-child{border-bottom:0}
+label{display:block;font-size:12px;color:#57616b;margin:0 0 5px;font-weight:650}
+input,textarea,select{width:100%;border:1px solid #d8dde2;border-radius:9px;padding:9px 10px;background:#fff;outline:none}
+textarea{min-height:58px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:#7f9db7;box-shadow:0 0 0 3px rgba(95,135,170,.12)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.switch{display:flex;align-items:center;gap:8px;font-size:13px}
+.switch input{width:auto}
+.mini{font-size:11px;color:#6c7680;line-height:1.5;margin-top:6px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:pointer}
+.primary{background:#1f6fae;color:#fff}
+.secondary,.mode{background:#edf2f6;color:#27323c}
+.mode{padding:8px 11px;font-size:12px}
+.mode.active{background:#243442;color:#fff}
+.status{font-size:12px;color:#337047;min-height:18px;margin-top:8px}
+.preview{padding:14px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}
+.toolbar .left{display:flex;gap:8px;flex-wrap:wrap}
+.viewport{overflow:auto;background:#dfe4e8;border-radius:12px;padding:18px;min-height:520px;display:flex;justify-content:center}
+.scale{transform-origin:top left}
+#paper{position:relative;width:var(--paper-w);height:var(--paper-h);background:transparent;box-shadow:0 3px 18px rgba(0,0,0,.18);overflow:visible;flex:none}
+.canvas{position:absolute;inset:0}
+.paper-body{position:absolute;left:0;top:var(--body-top);width:277mm;height:var(--body-h);background:#fff}
+.top-flap,.bottom-flap{position:absolute;left:var(--front-x);width:var(--front-w);height:18mm;background:#fff}
+.top-flap{top:0;clip-path:polygon(8% 100%,14% 12%,86% 12%,94% 100%)}
+.bottom-flap{top:183mm;clip-path:polygon(6% 0,94% 0,86% 88%,14% 88%)}
+.left-glue{position:absolute;left:0;top:var(--body-top);width:var(--glue-w);height:var(--body-h);background:#fff;clip-path:polygon(0 8%,100% 0,100% 100%,0 92%)}
+.fold{position:absolute;top:var(--body-top);height:var(--body-h);border-left:.35mm solid #8eb4cc;opacity:.9}
+.fold1{left:var(--front-x)}
+.fold2{left:var(--back-x)}
+.fold3{left:var(--letter-x)}
+.panel-outline{position:absolute;top:var(--body-top);height:var(--body-h);border:.25mm solid rgba(116,166,197,.55);pointer-events:none}
+.front-panel{left:var(--front-x);width:var(--front-w)}
+.back-panel{left:var(--back-x);width:var(--back-w)}
+.letter-panel{left:var(--letter-x);width:var(--letter-w)}
+.panel-label{position:absolute;left:2.4mm;bottom:2mm;font-size:2.7mm;color:#6f90a5}
+.blue{color:#6799b8}
+.printed{position:absolute;color:#6fa0bd;font-size:2.4mm;line-height:1.25}
+.fold-note-top{left:32mm;top:9mm;letter-spacing:.2mm}
+.fold-note-left{left:1.2mm;top:82mm;writing-mode:vertical-rl}
+.fold-note-front-r{left:96.2mm;top:79mm;writing-mode:vertical-rl}
+.fold-note-bottom{left:35mm;top:190mm}
+.fold-note-mid{left:169mm;top:30mm;writing-mode:vertical-rl;height:102mm}
+.right-note{left:202mm;top:27mm;font-size:2.2mm}
+.stamp-guide{position:absolute;left:18mm;top:29mm;width:18mm;height:22mm;border:.35mm solid #6d9db8;color:#5f94b4;background:#eef7fb;display:flex;align-items:center;justify-content:center;text-align:center;font-size:3mm;font-weight:700}
+.stamp-guide small{display:block;font-size:2.2mm;font-weight:500}
+.front-title{position:absolute;left:48mm;top:29mm;font-size:3.2mm;letter-spacing:1mm;color:#6499ba;font-weight:650}
+.postal-frame{position:absolute;height:8mm;display:flex;gap:.8mm;align-items:stretch}
+.postal-frame.front{left:47mm;top:36mm}
+.postal-frame.sender-frame{left:108mm;top:149mm}
+.postal-box{width:5.2mm;border:.35mm solid #d98989;background:rgba(255,255,255,.7)}
+.sender-caption{position:absolute;left:108mm;top:158.5mm;color:#6d9db8;font-size:2.5mm}
+.stripe{position:absolute;background:repeating-linear-gradient(45deg,rgba(110,160,190,.12) 0,rgba(110,160,190,.12) 1.3mm,rgba(110,160,190,.02) 1.3mm,rgba(110,160,190,.02) 2.6mm)}
+.stripe-left-top{left:0;top:18mm;width:9mm;height:18mm;clip-path:polygon(0 0,100% 0,100% 100%,0 55%)}
+.stripe-left-bottom{left:0;top:165mm;width:9mm;height:18mm;clip-path:polygon(0 45%,100% 0,100% 100%,0 100%)}
+.stripe-mid-bottom{left:101mm;top:163mm;width:92mm;height:20mm}
+.vertical-divider-note{position:absolute;left:188mm;top:36mm;height:118mm;border-left:.35mm dashed #7fa8c1}
+.letter-lines{position:absolute;left:202mm;top:28mm;width:65mm;height:133mm;display:flex;justify-content:space-between;pointer-events:none}
+.letter-lines i{display:block;height:100%;border-left:.22mm solid rgba(105,155,185,.35)}
+.recipient{position:absolute;left:0;top:0;transform:translate(var(--addr-x),var(--addr-y));width:52mm;height:108mm;cursor:move;user-select:none;outline:1px dashed rgba(49,106,152,.35);outline-offset:1.5mm}
+.rzip-digits{position:absolute;left:8mm;top:-18.1mm;display:flex;gap:.8mm;height:8mm}
+.rzip-digits span,.szip-digits span{width:5.2mm;display:flex;align-items:center;justify-content:center;font-size:4.2mm;font-weight:600;color:#17202a}
+.vertical .raddr{position:absolute;right:0;top:0;height:89mm;max-width:20mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:4mm;line-height:1.45;white-space:pre-wrap}
+.vertical .rname{position:absolute;left:5mm;top:14mm;height:82mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:7mm;letter-spacing:.4mm;white-space:nowrap;font-weight:650}
+.horizontal .raddr{position:absolute;left:0;top:0;width:52mm;font-size:3.7mm;line-height:1.45;white-space:pre-wrap}
+.horizontal .rname{position:absolute;left:0;top:33mm;width:52mm;font-size:6mm;font-weight:650;white-space:pre-wrap}
+.sender{position:absolute;left:0;top:0;transform:translate(var(--sender-x),var(--sender-y));width:70mm;height:29mm;cursor:move;user-select:none;outline:1px dashed rgba(49,106,152,.35);outline-offset:1.5mm}
+.szip-digits{position:absolute;left:0;top:0;display:flex;gap:.8mm;height:8mm}
+.sender-address{position:absolute;left:0;top:9.5mm;width:68mm;font-size:3mm;line-height:1.35;white-space:pre-wrap}
+.sender-name{position:absolute;left:0;top:19mm;width:68mm;font-size:3.4mm;font-weight:650}
+.a4{width:297mm!important;height:210mm!important;background:#fff!important}
+.a4 .a4frame{position:absolute;left:10mm;top:4.5mm;width:277mm;height:201mm;border:.3mm solid #333}
+.a4 .canvas{left:10mm;top:4.5mm;width:277mm;height:201mm;inset:auto}
+.hidden{display:none!important}
+.tip{font-size:12px;color:#59636d;line-height:1.55;margin-top:8px}
+@media(max-width:930px){.grid{grid-template-columns:1fr}.hero{display:block}.badge{display:inline-block;margin-top:8px}.viewport{min-height:390px}}
+@media print{
+  html,body{margin:0!important;background:#fff!important}
+  .app>*:not(.grid),.controls,.toolbar{display:none!important}
+  .grid{display:block!important}
+  .preview{padding:0!important;border:0!important;box-shadow:none!important}
+  .viewport{padding:0!important;background:#fff!important;overflow:visible!important;min-height:0!important}
+  .scale{transform:none!important}
+  #paper{box-shadow:none!important;margin:0!important}
+  .recipient,.sender{outline:none!important}
+  .print-letters-only .paper-body,
+  .print-letters-only .top-flap,
+  .print-letters-only .bottom-flap,
+  .print-letters-only .left-glue,
+  .print-letters-only .fold,
+  .print-letters-only .panel-outline,
+  .print-letters-only .printed,
+  .print-letters-only .stamp-guide,
+  .print-letters-only .front-title,
+  .print-letters-only .postal-frame,
+  .print-letters-only .sender-caption,
+  .print-letters-only .stripe,
+  .print-letters-only .vertical-divider-note,
+  .print-letters-only .letter-lines{display:none!important}
+  .print-letters-only.a4 .a4frame{display:none!important}
+}
 </style>
 <style id="pageStyle">@page{size:277mm 201mm;margin:0}</style>
 </head>
 <body>
 <div class="app">
-<div class="hero"><div><h1>ミニレター宛名プリンター</h1><div class="sub">未折りのミニレター外側に、宛名と差出人を同じ面へ一度で印刷します。</div></div><div class="badge">開いた状態・外側印刷</div></div>
-<div class="notice"><b>今回の修正：</b>開いたミニレターは左から「宛名面 → 折った後の裏面 → 便箋部分」です。差出人は中央パネルの左下に配置します。まずA4実寸テストで実物を重ね、位置を合わせてから本体へ印刷してください。</div>
-<div class="grid">
-<div class="panel controls">
-<h2>宛先</h2><div class="section">
-<label>郵便番号</label><input id="rzipIn" placeholder="1234567" maxlength="8">
-<label style="margin-top:9px">住所</label><textarea id="raddrIn" placeholder="東京都〇〇区…&#10;〇〇マンション101"></textarea>
-<div class="row" style="margin-top:9px"><div><label>宛名</label><input id="rnameIn" placeholder="山田 太郎"></div><div><label>敬称</label><select id="honor"><option>様</option><option>御中</option><option>先生</option><option value="">なし</option></select></div></div>
-<div class="row" style="margin-top:9px"><div><label>表記</label><select id="orientation"><option value="vertical">縦書き</option><option value="horizontal">横書き</option></select></div><div><label>宛名サイズ(mm)</label><input id="nameSize" type="number" value="7" min="4" max="12" step=".5"></div></div>
-</div>
-<h2>差出人（中央パネル左下）</h2><div class="section">
-<label class="switch"><input id="senderOn" type="checkbox" checked> 差出人も印刷する</label>
-<div id="senderFields" style="margin-top:9px"><input id="szipIn" placeholder="〒123-4567"><textarea id="saddrIn" placeholder="住所" style="margin-top:7px"></textarea><input id="snameIn" placeholder="氏名" style="margin-top:7px"></div>
-</div>
-<h2>位置調整</h2><div class="section">
-<div class="mini">文字ブロックはプレビュー上でドラッグできます。</div>
-<div class="row" style="margin-top:9px"><div><label>宛名 X (mm)</label><input id="rx" type="number" step=".5" value="26"></div><div><label>宛名 Y (mm)</label><input id="ry" type="number" step=".5" value="50"></div></div>
-<div class="row" style="margin-top:9px"><div><label>差出人 X (mm)</label><input id="sx" type="number" step=".5" value="101"></div><div><label>差出人 Y (mm)</label><input id="sy" type="number" step=".5" value="130"></div></div>
-<div class="btns" style="margin-top:10px"><button class="secondary" id="reset">初期位置</button><button class="secondary" id="save">設定保存</button></div><div id="status" class="status"></div>
-</div>
-<h2>印刷</h2><div class="section">
-<div class="btns"><button class="primary" id="testBtn">① A4実寸テスト</button><button class="primary" id="printBtn">② ミニレターに印刷</button></div>
-<div class="tip"><b>A4テスト：</b>A4横・100%で印刷して、開いたミニレターを重ねて確認。<br><b>本体印刷：</b>未折りの外側を印刷面にして給紙。プリンター側も倍率100%／実際のサイズにしてください。</div>
-</div>
+  <div class="hero">
+    <div>
+      <h1>ミニレター宛名プリンター</h1>
+      <div class="sub">開いたミニレター（201×277mm）の外側を実物に近い位置関係で再現し、宛名・差出人だけを重ねて印刷します。</div>
+    </div>
+    <div class="badge">実物位置合わせ版 v3</div>
+  </div>
+
+  <div class="notice"><b>重要：</b>画面の青・赤の線は位置合わせ用ガイドです。本体印刷ではガイドは印刷せず、宛名・郵便番号・差出人だけを出します。最初は「A4実寸テスト」を100%で印刷し、開いたミニレターを上から重ねて郵便番号枠が合うことを確認してください。</div>
+
+  <div class="grid">
+    <div class="panel controls">
+      <h2>宛先</h2>
+      <div class="section">
+        <label>郵便番号（7桁）</label><input id="rzipIn" inputmode="numeric" placeholder="1234567" maxlength="8">
+        <label style="margin-top:9px">住所</label><textarea id="raddrIn" placeholder="東京都〇〇区…&#10;〇〇マンション101"></textarea>
+        <div class="row" style="margin-top:9px">
+          <div><label>宛名</label><input id="rnameIn" placeholder="山田 太郎"></div>
+          <div><label>敬称</label><select id="honor"><option>様</option><option>御中</option><option>先生</option><option value="">なし</option></select></div>
+        </div>
+        <div class="row" style="margin-top:9px">
+          <div><label>表記</label><select id="orientation"><option value="vertical">縦書き</option><option value="horizontal">横書き</option></select></div>
+          <div><label>宛名サイズ(mm)</label><input id="nameSize" type="number" value="7" min="4" max="12" step=".5"></div>
+        </div>
+      </div>
+
+      <h2>差出人（折った後の裏面・左下）</h2>
+      <div class="section">
+        <label class="switch"><input id="senderOn" type="checkbox" checked> 差出人も印刷する</label>
+        <div id="senderFields" style="margin-top:9px">
+          <label>郵便番号（7桁）</label><input id="szipIn" inputmode="numeric" placeholder="1234567" maxlength="8">
+          <label style="margin-top:7px">住所</label><textarea id="saddrIn" placeholder="宮城県仙台市…"></textarea>
+          <label style="margin-top:7px">氏名</label><input id="snameIn" placeholder="山田 太郎">
+        </div>
+      </div>
+
+      <h2>微調整</h2>
+      <div class="section">
+        <div class="mini">実物差やプリンターの給紙ズレ用。文字ブロックはプレビュー上でドラッグもできます。</div>
+        <div class="row" style="margin-top:9px">
+          <div><label>宛名 X (mm)</label><input id="rx" type="number" step=".5" value="39"></div>
+          <div><label>宛名 Y (mm)</label><input id="ry" type="number" step=".5" value="54"></div>
+        </div>
+        <div class="row" style="margin-top:9px">
+          <div><label>差出人 X (mm)</label><input id="sx" type="number" step=".5" value="108"></div>
+          <div><label>差出人 Y (mm)</label><input id="sy" type="number" step=".5" value="150"></div>
+        </div>
+        <div class="btns" style="margin-top:10px">
+          <button class="secondary" id="reset">実物基準へ戻す</button>
+          <button class="secondary" id="save">設定保存</button>
+        </div>
+        <div id="status" class="status"></div>
+      </div>
+
+      <h2>印刷</h2>
+      <div class="section">
+        <div class="btns">
+          <button class="primary" id="testBtn">① A4実寸テスト</button>
+          <button class="primary" id="printBtn">② ミニレター本体</button>
+        </div>
+        <div class="tip"><b>A4実寸テスト：</b>A4横・倍率100%で印刷。実物を重ねて、赤い郵便番号枠と折り線が一致するか確認。<br><b>本体：</b>開いた状態の外側を印刷面にして給紙。印刷されるのは入力した文字だけです。</div>
+      </div>
+    </div>
+
+    <div class="panel preview">
+      <div class="toolbar">
+        <div class="left">
+          <button class="mode active" id="guideOn">実物ガイド</button>
+          <button class="mode" id="guideOff">印刷内容だけ</button>
+        </div>
+        <div class="mini">青線＝実物の印刷・折り位置の目安 ／ 赤枠＝既存の郵便番号枠</div>
+      </div>
+
+      <div class="viewport" id="viewport">
+        <div class="scale" id="scale">
+          <div id="paper">
+            <div class="a4frame hidden"></div>
+            <div class="canvas" id="canvas">
+              <div class="paper-body"></div>
+              <div class="top-flap"></div>
+              <div class="bottom-flap"></div>
+              <div class="left-glue"></div>
+
+              <div class="fold fold1"></div>
+              <div class="fold fold2"></div>
+              <div class="fold fold3"></div>
+
+              <div class="panel-outline front-panel"><span class="panel-label">宛名面</span></div>
+              <div class="panel-outline back-panel"><span class="panel-label">折った後の裏面</span></div>
+              <div class="panel-outline letter-panel"><span class="panel-label">便箋部分</span></div>
+
+              <div class="printed fold-note-top">✂　やまおり</div>
+              <div class="printed fold-note-left">✂　やまおり</div>
+              <div class="printed fold-note-front-r">たにおり</div>
+              <div class="printed fold-note-bottom">✂　やまおり</div>
+              <div class="printed fold-note-mid">この部分は、折ると内側になります</div>
+              <div class="printed right-note">この部分は、折ると内側になります。</div>
+
+              <div class="stripe stripe-left-top"></div>
+              <div class="stripe stripe-left-bottom"></div>
+              <div class="stripe stripe-mid-bottom"></div>
+
+              <div class="stamp-guide">NIPPON<br>85<small>料額印面</small></div>
+              <div class="front-title">郵 便 書 簡</div>
+              <div class="postal-frame front">
+                <i class="postal-box"></i><i class="postal-box"></i><i class="postal-box"></i><i class="postal-box"></i><i class="postal-box"></i><i class="postal-box"></i><i class="postal-box"></i>
+              </div>
+
+              <div class="postal-frame sender-frame">
+                <i class="postal-box"></i><i class="postal-box"></i><i class="postal-box"></i><i class="postal-box"></i><i class="postal-box"></i><i class="postal-box"></i><i class="postal-box"></i>
+              </div>
+              <div class="sender-caption">差出人郵便番号</div>
+
+              <div class="vertical-divider-note"></div>
+              <div class="letter-lines">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </div>
+
+              <div id="recipient" class="recipient vertical">
+                <div id="rzipDigits" class="rzip-digits"></div>
+                <div id="raddrOut" class="raddr"></div>
+                <div id="rnameOut" class="rname"></div>
+              </div>
+
+              <div id="sender" class="sender">
+                <div id="szipDigits" class="szip-digits"></div>
+                <div id="saddrOut" class="sender-address"></div>
+                <div id="snameOut" class="sender-name"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="panel preview">
-<div class="toolbar"><div class="left"><button id="guideOn" class="mode active">実物ガイド</button><button id="guideOff" class="mode">印刷内容だけ</button></div><div class="mini">左：宛名面　中央：裏面（差出人）　右：便箋</div></div>
-<div class="viewport" id="viewport"><div class="scale" id="scale"><div id="paper">
-<div class="a4frame hidden"></div>
-<div class="canvas" id="canvas">
-<div class="sheet"></div><div class="topFlap"></div><div class="bottomFlap"></div><div class="sideFlap"></div>
-<div class="fold f1"></div><div class="fold f2"></div>
-<div class="panelMark p1"><span>宛名面 92×165mm</span></div>
-<div class="panelMark p2"><span>折った後の裏面 92×165mm</span></div>
-<div class="panelMark p3"><span>便箋部分</span></div>
-<div class="stamp">料額<br>印面</div><div class="zipFront">受取人 郵便番号</div><div class="zipBack">差出人 郵便番号</div><div class="guideText">この中央パネルが、折った後の「裏面」になります</div>
-<div id="recipient" class="recipient vertical"><div id="rzipOut" class="rzip"></div><div id="raddrOut" class="raddr"></div><div id="rnameOut" class="rname"></div></div>
-<div id="sender" class="sender"><div id="szipOut" class="szip"></div><div id="saddrOut"></div><div id="snameOut" class="sname"></div></div>
-</div></div></div></div>
-</div>
-</div>
-</div>
 <script>
 (function(){
-var $=function(id){return document.getElementById(id)},root=document.documentElement.style,paper=$("paper"),canvas=$("canvas"),recipient=$("recipient"),sender=$("sender"),pageStyle=$("pageStyle"),guides=true;
-var ids=["rzipIn","raddrIn","rnameIn","honor","orientation","nameSize","senderOn","szipIn","saddrIn","snameIn","rx","ry","sx","sy"];
-function z(v){var d=(v||"").replace(/\D/g,"").slice(0,7);return d.length>3?d.slice(0,3)+"-"+d.slice(3):d}
-function fit(){requestAnimationFrame(function(){var vp=$("viewport"),sw=paper.offsetWidth,sh=paper.offsetHeight,s=Math.min(1,(vp.clientWidth-40)/sw,(window.innerHeight*.66)/sh);$("scale").style.transform="scale("+s+")";$("scale").style.width=sw*s+"px";$("scale").style.height=sh*s+"px"})}
-function update(){
-$("rzipOut").textContent=z($("rzipIn").value);$("raddrOut").textContent=$("raddrIn").value;var n=$("rnameIn").value.trim(),h=$("honor").value;$("rnameOut").textContent=n+(n&&h?"　"+h:h);
-recipient.classList.toggle("vertical",$("orientation").value==="vertical");recipient.classList.toggle("horizontal",$("orientation").value==="horizontal");$("rnameOut").style.fontSize=$("nameSize").value+"mm";
-$("senderFields").classList.toggle("hidden",!$("senderOn").checked);sender.classList.toggle("hidden",!$("senderOn").checked);$("szipOut").textContent=$("szipIn").value;$("saddrOut").textContent=$("saddrIn").value;$("snameOut").textContent=$("snameIn").value;
-root.setProperty("--rx",+$("rx").value+"mm");root.setProperty("--ry",+$("ry").value+"mm");root.setProperty("--sx",+$("sx").value+"mm");root.setProperty("--sy",+$("sy").value+"mm");fit()}
-ids.forEach(function(id){$(id).addEventListener($(id).type==="checkbox"?"change":"input",update)});$("honor").onchange=update;$("orientation").onchange=update;window.onresize=fit;
-function drag(el,xid,yid){var st=null;el.onpointerdown=function(e){st={x:e.clientX,y:e.clientY,ox:+$(xid).value,oy:+$(yid).value};el.setPointerCapture(e.pointerId)};el.onpointermove=function(e){if(!st)return;var r=paper.getBoundingClientRect(),ppm=(r.width/paper.offsetWidth)*(96/25.4);$(xid).value=(st.ox+(e.clientX-st.x)/ppm).toFixed(1);$(yid).value=(st.oy+(e.clientY-st.y)/ppm).toFixed(1);update()};el.onpointerup=function(){st=null}}
-drag(recipient,"rx","ry");drag(sender,"sx","sy");
-$("guideOn").onclick=function(){guides=true;$("guideOn").classList.add("active");$("guideOff").classList.remove("active");paper.classList.remove("printclean")};
-$("guideOff").onclick=function(){guides=false;$("guideOff").classList.add("active");$("guideOn").classList.remove("active");paper.classList.add("printclean")};
-function normal(){paper.classList.remove("a4");$("paper").querySelector(".a4frame").classList.add("hidden");canvas.style.cssText="position:absolute;inset:0";root.setProperty("--pw","277mm");root.setProperty("--ph","201mm");pageStyle.textContent="@page{size:277mm 201mm;margin:0}"}
-function a4(){paper.classList.add("a4");$("paper").querySelector(".a4frame").classList.remove("hidden");root.setProperty("--pw","297mm");root.setProperty("--ph","210mm");canvas.style.cssText="position:absolute;left:10mm;top:4.5mm;width:277mm;height:201mm";pageStyle.textContent="@page{size:A4 landscape;margin:0}";fit()}
-$("testBtn").onclick=function(){a4();paper.classList.remove("printclean");setTimeout(function(){window.print()},120)};
-$("printBtn").onclick=function(){normal();paper.classList.add("printclean");setTimeout(function(){window.print()},120)};
-$("reset").onclick=function(){$("rx").value=26;$("ry").value=50;$("sx").value=101;$("sy").value=130;update()};
-$("save").onclick=function(){var o={};ids.forEach(function(id){o[id]=$(id).type==="checkbox"?$(id).checked:$(id).value});localStorage.setItem("miniLetterPrinterV2",JSON.stringify(o));$("status").textContent="この端末に保存しました";setTimeout(function(){$("status").textContent=""},2200)};
-try{var o=JSON.parse(localStorage.getItem("miniLetterPrinterV2")||"null");if(o)ids.forEach(function(id){if(o[id]!==undefined){if($(id).type==="checkbox")$(id).checked=!!o[id];else $(id).value=o[id]}})}catch(e){}
-update();fit();
+  var $=function(id){return document.getElementById(id)};
+  var root=document.documentElement.style;
+  var paper=$("paper"),canvas=$("canvas"),recipient=$("recipient"),sender=$("sender"),pageStyle=$("pageStyle");
+  var ids=["rzipIn","raddrIn","rnameIn","honor","orientation","nameSize","senderOn","szipIn","saddrIn","snameIn","rx","ry","sx","sy"];
+
+  function digits(v){
+    return (v||"").replace(/\D/g,"").slice(0,7).split("");
+  }
+  function renderDigits(target,v){
+    var a=digits(v),html="";
+    for(var i=0;i<7;i++)html+="<span>"+(a[i]||"")+"</span>";
+    target.innerHTML=html;
+  }
+  function fit(){
+    requestAnimationFrame(function(){
+      var vp=$("viewport"),sw=paper.offsetWidth,sh=paper.offsetHeight;
+      var s=Math.min(1,(vp.clientWidth-40)/sw,(window.innerHeight*.68)/sh);
+      $("scale").style.transform="scale("+s+")";
+      $("scale").style.width=sw*s+"px";
+      $("scale").style.height=sh*s+"px";
+    });
+  }
+  function update(){
+    renderDigits($("rzipDigits"),$("rzipIn").value);
+    $("raddrOut").textContent=$("raddrIn").value;
+    var n=$("rnameIn").value.trim(),h=$("honor").value;
+    $("rnameOut").textContent=n+(n&&h?"　"+h:h);
+    recipient.classList.toggle("vertical",$("orientation").value==="vertical");
+    recipient.classList.toggle("horizontal",$("orientation").value==="horizontal");
+    $("rnameOut").style.fontSize=$("nameSize").value+"mm";
+
+    $("senderFields").classList.toggle("hidden",!$("senderOn").checked);
+    sender.classList.toggle("hidden",!$("senderOn").checked);
+    renderDigits($("szipDigits"),$("szipIn").value);
+    $("saddrOut").textContent=$("saddrIn").value;
+    $("snameOut").textContent=$("snameIn").value;
+
+    root.setProperty("--addr-x",+$("rx").value+"mm");
+    root.setProperty("--addr-y",+$("ry").value+"mm");
+    root.setProperty("--sender-x",+$("sx").value+"mm");
+    root.setProperty("--sender-y",+$("sy").value+"mm");
+    fit();
+  }
+  ids.forEach(function(id){
+    $(id).addEventListener($(id).type==="checkbox"?"change":"input",update);
+  });
+  $("honor").onchange=update;
+  $("orientation").onchange=update;
+  window.onresize=fit;
+
+  function drag(el,xid,yid){
+    var st=null;
+    el.onpointerdown=function(e){
+      if(e.button!==0)return;
+      st={x:e.clientX,y:e.clientY,ox:+$(xid).value,oy:+$(yid).value};
+      el.setPointerCapture(e.pointerId);
+    };
+    el.onpointermove=function(e){
+      if(!st)return;
+      var r=paper.getBoundingClientRect();
+      var ppm=(r.width/paper.offsetWidth)*(96/25.4);
+      $(xid).value=(st.ox+(e.clientX-st.x)/ppm).toFixed(1);
+      $(yid).value=(st.oy+(e.clientY-st.y)/ppm).toFixed(1);
+      update();
+    };
+    el.onpointerup=function(){st=null};
+    el.onpointercancel=function(){st=null};
+  }
+  drag(recipient,"rx","ry");
+  drag(sender,"sx","sy");
+
+  $("guideOn").onclick=function(){
+    paper.classList.remove("print-letters-only");
+    $("guideOn").classList.add("active");
+    $("guideOff").classList.remove("active");
+  };
+  $("guideOff").onclick=function(){
+    paper.classList.add("print-letters-only");
+    $("guideOff").classList.add("active");
+    $("guideOn").classList.remove("active");
+  };
+
+  function directMode(){
+    paper.classList.remove("a4");
+    paper.querySelector(".a4frame").classList.add("hidden");
+    canvas.style.cssText="position:absolute;inset:0";
+    root.setProperty("--paper-w","277mm");
+    root.setProperty("--paper-h","201mm");
+    pageStyle.textContent="@page{size:277mm 201mm;margin:0}";
+  }
+  function a4Mode(){
+    paper.classList.add("a4");
+    paper.querySelector(".a4frame").classList.remove("hidden");
+    root.setProperty("--paper-w","297mm");
+    root.setProperty("--paper-h","210mm");
+    canvas.style.cssText="position:absolute;left:10mm;top:4.5mm;width:277mm;height:201mm";
+    pageStyle.textContent="@page{size:A4 landscape;margin:0}";
+    fit();
+  }
+
+  $("testBtn").onclick=function(){
+    a4Mode();
+    paper.classList.remove("print-letters-only");
+    setTimeout(function(){window.print()},120);
+  };
+  $("printBtn").onclick=function(){
+    directMode();
+    paper.classList.add("print-letters-only");
+    setTimeout(function(){window.print()},120);
+  };
+
+  $("reset").onclick=function(){
+    $("rx").value=39;$("ry").value=54;$("sx").value=108;$("sy").value=150;
+    update();
+  };
+  $("save").onclick=function(){
+    var o={};
+    ids.forEach(function(id){o[id]=$(id).type==="checkbox"?$(id).checked:$(id).value});
+    localStorage.setItem("miniLetterPrinterV3",JSON.stringify(o));
+    $("status").textContent="この端末に位置設定を保存しました。";
+    setTimeout(function(){$("status").textContent=""},2200);
+  };
+  try{
+    var o=JSON.parse(localStorage.getItem("miniLetterPrinterV3")||"null");
+    if(o)ids.forEach(function(id){
+      if(o[id]!==undefined){
+        if($(id).type==="checkbox")$(id).checked=!!o[id]; else $(id).value=o[id];
+      }
+    });
+  }catch(e){}
+  update();fit();
 })();
 </script>
 </body>
