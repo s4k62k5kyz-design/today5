@@ -95,9 +95,9 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
 .horizontal .raddr{position:absolute;left:0;top:0;width:52mm;font-size:3.7mm;line-height:1.45;white-space:pre-wrap}
 .horizontal .rname{position:absolute;left:0;top:33mm;width:52mm;font-size:6mm;font-weight:650;white-space:pre-wrap}
 .sender{position:absolute;left:0;top:0;transform:translate(var(--sender-x),var(--sender-y));width:70mm;height:38mm;cursor:move;user-select:none;outline:1px dashed rgba(49,106,152,.35);outline-offset:1.5mm;overflow:visible}
-.szip-digits{position:absolute;left:0;top:0;display:flex;gap:.8mm;height:8mm}
-.sender-address{position:absolute;left:43mm;top:-24mm;width:22mm;height:22mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:3.1mm;line-height:1.35;white-space:pre-wrap;display:flex;justify-content:flex-end}
-.sender-name{position:absolute;left:26mm;top:-24mm;width:10mm;height:22mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:3.8mm;font-weight:650;white-space:nowrap;display:flex;justify-content:flex-end}
+.szip-digits{position:absolute;left:0;bottom:0;display:flex;gap:.8mm;height:8mm}
+.sender-address{position:absolute;left:43mm;bottom:9mm;width:22mm;height:18mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:3.1mm;line-height:1.35;white-space:pre-wrap}
+.sender-name{position:absolute;left:27mm;bottom:9mm;width:10mm;height:18mm;writing-mode:vertical-rl;text-orientation:mixed;font-size:3.8mm;font-weight:650;white-space:nowrap}
 .a4{width:297mm!important;height:210mm!important;background:#fff!important}
 .a4 .a4frame{position:absolute;left:10mm;top:4.5mm;width:277mm;height:201mm;border:.3mm solid #333}
 .a4 .canvas{left:10mm;top:4.5mm;width:277mm;height:201mm;inset:auto}
@@ -172,7 +172,7 @@ button{border:0;border-radius:10px;padding:10px 12px;font-weight:750;cursor:poin
 
       <h2>微調整</h2>
       <div class="section">
-        <div class="mini">差出人は郵便番号枠のすぐ上に住所を縦書き、その左側に氏名を縦書きで下寄せ配置しています。実物差や給紙ズレはドラッグまたはmm単位で調整できます。</div>
+        <div class="mini">裏面の差出人欄は、郵便番号のすぐ上に住所を縦書き、その左側に氏名を縦書きで配置しています。実物差や給紙ズレはドラッグまたはmm単位で調整できます。</div>
         <div class="row" style="margin-top:9px">
           <div><label>宛名 X (mm)</label><input id="rx" type="number" step=".5" value="39"></div>
           <div><label>宛名 Y (mm)</label><input id="ry" type="number" step=".5" value="54"></div>
