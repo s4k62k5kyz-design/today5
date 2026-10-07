@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=42">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=43">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -23,14 +23,15 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 .settings-fold{border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden}.settings-fold-tab{width:100%;border:0;background:var(--card);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 15px;text-align:left;cursor:pointer}.settings-fold-tab b{display:block;font-size:13px}.settings-fold-tab .fold-sub{display:block;font-size:9px;color:var(--muted);margin-top:2px}.fold-arrow{font-size:17px;color:var(--muted);transition:transform .18s}.settings-fold.open .fold-arrow{transform:rotate(180deg)}.settings-fold-body{border:0;border-top:1px solid var(--line);border-radius:0;box-shadow:none;padding-top:12px}.cat-manage{display:flex;flex-direction:column;gap:7px}.cat-manage-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.cat-manage-row:last-child{border-bottom:0}.cat-manage-main{font-size:11px;font-weight:750}.cat-manage-actions{display:flex;gap:5px}.cat-manage-actions button{border:1px solid var(--line);background:white;border-radius:8px;padding:6px 8px;font-size:9px}.cat-manage-actions .del{color:var(--r)}
 .autocomplete{position:relative;min-width:0;max-width:100%;overflow:hidden}.suggestions{position:static;width:100%;max-width:100%;margin-top:5px;z-index:1;background:white;border:1px solid var(--line);border-radius:12px;box-shadow:none;max-height:124px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;box-sizing:border-box;-webkit-overflow-scrolling:touch}.suggestions-head{position:sticky;top:0;background:#f8f9fc;color:var(--muted);font-size:9px;font-weight:800;padding:7px 11px;border-bottom:1px solid var(--line);z-index:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.suggestions button{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;border:0;background:white;color:var(--text);text-decoration:none;text-align:left;padding:9px 11px;font-size:11px;border-bottom:1px solid var(--line);overflow:hidden}.suggestions button:last-child{border-bottom:0}.suggestions button:active{background:var(--soft)}.suggestions button b,.suggestions button small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.suggestions button b{font-size:11px;color:var(--text);text-decoration:none}.suggestions button small{color:var(--muted);font-size:9px;margin-top:2px}.suggestions mark{background:transparent;color:var(--p);font-weight:900;padding:0;text-decoration:none}
 
-.month-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.month-cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}.month-cal-head span{text-align:center;font-size:9px;color:var(--muted);font-weight:800}.month-day{min-height:66px;border:1px solid var(--line);background:white;border-radius:11px;padding:6px 5px;text-align:left;display:flex;flex-direction:column;gap:3px}.month-day.other{opacity:.28}.month-day.today{border-color:var(--p)}.month-day.selected{background:var(--soft);border-color:var(--p)}.month-day .dnum{font-size:10px;font-weight:850}.month-day .dexp{font-size:9px;color:var(--r);font-weight:800;line-height:1.2}.month-day .dcnt{font-size:8px;color:var(--muted);margin-top:auto}.cal-day-title{font-size:12px;font-weight:850;margin:2px 0 8px}.receipt-view-btn{width:100%;margin-top:8px}.receipt-photo-large{width:100%;max-height:68dvh;object-fit:contain;border-radius:12px;background:#f5f5f5}
+.cal-overview{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}.cal-overview>div{background:#f7f9fd;border:1px solid var(--line);border-radius:12px;padding:9px 8px;min-width:0}.cal-overview small{display:block;font-size:8px;color:var(--muted);margin-bottom:3px}.cal-overview b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cal-overview .out{color:var(--r)}.cal-overview .in{color:var(--g)}
+.month-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.month-cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px}.month-cal-head span{text-align:center;font-size:9px;color:var(--muted);font-weight:850;padding-bottom:2px}.month-cal-head span:first-child{color:#d85a65}.month-cal-head span:last-child{color:#527bd6}.month-day{min-height:74px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:6px 5px;text-align:left;display:flex;flex-direction:column;gap:4px;min-width:0;transition:transform .08s,background .12s,border-color .12s}.month-day:active{transform:scale(.97)}.month-day.other{opacity:.34;background:#fafbfd}.month-day.sun .dnum{color:#d85a65}.month-day.sat .dnum{color:#527bd6}.month-day.today:not(.selected) .dnum{display:grid;place-items:center;width:22px;height:22px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--p);color:#fff}.month-day.selected{background:var(--p);border-color:var(--p);box-shadow:0 5px 14px rgba(65,105,225,.22)}.month-day.selected .dnum,.month-day.selected.sun .dnum,.month-day.selected.sat .dnum,.month-day.selected .dexp{color:#fff}.month-day.selected .dcnt{color:rgba(255,255,255,.78)}.month-day .dnum{font-size:12px;font-weight:900;line-height:1}.month-day .dexp{font-size:9px;color:var(--r);font-weight:850;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.month-day .dcnt{font-size:8px;color:var(--muted);margin-top:auto}.cal-day-metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}.cal-day-metrics>div{background:#fff;border:1px solid var(--line);border-radius:13px;padding:10px 11px}.cal-day-metrics small{display:block;font-size:8px;color:var(--muted);margin-bottom:3px}.cal-day-metrics b{font-size:14px}.cal-day-metrics .out{color:var(--r)}.cal-day-metrics .in{color:var(--g)}.receipt-view-btn{width:100%;margin-top:8px}.receipt-photo-large{width:100%;max-height:68dvh;object-fit:contain;border-radius:12px;background:#f5f5f5}
 .optional-note{border:1px solid var(--line);border-radius:11px;background:#fafbfe;margin-bottom:10px;overflow:hidden}.optional-note summary{cursor:pointer;list-style:none;padding:10px 11px;font-size:10px;color:var(--muted);font-weight:800}.optional-note summary::-webkit-details-marker{display:none}.optional-note[open] summary{border-bottom:1px solid var(--line)}.optional-note .field{margin:9px 10px 10px}.optional-note textarea{width:100%;min-height:72px;resize:vertical;border:1px solid var(--line);background:white;border-radius:11px;padding:10px;font:inherit;font-size:11px}
 .app-number,.app-date{background:#f8f9fc!important;cursor:pointer}.input-hint{font-size:9px;color:var(--muted);margin-top:4px}.tool-display{background:#f6f8fc;border:1px solid var(--line);border-radius:13px;padding:14px;text-align:right;font-size:28px;font-weight:850;margin-bottom:10px;min-height:62px}.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.numpad button{border:1px solid var(--line);background:white;border-radius:13px;padding:15px 4px;font-size:18px;font-weight:750}.numpad .sub{font-size:13px;color:var(--muted)}.numpad-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.calendar-head button{border:0;background:#f3f5f8;border-radius:10px;width:36px;height:34px}.calendar-head b{font-size:14px}.weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.weekdays span{text-align:center;font-size:9px;color:var(--muted);padding:4px}.calendar-grid button{border:0;background:white;border-radius:10px;min-height:38px;font-size:11px}.calendar-grid button.other{color:#b8beca}.calendar-grid button.today{background:var(--soft);color:var(--p);font-weight:800}.calendar-grid button.selected{background:var(--p);color:white;font-weight:800}
 .batch-launch{width:100%;margin-top:8px;border:1px solid #cbd6f6;background:var(--soft);color:var(--p);border-radius:14px;padding:11px 12px;font-size:11px;font-weight:850}
 .batch-head{display:grid;grid-template-columns:1fr 1fr;gap:8px}.batch-rows{display:flex;flex-direction:column;gap:9px;margin-top:10px}.batch-row{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fbfcff}.batch-row-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.batch-row-top b{font-size:11px}.batch-remove{border:0;background:#fff1f2;color:var(--r);border-radius:9px;padding:6px 8px;font-size:9px;font-weight:800}.batch-fields{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(88px,.8fr);gap:7px}.batch-fields .field{margin-bottom:0}.batch-cat{margin-top:7px}.batch-total{display:flex;align-items:center;justify-content:space-between;background:#f6f8fc;border-radius:12px;padding:11px 12px;margin:10px 0}.batch-total span{font-size:10px;color:var(--muted)}.batch-total b{font-size:18px}.batch-add{width:100%;border:1px dashed #bfcaf0;background:white;color:var(--p);border-radius:12px;padding:10px;font-size:10px;font-weight:800;margin-top:9px}.receipt-check{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f6f8fc;border-radius:12px;padding:10px 11px;margin:9px 0}.receipt-check span{font-size:10px;color:var(--muted)}.receipt-check b{font-size:14px}.receipt-check.warn{background:#fff7e9}.receipt-check.warn b{color:#b97514}.receipt-row-note{font-size:9px;color:var(--muted);line-height:1.45;margin:5px 1px 0}
 @media(max-width:430px){.batch-head{grid-template-columns:1fr}.batch-fields{grid-template-columns:minmax(0,1fr) 104px}}
 .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:#202634;color:white;border-radius:11px;padding:9px 12px;font-size:11px;z-index:99}.hide{display:none!important}
-@media(max-width:430px){.suggestions{max-height:112px}.pie-wrap{grid-template-columns:120px 1fr;gap:10px}.pie{width:116px;height:116px}.pie:after{inset:23px}}
+@media(max-width:430px){.suggestions{max-height:112px}.pie-wrap{grid-template-columns:120px 1fr;gap:10px}.pie{width:116px;height:116px}.pie:after{inset:23px}.month-cal{gap:3px}.month-cal-head{gap:3px}.month-day{min-height:67px;border-radius:10px;padding:5px 4px}.month-day .dnum{font-size:11px}.month-day .dexp{font-size:8px}.month-day .dcnt{font-size:7px}.cal-overview{gap:5px}.cal-overview>div{padding:8px 6px}.cal-overview b{font-size:11px}}
 </style></head>
 <body>
 <div class="app">
@@ -57,8 +58,8 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 
 <section id="calendarPage" class="page">
 <div class="section"><div class="head"><h2>カレンダー</h2><span>日別の支出</span></div>
-<div class="card"><div class="month-cal-head"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div><div id="mainCalendar" class="month-cal"></div></div></div>
-<div class="section"><div class="head"><h2 id="calendarDayTitle">日付を選択</h2><span id="calendarDaySummary"></span></div><div class="card" id="calendarDayList"><div class="empty">日付をタップすると記録を表示します</div></div></div>
+<div class="card"><div class="cal-overview"><div><small>この月の支出</small><b class="out" id="calMonthExp">¥0</b></div><div><small>この月の収入</small><b class="in" id="calMonthInc">¥0</b></div><div><small>記録した日</small><b id="calActiveDays">0日</b></div></div><div class="month-cal-head"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div><div id="mainCalendar" class="month-cal"></div></div></div>
+<div class="section"><div class="head"><h2 id="calendarDayTitle">日付を選択</h2><span id="calendarDaySummary"></span></div><div id="calendarDayMetrics" class="cal-day-metrics"><div><small>支出</small><b class="out">¥0</b></div><div><small>収入</small><b class="in">¥0</b></div></div><div class="card" id="calendarDayList"><div class="empty">日付をタップすると記録を表示します</div></div></div>
 </section>
 
 <section id="settings" class="page">
@@ -122,7 +123,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v42-recent-store-title';
+const APP_BUILD='v43-calendar-polish';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -152,7 +153,7 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=42',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=43',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 window.addEventListener('pageshow',()=>checkAppUpdate());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
@@ -627,31 +628,49 @@ function renderCategoryBreakdown(){
 }
 
 let calendarSelected='';
+function calendarMoney(n){
+  n=Number(n||0);
+  if(n>=100000)return '¥'+Math.round(n/10000)+'万';
+  if(n>=10000)return '¥'+(n/10000).toFixed(1).replace(/\.0$/,'')+'万';
+  return money(n)
+}
 function renderMainCalendar(){
   const box=$('mainCalendar');if(!box)return;
-  const y=view.getFullYear(),m=view.getMonth(),monthKey=mk(view),first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());
+  const y=view.getFullYear(),m=view.getMonth(),monthKey=mk(view),first=new Date(y,m,1),offset=first.getDay(),daysInMonth=new Date(y,m+1,0).getDate(),cells=Math.ceil((offset+daysInMonth)/7)*7,start=new Date(y,m,1-offset),monthRows=rows(view);
+  const monthExp=monthRows.filter(x=>x.type==='expense').reduce((a,x)=>a+Number(x.amount||0),0),monthInc=monthRows.filter(x=>x.type==='income').reduce((a,x)=>a+Number(x.amount||0),0),activeDays=new Set(monthRows.map(x=>x.date).filter(Boolean)).size;
+  $('calMonthExp').textContent=money(monthExp);$('calMonthInc').textContent=money(monthInc);$('calActiveDays').textContent=activeDays+'日';
   if(!calendarSelected||calendarSelected.slice(0,7)!==monthKey){
-    const td=today();
-    calendarSelected=td.slice(0,7)===monthKey?td:monthKey+'-01';
+    const td=today();calendarSelected=td.slice(0,7)===monthKey?td:monthKey+'-01'
   }
+  const dayMap=new Map();
+  db.tx.forEach(x=>{if(!dayMap.has(x.date))dayMap.set(x.date,[]);dayMap.get(x.date).push(x)});
   let out='';
-  for(let i=0;i<42;i++){
+  for(let i=0;i<cells;i++){
     const d=new Date(start);d.setDate(start.getDate()+i);
-    const ds=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),same=d.getMonth()===m,dayRows=db.tx.filter(x=>x.date===ds);
+    const ds=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),same=d.getMonth()===m,dayRows=dayMap.get(ds)||[],wd=d.getDay();
     const exp=dayRows.filter(x=>x.type==='expense').reduce((a,x)=>a+Number(x.amount||0),0);
-    const cls=['month-day'];if(!same)cls.push('other');if(ds===today())cls.push('today');if(ds===calendarSelected)cls.push('selected');
-    out+='<button class="'+cls.join(' ')+'" type="button" data-main-date="'+ds+'"><span class="dnum">'+d.getDate()+'</span>'+(exp?'<span class="dexp">−'+money(exp)+'</span>':'')+(dayRows.length?'<span class="dcnt">'+dayRows.length+'件</span>':'')+'</button>'
+    const cls=['month-day'];if(!same)cls.push('other');if(wd===0)cls.push('sun');if(wd===6)cls.push('sat');if(ds===today())cls.push('today');if(ds===calendarSelected)cls.push('selected');
+    out+='<button class="'+cls.join(' ')+'" type="button" data-main-date="'+ds+'"><span class="dnum">'+d.getDate()+'</span>'+(exp?'<span class="dexp">−'+calendarMoney(exp)+'</span>':'')+(dayRows.length?'<span class="dcnt">'+dayRows.length+'件</span>':'')+'</button>'
   }
   box.innerHTML=out;
-  box.querySelectorAll('[data-main-date]').forEach(b=>b.onclick=()=>{calendarSelected=b.dataset.mainDate;renderMainCalendar();renderCalendarDay()});
+  box.querySelectorAll('[data-main-date]').forEach(b=>b.onclick=()=>{
+    const ds=b.dataset.mainDate;
+    calendarSelected=ds;
+    if(ds.slice(0,7)!==mk(view)){const d=new Date(ds+'T00:00:00');view=new Date(d.getFullYear(),d.getMonth(),1);render();return}
+    renderMainCalendar()
+  });
   renderCalendarDay()
 }
 function renderCalendarDay(){
-  const list=$('calendarDayList'),title=$('calendarDayTitle'),summary=$('calendarDaySummary');if(!list||!title)return;
+  const list=$('calendarDayList'),title=$('calendarDayTitle'),summary=$('calendarDaySummary'),metrics=$('calendarDayMetrics');if(!list||!title)return;
   const a=db.tx.filter(x=>x.date===calendarSelected),d=calendarSelected?new Date(calendarSelected+'T00:00:00'):null;
-  title.textContent=d&&!isNaN(d)?(d.getMonth()+1)+'月'+d.getDate()+'日':'日付を選択';
+  const wd=['日','月','火','水','木','金','土'];
+  title.textContent=d&&!isNaN(d)?(d.getMonth()+1)+'月'+d.getDate()+'日（'+wd[d.getDay()]+'）'):'日付を選択';
   const exp=a.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0),inc=a.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
-  summary.textContent=a.length?(a.length+'件・支出 '+money(exp)+(inc?'・収入 '+money(inc):'')):'記録なし';
+  summary.textContent=a.length?a.length+'件':'記録なし';
+  if(metrics){
+    metrics.innerHTML='<div><small>支出</small><b class="out">'+money(exp)+'</b></div><div><small>収入</small><b class="in">'+money(inc)+'</b></div>'
+  }
   txList(list,a)
 }
 function renderHist(){renderCategoryBreakdown();let q=$('q').value,c=$('qcat').value,r=rows().filter(x=>(!c||x.category===c)&&(!q||textMatchesReading(x.itemName||x.memo||'',q,'name')||textMatchesReading(x.merchant||'',q,'merchant')||String(x.note||'').toLowerCase().includes(String(q).toLowerCase())||String(x.category||'').includes(q)));$('histN').textContent=r.length+'件';txList($('hist'),r)}
