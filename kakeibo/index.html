@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=40">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=41">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -24,6 +24,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 .autocomplete{position:relative;min-width:0;max-width:100%;overflow:hidden}.suggestions{position:static;width:100%;max-width:100%;margin-top:5px;z-index:1;background:white;border:1px solid var(--line);border-radius:12px;box-shadow:none;max-height:124px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;box-sizing:border-box;-webkit-overflow-scrolling:touch}.suggestions-head{position:sticky;top:0;background:#f8f9fc;color:var(--muted);font-size:9px;font-weight:800;padding:7px 11px;border-bottom:1px solid var(--line);z-index:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.suggestions button{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;border:0;background:white;color:var(--text);text-decoration:none;text-align:left;padding:9px 11px;font-size:11px;border-bottom:1px solid var(--line);overflow:hidden}.suggestions button:last-child{border-bottom:0}.suggestions button:active{background:var(--soft)}.suggestions button b,.suggestions button small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.suggestions button b{font-size:11px;color:var(--text);text-decoration:none}.suggestions button small{color:var(--muted);font-size:9px;margin-top:2px}.suggestions mark{background:transparent;color:var(--p);font-weight:900;padding:0;text-decoration:none}
 
 .month-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.month-cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}.month-cal-head span{text-align:center;font-size:9px;color:var(--muted);font-weight:800}.month-day{min-height:66px;border:1px solid var(--line);background:white;border-radius:11px;padding:6px 5px;text-align:left;display:flex;flex-direction:column;gap:3px}.month-day.other{opacity:.28}.month-day.today{border-color:var(--p)}.month-day.selected{background:var(--soft);border-color:var(--p)}.month-day .dnum{font-size:10px;font-weight:850}.month-day .dexp{font-size:9px;color:var(--r);font-weight:800;line-height:1.2}.month-day .dcnt{font-size:8px;color:var(--muted);margin-top:auto}.cal-day-title{font-size:12px;font-weight:850;margin:2px 0 8px}.receipt-view-btn{width:100%;margin-top:8px}.receipt-photo-large{width:100%;max-height:68dvh;object-fit:contain;border-radius:12px;background:#f5f5f5}
+.optional-note{border:1px solid var(--line);border-radius:11px;background:#fafbfe;margin-bottom:10px;overflow:hidden}.optional-note summary{cursor:pointer;list-style:none;padding:10px 11px;font-size:10px;color:var(--muted);font-weight:800}.optional-note summary::-webkit-details-marker{display:none}.optional-note[open] summary{border-bottom:1px solid var(--line)}.optional-note .field{margin:9px 10px 10px}.optional-note textarea{width:100%;min-height:72px;resize:vertical;border:1px solid var(--line);background:white;border-radius:11px;padding:10px;font:inherit;font-size:11px}
 .app-number,.app-date{background:#f8f9fc!important;cursor:pointer}.input-hint{font-size:9px;color:var(--muted);margin-top:4px}.tool-display{background:#f6f8fc;border:1px solid var(--line);border-radius:13px;padding:14px;text-align:right;font-size:28px;font-weight:850;margin-bottom:10px;min-height:62px}.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.numpad button{border:1px solid var(--line);background:white;border-radius:13px;padding:15px 4px;font-size:18px;font-weight:750}.numpad .sub{font-size:13px;color:var(--muted)}.numpad-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.calendar-head button{border:0;background:#f3f5f8;border-radius:10px;width:36px;height:34px}.calendar-head b{font-size:14px}.weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.weekdays span{text-align:center;font-size:9px;color:var(--muted);padding:4px}.calendar-grid button{border:0;background:white;border-radius:10px;min-height:38px;font-size:11px}.calendar-grid button.other{color:#b8beca}.calendar-grid button.today{background:var(--soft);color:var(--p);font-weight:800}.calendar-grid button.selected{background:var(--p);color:white;font-weight:800}
 .batch-launch{width:100%;margin-top:8px;border:1px solid #cbd6f6;background:var(--soft);color:var(--p);border-radius:14px;padding:11px 12px;font-size:11px;font-weight:850}
 .batch-head{display:grid;grid-template-columns:1fr 1fr;gap:8px}.batch-rows{display:flex;flex-direction:column;gap:9px;margin-top:10px}.batch-row{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fbfcff}.batch-row-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.batch-row-top b{font-size:11px}.batch-remove{border:0;background:#fff1f2;color:var(--r);border-radius:9px;padding:6px 8px;font-size:9px;font-weight:800}.batch-fields{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(88px,.8fr);gap:7px}.batch-fields .field{margin-bottom:0}.batch-cat{margin-top:7px}.batch-total{display:flex;align-items:center;justify-content:space-between;background:#f6f8fc;border-radius:12px;padding:11px 12px;margin:10px 0}.batch-total span{font-size:10px;color:var(--muted)}.batch-total b{font-size:18px}.batch-add{width:100%;border:1px dashed #bfcaf0;background:white;color:var(--p);border-radius:12px;padding:10px;font-size:10px;font-weight:800;margin-top:9px}.receipt-check{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f6f8fc;border-radius:12px;padding:10px 11px;margin:9px 0}.receipt-check span{font-size:10px;color:var(--muted)}.receipt-check b{font-size:14px}.receipt-check.warn{background:#fff7e9}.receipt-check.warn b{color:#b97514}.receipt-row-note{font-size:9px;color:var(--muted);line-height:1.45;margin:5px 1px 0}
@@ -79,7 +80,13 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <div class="navwrap"><div class="nav"><button class="on" data-p="home"><b>⌂</b>ホーム</button><button data-p="history"><b>≡</b>履歴</button><button data-p="calendarPage"><b>▦</b>カレンダー</button><button data-p="plan"><b>◎</b>計画</button><button data-p="settings"><b>⚙</b>設定</button></div></div>
 
 <dialog id="entry"><div class="mh"><h3 id="entryTitle">支出を記録</h3><button data-close="entry">×</button></div><div class="mb">
-<div class="field"><label>金額</label><input id="amount" class="app-number" type="text" inputmode="none" readonly placeholder="0"><div class="input-hint">タップして専用テンキーで入力</div></div><div class="field"><label>日付</label><input id="date" class="app-date" type="text" inputmode="none" readonly><div class="input-hint">タップしてカレンダーから選択</div></div><div class="field"><label>カテゴリ</label><select id="cat"></select></div><div class="field autocomplete"><label>店名・名目・メモ</label><input id="memo" autocomplete="off" placeholder="店名・名目を入力" aria-autocomplete="list" aria-controls="memoSuggestions"><div id="memoSuggestions" class="suggestions hide"></div></div><button class="primary" id="saveEntry" style="width:100%">登録</button><button class="secondary hide receipt-view-btn" id="viewReceiptImage" type="button">📷 レシート画像を見る</button><button class="secondary hide" id="deleteEntry" style="width:100%;margin-top:8px;color:var(--r)">削除</button></div></dialog>
+<div class="field"><label>金額</label><input id="amount" class="app-number" type="text" inputmode="none" readonly placeholder="0"><div class="input-hint">タップして専用テンキーで入力</div></div>
+<div class="field"><label>日付</label><input id="date" class="app-date" type="text" inputmode="none" readonly><div class="input-hint">タップしてカレンダーから選択</div></div>
+<div class="field autocomplete"><label>名目</label><input id="memo" autocomplete="off" placeholder="例：バイクシェア、食料品" aria-autocomplete="list" aria-controls="memoSuggestions"><div id="memoSuggestions" class="suggestions hide"></div></div>
+<div class="field autocomplete"><label id="merchantLabel">店名・利用先（任意）</label><input id="merchantInput" autocomplete="off" placeholder="例：西友" aria-autocomplete="list" aria-controls="merchantSuggestions"><div id="merchantSuggestions" class="suggestions hide"></div></div>
+<div class="field"><label>カテゴリ</label><select id="cat"></select></div>
+<details id="noteDetails" class="optional-note"><summary>＋ メモを追加（任意）</summary><div class="field"><textarea id="entryNote" placeholder="例：友人と、出張分など"></textarea></div></details>
+<button class="primary" id="saveEntry" style="width:100%">登録</button><button class="secondary hide receipt-view-btn" id="viewReceiptImage" type="button">📷 レシート画像を見る</button><button class="secondary hide" id="deleteEntry" style="width:100%;margin-top:8px;color:var(--r)">削除</button></div></dialog>
 
 <dialog id="batchDialog"><div class="mh"><h3>まとめて登録</h3><button data-close="batchDialog">×</button></div><div class="mb">
 <div class="note" style="margin-bottom:10px">同じ買い物でも、商品ごとに別のカテゴリを付けて一括登録できます。</div>
@@ -115,7 +122,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v40-longterm-storage';
+const APP_BUILD='v41-separated-fields-kana';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -145,7 +152,7 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=40',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=41',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 window.addEventListener('pageshow',()=>checkAppUpdate());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
@@ -154,8 +161,8 @@ setTimeout(checkAppUpdate,500);
 const KEY='kakeibo_pro_v2',BACKUP_KEY='kakeibo_pro_v2_last_good',RECOVERY_KEY='kakeibo_recovery_v31',SNAP_PREFIX='kakeibo_pro_v2_snapshot_',META_KEY='kakeibo_pro_v2_meta',BOOT_KEY='kakeibo_boot_v1',VAULT_DB='kakeibo-data-v1',LOCAL_MIRROR_LIMIT=1000000,VAULT_SNAPSHOT_LIMIT=5,AI='https://rngmvobnxliegijzzdbg.supabase.co/functions/v1/receipt-analyzer';
 const cats={expense:[['食費','🍚'],['日用品','🧻'],['交通','🚃'],['住居','🏠'],['水道光熱','💡'],['通信','📱'],['娯楽','🎮'],['医療','🏥'],['衣服','👕'],['交際費','🍻'],['教育','📚'],['その他','📦']],income:[['給与','💰'],['賞与','✨'],['副収入','💼'],['臨時収入','🎁'],['その他','📥']]};
 const $=x=>document.getElementById(x),$$=q=>[...document.querySelectorAll(q)],pad=n=>String(n).padStart(2,'0'),uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36),money=n=>'¥'+Math.round(Number(n||0)).toLocaleString('ja-JP'),mk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1),today=()=>{let d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
-const def=()=>({version:7,tx:[],categories:JSON.parse(JSON.stringify(cats)),overallBudgets:{},savings:[],recurring:[],settings:{autoSavings:true}});
-function norm(x){let d=def(),s=x&&typeof x==='object'?x:{},cs=s.categories&&Array.isArray(s.categories.expense)&&Array.isArray(s.categories.income)?s.categories:d.categories;return {...d,...s,tx:Array.isArray(s.tx)?s.tx:[],categories:cs,overallBudgets:s.overallBudgets||{},savings:Array.isArray(s.savings)?s.savings:[],recurring:Array.isArray(s.recurring)?s.recurring:[],settings:{...d.settings,...(s.settings||{}),autoSavings:s.settings?.autoSavings!==false}}}
+const def=()=>({version:8,tx:[],categories:JSON.parse(JSON.stringify(cats)),overallBudgets:{},savings:[],recurring:[],settings:{autoSavings:true,merchantReadings:{},nameReadings:{}}});
+function norm(x){let d=def(),s=x&&typeof x==='object'?x:{},cs=s.categories&&Array.isArray(s.categories.expense)&&Array.isArray(s.categories.income)?s.categories:d.categories,st=s.settings&&typeof s.settings==='object'?s.settings:{};return {...d,...s,tx:Array.isArray(s.tx)?s.tx:[],categories:cs,overallBudgets:s.overallBudgets||{},savings:Array.isArray(s.savings)?s.savings:[],recurring:Array.isArray(s.recurring)?s.recurring:[],settings:{...d.settings,...st,autoSavings:st.autoSavings!==false,merchantReadings:st.merchantReadings&&typeof st.merchantReadings==='object'?st.merchantReadings:{},nameReadings:st.nameReadings&&typeof st.nameReadings==='object'?st.nameReadings:{}}}}
 function stateSigTx(x){
   if(x?.id)return 'id:'+x.id;
   return ['tx',x?.date||'',x?.type||'',Number(x?.amount||0),x?.category||'',x?.memo||'',x?.merchant||'',x?.itemName||''].join('|')
@@ -463,27 +470,72 @@ function refreshCategorySelects(){
   if($('rCat'))options($('rCat'),db.categories.expense.map(x=>x[0]),$('rCat').value);
   if($('recCat'))fillRecCats();
 }
+const COMMON_MERCHANT_READINGS={
+  '西友':'せいゆう','セブン-イレブン':'せぶんいれぶん','セブンイレブン':'せぶんいれぶん','ファミリーマート':'ふぁみりーまーと','ローソン':'ろーそん','マミーマート':'まみーまーと','イオン':'いおん','イトーヨーカドー':'いとーよーかどー','ウエルシア':'うえるしあ','スギ薬局':'すぎやっきょく','ドン・キホーテ':'どんきほーて','ダイソー':'だいそー'
+};
+function kanaSearchNorm(s){
+  return String(s??'').normalize('NFKC').toLowerCase().replace(/[ァ-ヶ]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0x60)).replace(/[\s　・･\-‐‑–—_]/g,'')
+}
+function readingKey(s){return String(s??'').normalize('NFKC').trim().toLowerCase()}
+function learnedReading(kind,name){
+  const key=readingKey(name),map=kind==='merchant'?db.settings.merchantReadings:db.settings.nameReadings;
+  if(map?.[key])return map[key];
+  if(kind==='merchant'){
+    for(const [store,reading] of Object.entries(COMMON_MERCHANT_READINGS))if(String(name||'').startsWith(store))return reading
+  }
+  return ''
+}
+function learnReading(kind,name,reading){
+  name=String(name||'').trim();let r=kanaSearchNorm(reading);
+  if(!name||!r||!/[ぁ-ん]/.test(r))return;
+  const field=kind==='merchant'?'merchantReadings':'nameReadings';
+  if(!db.settings[field]||typeof db.settings[field]!=='object')db.settings[field]={};
+  db.settings[field][readingKey(name)]=r
+}
+function textMatchesReading(value,query,kind=''){
+  const q=kanaSearchNorm(query);if(!q)return true;
+  if(kanaSearchNorm(value).includes(q))return true;
+  const r=kind?learnedReading(kind,value):'';
+  return !!r&&kanaSearchNorm(r).includes(q)
+}
+function candidateRank(name,q,kind=''){
+  const nq=kanaSearchNorm(q),nn=kanaSearchNorm(name),nr=kanaSearchNorm(learnedReading(kind,name));
+  if(!nq)return 0;
+  if(nn.startsWith(nq))return 4;
+  if(nr&&nr.startsWith(nq))return 3;
+  if(nn.includes(nq))return 2;
+  if(nr&&nr.includes(nq))return 1;
+  return 0
+}
 function memoCandidates(query=''){
-  let q=query.trim().toLowerCase(),map=new Map();
+  let map=new Map();
   db.tx.forEach((x,i)=>{
     if(x.type!==type)return;
-    let name=String(x.memo||'').trim();if(!name)return;
-    let k=name.toLowerCase(),e=map.get(k)||{name,count:0,last:0,category:x.category,type:x.type};
+    let name=String(x.itemName||x.memo||'').trim();if(!name)return;
+    let k=readingKey(name),e=map.get(k)||{name,count:0,last:0,category:x.category,type:x.type};
     e.count++;e.last=Math.max(e.last,Number(x.createdAt||i));e.category=x.category||e.category;e.type=x.type||e.type;map.set(k,e)
   });
   db.recurring.forEach((x,i)=>{
     if(x.type!==type)return;
     let name=String(x.name||'').trim();if(!name)return;
-    let k=name.toLowerCase(),e=map.get(k)||{name,count:0,last:0,category:x.category,type:x.type};
+    let k=readingKey(name),e=map.get(k)||{name,count:0,last:0,category:x.category,type:x.type};
     e.count++;e.last=Math.max(e.last,Date.now()-100000-i);map.set(k,e)
   });
   let arr=[...map.values()];
-  if(q)arr=arr.filter(x=>x.name.toLowerCase().includes(q));
-  return arr.sort((a,b)=>{
-    if(!q)return b.last-a.last||b.count-a.count||a.name.localeCompare(b.name,'ja');
-    let an=a.name.toLowerCase(),bn=b.name.toLowerCase(),ap=an.startsWith(q)?2:an.includes(q)?1:0,bp=bn.startsWith(q)?2:bn.includes(q)?1:0;
-    return bp-ap||b.count-a.count||b.last-a.last||a.name.localeCompare(b.name,'ja')
-  }).slice(0,q?8:6)
+  if(query.trim())arr=arr.filter(x=>textMatchesReading(x.name,query,'name'));
+  return arr.sort((a,b)=>candidateRank(b.name,query,'name')-candidateRank(a.name,query,'name')||b.count-a.count||b.last-a.last||a.name.localeCompare(b.name,'ja')).slice(0,query.trim()?8:6)
+}
+function merchantCandidates(query=''){
+  let map=new Map();
+  db.tx.forEach((x,i)=>{
+    if(x.type!==type)return;
+    let name=String(x.merchant||'').trim();if(!name)return;
+    let k=readingKey(name),e=map.get(k)||{name,count:0,last:0};
+    e.count++;e.last=Math.max(e.last,Number(x.createdAt||i));map.set(k,e)
+  });
+  let arr=[...map.values()];
+  if(query.trim())arr=arr.filter(x=>textMatchesReading(x.name,query,'merchant'));
+  return arr.sort((a,b)=>candidateRank(b.name,query,'merchant')-candidateRank(a.name,query,'merchant')||b.count-a.count||b.last-a.last||a.name.localeCompare(b.name,'ja')).slice(0,query.trim()?8:6)
 }
 function highlightMemo(name,q){
   let raw=String(name||''),needle=String(q||'').trim(),low=raw.toLowerCase(),nlow=needle.toLowerCase(),i=nlow?low.indexOf(nlow):-1;
@@ -493,15 +545,43 @@ function highlightMemo(name,q){
 function renderMemoSuggestions(){
   let box=$('memoSuggestions'),q=$('memo').value,c=memoCandidates(q);
   if(!c.length){box.classList.add('hide');box.innerHTML='';return}
-  let head=q.trim()?'入力に合う候補':'最近使った名目';
-  box.innerHTML='<div class="suggestions-head">'+head+'</div>'+c.map((x,i)=>'<button type="button" data-memo-index="'+i+'"><b>'+highlightMemo(x.name,q)+'</b><small>'+(q.trim()?'使用 '+x.count+'回':'最近の入力')+(x.category?' ・ '+esc(x.category):'')+'</small></button>').join('');
+  box.innerHTML='<div class="suggestions-head">'+(q.trim()?'入力に合う名目':'最近使った名目')+'</div>'+c.map((x,i)=>'<button type="button" data-memo-index="'+i+'"><b>'+highlightMemo(x.name,q)+'</b><small>使用 '+x.count+'回'+(x.category?' ・ '+esc(x.category):'')+'</small></button>').join('');
   box.classList.remove('hide');
   $$('[data-memo-index]').forEach(b=>b.onclick=()=>{
     let x=c[Number(b.dataset.memoIndex)];if(!x)return;
     $('memo').value=x.name;
     if(x.category&&db.categories[type]?.some(v=>v[0]===x.category))$('cat').value=x.category;
-    box.classList.add('hide');
+    box.classList.add('hide')
   })
+}
+function renderMerchantSuggestions(){
+  let box=$('merchantSuggestions'),q=$('merchantInput').value,c=merchantCandidates(q);
+  if(!c.length){box.classList.add('hide');box.innerHTML='';return}
+  box.innerHTML='<div class="suggestions-head">'+(q.trim()?'入力に合う店名・利用先':'最近使った店名・利用先')+'</div>'+c.map((x,i)=>'<button type="button" data-merchant-index="'+i+'"><b>'+highlightMemo(x.name,q)+'</b><small>使用 '+x.count+'回'+(learnedReading('merchant',x.name)&&q.trim()?' ・ よみ '+esc(learnedReading('merchant',x.name)):'')+'</small></button>').join('');
+  box.classList.remove('hide');
+  $$('[data-merchant-index]').forEach(b=>b.onclick=()=>{
+    let x=c[Number(b.dataset.merchantIndex)];if(!x)return;
+    $('merchantInput').value=x.name;box.classList.add('hide')
+  })
+}
+function resetReadingCapture(id){let el=$(id);if(el){el._readingParts=[];el._readingChunk=''}}
+function bindReadingCapture(id,kind,renderFn){
+  const el=$(id);if(!el||el.dataset.readingBound)return;el.dataset.readingBound='1';resetReadingCapture(id);
+  el.addEventListener('compositionstart',()=>{el._readingChunk=''});
+  el.addEventListener('compositionupdate',e=>{
+    const d=String(e.data||'');
+    if(/[ぁ-んァ-ヶ]/.test(d)&&kanaSearchNorm(d).length>=kanaSearchNorm(el._readingChunk||'').length)el._readingChunk=d;
+    if(renderFn)setTimeout(renderFn,0)
+  });
+  el.addEventListener('compositionend',()=>{
+    if(el._readingChunk)el._readingParts.push(el._readingChunk);
+    el._readingChunk='';if(renderFn)setTimeout(renderFn,0)
+  });
+  if(renderFn){el.addEventListener('input',renderFn);el.addEventListener('keyup',renderFn);el.addEventListener('paste',()=>setTimeout(renderFn,0));el.addEventListener('focus',renderFn)}
+}
+function learnReadingFromInput(kind,id,value){
+  const el=$(id),parts=el?el._readingParts||[]:[];
+  if(parts.length)learnReading(kind,value,parts.join(''))
 }
 let numberTarget='',numberBuffer='';
 function openNumpad(id){let el=$(id);if(!el)return;numberTarget=id;numberBuffer=String(el.value||'').replace(/\D/g,'').slice(0,10);updateNumpad();$('numpadTitle').textContent=id==='budget'?'月予算を入力':'金額を入力';$('numpadDialog').showModal()}
@@ -534,7 +614,7 @@ function fillRecCats(){let t=$('recType').value==='income'?'income':'expense';op
 function openRecurring(id=''){
   let r=id?db.recurring.find(x=>x.id===id):null;$('recurring').dataset.id=id;$('recTitle').textContent=r?'固定収支を編集':'固定費・サブスクを追加';$('recType').value=r?.type==='income'?'income':'expense';$('recName').value=r?.name||'';$('recAmount').value=r?.amount||'';$('recDay').innerHTML=Array.from({length:31},(_,i)=>'<option value="'+(i+1)+'">'+(i===30?'月末':(i+1)+'日')+'</option>').join('');$('recDay').value=Number(r?.day||1);fillRecCats();if(r?.category)$('recCat').value=recCat(r);$('recAuto').classList.toggle('on',r?r.autoPost!==false:true);$('recurring').showModal()
 }
-function txList(el,a,limit=999){let r=a.slice().sort((x,y)=>(y.date||'').localeCompare(x.date||'')||(y.createdAt||0)-(x.createdAt||0)).slice(0,limit);el.innerHTML=r.length?r.map(x=>'<div class="tx" data-id="'+x.id+'"><div class="ico">'+(x.type==='income'?'💰':icon(x.category))+'</div><div><b>'+esc(x.memo||x.category)+(x.receiptGroupId?' 📷':'')+'</b><p>'+esc(x.date)+' ・ '+esc(x.category)+(x.merchant?' ・ '+esc(x.merchant):'')+'</p></div><div class="amt '+(x.type==='income'?'income':'expense')+'">'+(x.type==='income'?'+':'−')+money(x.amount)+'</div></div>').join(''):'<div class="empty">まだ記録がありません</div>';el.querySelectorAll('.tx').forEach(n=>n.onclick=()=>openEdit(n.dataset.id))}
+function txList(el,a,limit=999){let r=a.slice().sort((x,y)=>(y.date||'').localeCompare(x.date||'')||(y.createdAt||0)-(x.createdAt||0)).slice(0,limit);el.innerHTML=r.length?r.map(x=>'<div class="tx" data-id="'+x.id+'"><div class="ico">'+(x.type==='income'?'💰':icon(x.category))+'</div><div><b>'+esc(x.itemName||x.memo||x.category)+(x.receiptGroupId?' 📷':'')+'</b><p>'+esc(x.date)+' ・ '+esc(x.category)+(x.merchant?' ・ '+esc(x.merchant):'')+(x.note?' ・ '+esc(x.note):'')+'</p></div><div class="amt '+(x.type==='income'?'income':'expense')+'">'+(x.type==='income'?'+':'−')+money(x.amount)+'</div></div>').join(''):'<div class="empty">まだ記録がありません</div>';el.querySelectorAll('.tx').forEach(n=>n.onclick=()=>openEdit(n.dataset.id))}
 function render(){let t=tot(),b=budget(),reserved=pendingRecurringExpense(),rem=b?Math.max(0,b-t.exp-reserved):null;$('monthLabel').textContent=view.getFullYear()+'年'+(view.getMonth()+1)+'月';$('remain').textContent=rem===null?'—':money(rem);$('heroSub').textContent=b?'予算 '+money(b)+' / 使用 '+money(t.exp)+(reserved?' / 予定固定費 '+money(reserved):''):'「計画」で月予算を設定できます';$('hExp').textContent=money(t.exp);$('hInc').textContent=money(t.inc);$('hSav').textContent=money(forecast());$('recentN').textContent=rows().length+'件';txList($('recent'),rows(),6);renderHist();$('budget').value=b||'';$('autoSav').classList.toggle('on',db.settings.autoSavings);let savPlan=db.settings.autoSavings?forecast():0;$('savForecast').textContent=money(savPlan);$('savForecastNote').textContent=db.settings.autoSavings?(extraIncome()?'月末に確定します（臨時収入を含む）':'月末に確定します'):'自動貯蓄がOFFです';$('savTotal').textContent=money(db.savings.reduce((a,x)=>a+Number(x.amount||0),0));let s=db.savings.slice().sort((a,b)=>b.month.localeCompare(a.month)).slice(0,6);$('savHist').innerHTML=s.map(x=>'<div class="tx"><div class="ico">💰</div><div><b>'+x.month+' の貯蓄</b></div><div class="amt income">'+money(x.amount)+'</div></div>').join('');renderMainCalendar();renderRecurring();renderCategoryManager()}
 function renderCategoryBreakdown(){
   let expenseRows=rows().filter(x=>x.type==='expense'),total=expenseRows.reduce((a,x)=>a+Number(x.amount||0),0),map={};
@@ -574,7 +654,7 @@ function renderCalendarDay(){
   summary.textContent=a.length?(a.length+'件・支出 '+money(exp)+(inc?'・収入 '+money(inc):'')):'記録なし';
   txList(list,a)
 }
-function renderHist(){renderCategoryBreakdown();let q=$('q').value.toLowerCase(),c=$('qcat').value,r=rows().filter(x=>(!c||x.category===c)&&(!q||String(x.memo||'').toLowerCase().includes(q)||String(x.merchant||'').toLowerCase().includes(q)||String(x.category||'').toLowerCase().includes(q)));$('histN').textContent=r.length+'件';txList($('hist'),r)}
+function renderHist(){renderCategoryBreakdown();let q=$('q').value,c=$('qcat').value,r=rows().filter(x=>(!c||x.category===c)&&(!q||textMatchesReading(x.itemName||x.memo||'',q,'name')||textMatchesReading(x.merchant||'',q,'merchant')||String(x.note||'').toLowerCase().includes(String(q).toLowerCase())||String(x.category||'').includes(q)));$('histN').textContent=r.length+'件';txList($('hist'),r)}
 let batchRowsData=[];
 let receiptRowsData=[],receiptExpectedTotal=0,pendingReceiptArchive=null;
 function batchDefaultCategory(){return db.categories.expense.some(x=>x[0]==='食費')?'食費':db.categories.expense[0]?.[0]||'その他'}
@@ -593,11 +673,12 @@ function renderBatchRows(){
   syncBatchRowsFromDom();
 }
 function openBatchEntry(){
-  $('batchStore').value='';$('batchDate').value=today();batchRowsData=[];addBatchItem();addBatchItem();$('batchDialog').showModal();
+  $('batchStore').value='';resetReadingCapture('batchStore');$('batchDate').value=today();batchRowsData=[];addBatchItem();addBatchItem();$('batchDialog').showModal();
 }
 function saveBatchEntry(){
   syncBatchRowsFromDom();let store=$('batchStore').value.trim(),date=$('batchDate').value,valid=batchRowsData.filter(r=>Number(r.amount)>0&&(r.name.trim()||store));
   if(!date)return toast('日付を選んでください');if(!valid.length)return toast('商品名と金額を入力してください');
+  learnReadingFromInput('merchant','batchStore',store);
   let group=uid(),now=Date.now();valid.forEach((r,i)=>db.tx.push({id:uid(),type:'expense',amount:Number(r.amount),date,category:r.category,account:'現金',toAccount:'',memo:r.name.trim()||store||'まとめて登録',merchant:store,batchGroupId:group,tags:['まとめて登録'],fixed:false,recurringId:'',createdAt:now+i}));
   save();$('batchDialog').close();view=new Date(date+'T00:00:00');render();toast(valid.length+'件をまとめて登録しました')
 }
@@ -617,9 +698,9 @@ function renderReceiptRows(){
   box.querySelectorAll('[data-receipt-name]').forEach(el=>el.oninput=syncReceiptRowsFromDom);box.querySelectorAll('[data-receipt-cat]').forEach(el=>el.onchange=syncReceiptRowsFromDom);box.querySelectorAll('[data-receipt-amount]').forEach(el=>el.onclick=()=>openNumpad(el.id));box.querySelectorAll('[data-receipt-remove]').forEach(b=>b.onclick=()=>{syncReceiptRowsFromDom();receiptRowsData=receiptRowsData.filter(x=>x.id!==b.dataset.receiptRemove);renderReceiptRows()});renderReceiptCheck()
 }
 function saveReceiptEntries(){
-  syncReceiptRowsFromDom();let merchant=$('merchant').value.trim(),date=$('rDate').value,total=Number($('rTotal').value||0),valid=receiptRowsData.filter(r=>Number(r.amount)>0&&(r.name.trim()||merchant));if(!date||!valid.length)return toast('日付と明細を確認してください');if(total>0&&valid.some(r=>Number(r.amount)>total))return toast('合計額を超える明細は登録できません');let sum=valid.reduce((a,r)=>a+Number(r.amount||0),0);if(total>0&&Math.abs(sum-total)>1)return toast('レシート合計と明細合計が一致していません');let group=uid(),now=Date.now();valid.forEach((r,i)=>db.tx.push({id:uid(),type:'expense',amount:Number(r.amount),date,category:r.category,account:'現金',toAccount:'',memo:r.name.trim()?(merchant?merchant+' / '+r.name.trim():r.name.trim()):(merchant||'レシート'),merchant,itemName:r.name.trim(),receiptGroupId:group,tags:['レシート'],fixed:false,recurringId:'',createdAt:now+i}));save();if(pendingReceiptArchive){Promise.resolve(pendingReceiptArchive).then(blob=>saveReceiptImage(group,blob,{merchant,date,total})).catch(()=>{});pendingReceiptArchive=null}$('receipt').close();view=new Date(date+'T00:00:00');calendarSelected=date;render();toast(valid.length+'件をレシートから登録しました')
+  syncReceiptRowsFromDom();let merchant=$('merchant').value.trim(),date=$('rDate').value,total=Number($('rTotal').value||0),valid=receiptRowsData.filter(r=>Number(r.amount)>0&&(r.name.trim()||merchant));if(!date||!valid.length)return toast('日付と明細を確認してください');learnReadingFromInput('merchant','merchant',merchant);if(total>0&&valid.some(r=>Number(r.amount)>total))return toast('合計額を超える明細は登録できません');let sum=valid.reduce((a,r)=>a+Number(r.amount||0),0);if(total>0&&Math.abs(sum-total)>1)return toast('レシート合計と明細合計が一致していません');let group=uid(),now=Date.now();valid.forEach((r,i)=>db.tx.push({id:uid(),type:'expense',amount:Number(r.amount),date,category:r.category,account:'現金',toAccount:'',memo:r.name.trim()?(merchant?merchant+' / '+r.name.trim():r.name.trim()):(merchant||'レシート'),merchant,itemName:r.name.trim(),receiptGroupId:group,tags:['レシート'],fixed:false,recurringId:'',createdAt:now+i}));save();if(pendingReceiptArchive){Promise.resolve(pendingReceiptArchive).then(blob=>saveReceiptImage(group,blob,{merchant,date,total})).catch(()=>{});pendingReceiptArchive=null}$('receipt').close();view=new Date(date+'T00:00:00');calendarSelected=date;render();toast(valid.length+'件をレシートから登録しました')
 }
-function openEntry(t,id=''){type=t;edit=id;let x=id?db.tx.find(z=>z.id===id):null;if(x)type=x.type;$('entryTitle').textContent=x?'記録を編集':(type==='income'?'収入を記録':'支出を記録');$('amount').value=x?.amount||'';$('date').value=x?.date||today();$('memo').value=x?.memo||'';$('memoSuggestions').classList.add('hide');options($('cat'),db.categories[type].map(v=>v[0]),x?.category);$('deleteEntry').classList.toggle('hide',!x);$('viewReceiptImage').classList.toggle('hide',!x?.receiptGroupId);$('viewReceiptImage').onclick=x?.receiptGroupId?()=>showReceiptImage(x.receiptGroupId):null;$('entry').showModal()}
+function openEntry(t,id=''){type=t;edit=id;let x=id?db.tx.find(z=>z.id===id):null;if(x)type=x.type;$('entryTitle').textContent=x?'記録を編集':(type==='income'?'収入を記録':'支出を記録');$('amount').value=x?.amount||'';$('date').value=x?.date||today();$('memo').value=x?.itemName||x?.memo||'';$('merchantInput').value=x?.merchant||'';$('entryNote').value=x?.note||'';$('noteDetails').open=!!x?.note;$('merchantLabel').textContent=type==='income'?'入金元・相手（任意）':'店名・利用先（任意）';$('memoSuggestions').classList.add('hide');$('merchantSuggestions').classList.add('hide');resetReadingCapture('memo');resetReadingCapture('merchantInput');options($('cat'),db.categories[type].map(v=>v[0]),x?.category);$('deleteEntry').classList.toggle('hide',!x);$('viewReceiptImage').classList.toggle('hide',!x?.receiptGroupId);$('viewReceiptImage').onclick=x?.receiptGroupId?()=>showReceiptImage(x.receiptGroupId):null;$('entry').showModal()}
 function openEdit(id){let x=db.tx.find(z=>z.id===id);if(x)openEntry(x.type,id)}
 
 function normalizeMoneyChars(s){return String(s||'').replace(/[￥\\]/g,'¥').replace(/[，]/g,',').replace(/[−―–—]/g,'-')}
@@ -786,7 +867,7 @@ function applyR(r,src){
 }
 async function receiptImageVariants(f){return new Promise((ok,no)=>{let i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{try{let target=i.width<900?Math.min(1800,i.width*4):Math.min(2400,i.width*1.5),sc=target/i.width,c=document.createElement('canvas');c.width=Math.max(1,Math.round(i.width*sc));c.height=Math.max(1,Math.round(i.height*sc));let ctx=c.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(i,0,0,c.width,c.height);let raw=c.toDataURL('image/jpeg',.92),im=ctx.getImageData(0,0,c.width,c.height),d=im.data;for(let p=0;p<d.length;p+=4){let y=.299*d[p]+.587*d[p+1]+.114*d[p+2];y=Math.max(0,Math.min(255,(y-128)*1.35+128));d[p]=d[p+1]=d[p+2]=y}ctx.putImageData(im,0,0);let gray=c.toDataURL('image/png');let th=ctx.getImageData(0,0,c.width,c.height),td=th.data;for(let p=0;p<td.length;p+=4){let y=td[p];let v=y>172?255:y<92?0:Math.round((y-92)/(172-92)*255);td[p]=td[p+1]=td[p+2]=v}ctx.putImageData(th,0,0);let threshold=c.toDataURL('image/png');URL.revokeObjectURL(u);ok({raw,gray,threshold})}catch(e){URL.revokeObjectURL(u);no(e)}};i.onerror=no;i.src=u})}
 async function analyze(f){
-  pendingReceiptArchive=archiveReceiptImage(f).catch(()=>null);
+  pendingReceiptArchive=archiveReceiptImage(f).catch(()=>null);resetReadingCapture('merchant');
   $('receipt').showModal();$('preview').src=URL.createObjectURL(f);$('rStatus').textContent='レシートを解析しています…';$('rProg').style.width='12%';receiptRowsData=[];receiptExpectedTotal=0;renderReceiptRows();$('merchant').value='';$('rDate').value=today();$('rTotal').value='';
   let imgs=await receiptImageVariants(f);
   try{let c=new AbortController(),tm=setTimeout(()=>c.abort(),5000),health=await fetch(AI,{method:'GET',signal:c.signal,cache:'no-store'});clearTimeout(tm);let h=await health.json().catch(()=>({}));if(h?.configured){let ctl=new AbortController(),tm2=setTimeout(()=>ctl.abort(),30000),res=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_data_url:imgs.raw,categories:db.categories.expense.map(x=>x[0])}),signal:ctl.signal});clearTimeout(tm2);let j=await res.json().catch(()=>({}));if(res.ok&&j.ok&&j.receipt){applyR(j.receipt,'AI');return}}}catch{}
@@ -815,11 +896,11 @@ async function analyze(f){
 $$('.app-number').forEach(el=>el.onclick=()=>openNumpad(el.id));$$('.app-date').forEach(el=>el.onclick=()=>openCalendar(el.id));
 $$('[data-num]').forEach(b=>b.onclick=()=>{if(numberBuffer.length>=10)return;let add=b.dataset.num;if(!numberBuffer&&add==='00')add='0';numberBuffer=(numberBuffer+add).replace(/^0+(?=\d)/,'');updateNumpad()});$('numBack').onclick=()=>{numberBuffer=numberBuffer.slice(0,-1);updateNumpad()};$('numClear').onclick=()=>{numberBuffer='';updateNumpad()};$('numDone').onclick=()=>{if(numberTarget){$(numberTarget).value=numberBuffer;if(numberTarget.startsWith('batchAmount-'))syncBatchRowsFromDom();if(numberTarget.startsWith('receiptAmount-'))syncReceiptRowsFromDom()}$('numpadDialog').close()};
 $('calPrev').onclick=()=>{calView=new Date(calView.getFullYear(),calView.getMonth()-1,1);renderCalendar()};$('calNext').onclick=()=>{calView=new Date(calView.getFullYear(),calView.getMonth()+1,1);renderCalendar()};$('calToday').onclick=()=>{let v=today();if(dateTarget)$(dateTarget).value=v;$('calendarDialog').close()};
-$('memo').oninput=renderMemoSuggestions;$('memo').onkeyup=renderMemoSuggestions;$('memo').oncompositionupdate=()=>setTimeout(renderMemoSuggestions,0);$('memo').onpaste=()=>setTimeout(renderMemoSuggestions,0);$('memo').onfocus=renderMemoSuggestions;$('memo').onblur=()=>setTimeout(()=>$('memoSuggestions').classList.add('hide'),180);
+bindReadingCapture('memo','name',renderMemoSuggestions);bindReadingCapture('merchantInput','merchant',renderMerchantSuggestions);bindReadingCapture('batchStore','merchant',null);bindReadingCapture('merchant','merchant',null);$('memo').onblur=()=>setTimeout(()=>$('memoSuggestions').classList.add('hide'),180);$('merchantInput').onblur=()=>setTimeout(()=>$('merchantSuggestions').classList.add('hide'),180);
 function setCategoryFold(open){let wrap=$('categorySettingsFold'),body=$('categoryFoldBody'),btn=$('categoryFoldToggle');if(!wrap||!body||!btn)return;wrap.classList.toggle('open',!!open);body.classList.toggle('hide',!open);btn.setAttribute('aria-expanded',open?'true':'false')}
 $('categoryFoldToggle').onclick=()=>setCategoryFold($('categoryFoldBody').classList.contains('hide'));
 $('addExpenseCat').onclick=()=>openCategoryDialog('expense');$('addIncomeCat').onclick=()=>openCategoryDialog('income');$('saveCategory').onclick=()=>{let t=$('categoryType').value,old=$('categoryOriginal').value,name=$('categoryName').value.trim(),ic=$('categoryIcon').value.trim()||'📌';if(!name)return toast('カテゴリ名を入力してください');if(db.categories[t].some(x=>x[0]===name&&x[0]!==old))return toast('同名カテゴリがあります');if(old){let item=db.categories[t].find(x=>x[0]===old);if(item){item[0]=name;item[1]=ic}if(name!==old)replaceCategoryRefs(t,old,name)}else db.categories[t].push([name,ic]);save();refreshCategorySelects();$('categoryDialog').close();render();toast(old?'カテゴリを変更しました':'カテゴリを追加しました')};$('deleteCategory').onclick=()=>{let t=$('categoryType').value,n=$('categoryOriginal').value;$('categoryDialog').close();deleteCategoryNow(t,n)};
-$$('.nav button').forEach(b=>b.onclick=()=>{$$('.page').forEach(x=>x.classList.toggle('on',x.id===b.dataset.p));$$('.nav button').forEach(x=>x.classList.toggle('on',x===b));if(b.dataset.p==='settings')setCategoryFold(false);render()});$('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};$('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};$('addExp').onclick=()=>openEntry('expense');$('addInc').onclick=()=>openEntry('income');$('openBatch').onclick=openBatchEntry;$('addBatchRow').onclick=()=>{syncBatchRowsFromDom();addBatchItem()};$('saveBatch').onclick=saveBatchEntry;$('saveEntry').onclick=()=>{let a=Number($('amount').value),d=$('date').value;if(!(a>0)||!d)return toast('金額と日付を入力してください');let o={type,amount:a,date:d,category:$('cat').value,memo:$('memo').value.trim(),createdAt:Date.now()};if(edit){let i=db.tx.findIndex(x=>x.id===edit);db.tx[i]={...db.tx[i],...o}}else db.tx.push({id:uid(),...o});save();$('entry').close();render();toast('登録しました')};$('deleteEntry').onclick=()=>{if(edit&&confirm('削除しますか？')){let x=db.tx.find(z=>z.id===edit),g=x?.receiptGroupId;db.tx=db.tx.filter(x=>x.id!==edit);save();if(g&&!db.tx.some(x=>x.receiptGroupId===g))deleteReceiptImage(g);$('entry').close();render()}};$('q').oninput=renderHist;$('qcat').onchange=renderHist;$('catClear').onclick=()=>{$('qcat').value='';$('q').value='';renderHist()};$('saveBudget').onclick=()=>{db.overallBudgets[mk(view)]=Number($('budget').value||0);save();render();toast('予算を保存しました')};$('autoSav').onclick=()=>{db.settings.autoSavings=!db.settings.autoSavings;save();syncSav();render()};$('addRecurring').onclick=()=>openRecurring();$('recType').onchange=fillRecCats;$('recAuto').onclick=()=>$('recAuto').classList.toggle('on');$('saveRec').onclick=()=>{let id=$('recurring').dataset.id,name=$('recName').value.trim(),amount=Number($('recAmount').value),day=Number($('recDay').value),rt=$('recType').value;if(!name||!(amount>0))return toast('名前と金額を入力してください');let obj={id:id||uid(),type:rt,amount,name,day,category:$('recCat').value,autoPost:$('recAuto').classList.contains('on'),active:id?(db.recurring.find(x=>x.id===id)?.active!==false):true,freq:'monthly'};let i=db.recurring.findIndex(x=>x.id===obj.id);if(i>=0)db.recurring[i]={...db.recurring[i],...obj};else db.recurring.push(obj);save();autoRecurring();$('recurring').close();render();toast('固定収支を保存しました')};$('receiptFile').onchange=e=>{let f=e.target.files[0];if(f)analyze(f);e.target.value=''};$('addReceiptRow').onclick=()=>{syncReceiptRowsFromDom();receiptRowsData.push({id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]});renderReceiptRows()};$('saveReceipt').onclick=saveReceiptEntries;if($('appVersion'))$('appVersion').textContent=APP_BUILD;
+$$('.nav button').forEach(b=>b.onclick=()=>{$$('.page').forEach(x=>x.classList.toggle('on',x.id===b.dataset.p));$$('.nav button').forEach(x=>x.classList.toggle('on',x===b));if(b.dataset.p==='settings')setCategoryFold(false);render()});$('prev').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);render()};$('next').onclick=()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);render()};$('addExp').onclick=()=>openEntry('expense');$('addInc').onclick=()=>openEntry('income');$('openBatch').onclick=openBatchEntry;$('addBatchRow').onclick=()=>{syncBatchRowsFromDom();addBatchItem()};$('saveBatch').onclick=saveBatchEntry;$('saveEntry').onclick=()=>{let a=Number($('amount').value),d=$('date').value,name=$('memo').value.trim(),merchant=$('merchantInput').value.trim(),note=$('entryNote').value.trim();if(!(a>0)||!d)return toast('金額と日付を入力してください');learnReadingFromInput('name','memo',name);learnReadingFromInput('merchant','merchantInput',merchant);let existing=edit?db.tx.find(x=>x.id===edit):null,memo=existing?.receiptGroupId?(name?(merchant?merchant+' / '+name:name):(merchant||'レシート')):name,o={type,amount:a,date:d,category:$('cat').value,memo,merchant,note,createdAt:existing?.createdAt||Date.now()};if(existing?.receiptGroupId)o.itemName=name;if(edit){let i=db.tx.findIndex(x=>x.id===edit);db.tx[i]={...db.tx[i],...o}}else db.tx.push({id:uid(),...o});save();$('entry').close();render();toast('登録しました')};$('deleteEntry').onclick=()=>{if(edit&&confirm('削除しますか？')){let x=db.tx.find(z=>z.id===edit),g=x?.receiptGroupId;db.tx=db.tx.filter(x=>x.id!==edit);save();if(g&&!db.tx.some(x=>x.receiptGroupId===g))deleteReceiptImage(g);$('entry').close();render()}};$('q').oninput=renderHist;$('qcat').onchange=renderHist;$('catClear').onclick=()=>{$('qcat').value='';$('q').value='';renderHist()};$('saveBudget').onclick=()=>{db.overallBudgets[mk(view)]=Number($('budget').value||0);save();render();toast('予算を保存しました')};$('autoSav').onclick=()=>{db.settings.autoSavings=!db.settings.autoSavings;save();syncSav();render()};$('addRecurring').onclick=()=>openRecurring();$('recType').onchange=fillRecCats;$('recAuto').onclick=()=>$('recAuto').classList.toggle('on');$('saveRec').onclick=()=>{let id=$('recurring').dataset.id,name=$('recName').value.trim(),amount=Number($('recAmount').value),day=Number($('recDay').value),rt=$('recType').value;if(!name||!(amount>0))return toast('名前と金額を入力してください');let obj={id:id||uid(),type:rt,amount,name,day,category:$('recCat').value,autoPost:$('recAuto').classList.contains('on'),active:id?(db.recurring.find(x=>x.id===id)?.active!==false):true,freq:'monthly'};let i=db.recurring.findIndex(x=>x.id===obj.id);if(i>=0)db.recurring[i]={...db.recurring[i],...obj};else db.recurring.push(obj);save();autoRecurring();$('recurring').close();render();toast('固定収支を保存しました')};$('receiptFile').onchange=e=>{let f=e.target.files[0];if(f)analyze(f);e.target.value=''};$('addReceiptRow').onclick=()=>{syncReceiptRowsFromDom();receiptRowsData.push({id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]});renderReceiptRows()};$('saveReceipt').onclick=saveReceiptEntries;if($('appVersion'))$('appVersion').textContent=APP_BUILD;
 if($('forceUpdate'))$('forceUpdate').onclick=()=>checkAppUpdate(true);
 if($('recoveryStatus')){
   const meta=currentProtectionStatus();
