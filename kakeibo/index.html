@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=41">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=42">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -122,7 +122,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v41-separated-fields-kana';
+const APP_BUILD='v42-recent-store-title';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -152,7 +152,7 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=41',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=42',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 window.addEventListener('pageshow',()=>checkAppUpdate());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
@@ -614,7 +614,7 @@ function fillRecCats(){let t=$('recType').value==='income'?'income':'expense';op
 function openRecurring(id=''){
   let r=id?db.recurring.find(x=>x.id===id):null;$('recurring').dataset.id=id;$('recTitle').textContent=r?'固定収支を編集':'固定費・サブスクを追加';$('recType').value=r?.type==='income'?'income':'expense';$('recName').value=r?.name||'';$('recAmount').value=r?.amount||'';$('recDay').innerHTML=Array.from({length:31},(_,i)=>'<option value="'+(i+1)+'">'+(i===30?'月末':(i+1)+'日')+'</option>').join('');$('recDay').value=Number(r?.day||1);fillRecCats();if(r?.category)$('recCat').value=recCat(r);$('recAuto').classList.toggle('on',r?r.autoPost!==false:true);$('recurring').showModal()
 }
-function txList(el,a,limit=999){let r=a.slice().sort((x,y)=>(y.date||'').localeCompare(x.date||'')||(y.createdAt||0)-(x.createdAt||0)).slice(0,limit);el.innerHTML=r.length?r.map(x=>'<div class="tx" data-id="'+x.id+'"><div class="ico">'+(x.type==='income'?'💰':icon(x.category))+'</div><div><b>'+esc(x.itemName||x.memo||x.category)+(x.receiptGroupId?' 📷':'')+'</b><p>'+esc(x.date)+' ・ '+esc(x.category)+(x.merchant?' ・ '+esc(x.merchant):'')+(x.note?' ・ '+esc(x.note):'')+'</p></div><div class="amt '+(x.type==='income'?'income':'expense')+'">'+(x.type==='income'?'+':'−')+money(x.amount)+'</div></div>').join(''):'<div class="empty">まだ記録がありません</div>';el.querySelectorAll('.tx').forEach(n=>n.onclick=()=>openEdit(n.dataset.id))}
+function txList(el,a,limit=999){let r=a.slice().sort((x,y)=>(y.date||'').localeCompare(x.date||'')||(y.createdAt||0)-(x.createdAt||0)).slice(0,limit),isRecent=el?.id==='recent';el.innerHTML=r.length?r.map(x=>{let name=x.itemName||x.memo||x.category,main=isRecent?(x.merchant||name):name,sub=esc(x.date)+' ・ '+esc(x.category);if(isRecent&&name&&name!==main)sub+=' ・ '+esc(name);else if(!isRecent&&x.merchant)sub+=' ・ '+esc(x.merchant);if(x.note)sub+=' ・ '+esc(x.note);return '<div class="tx" data-id="'+x.id+'"><div class="ico">'+(x.type==='income'?'💰':icon(x.category))+'</div><div><b>'+esc(main)+(x.receiptGroupId?' 📷':'')+'</b><p>'+sub+'</p></div><div class="amt '+(x.type==='income'?'income':'expense')+'">'+(x.type==='income'?'+':'−')+money(x.amount)+'</div></div>'}).join(''):'<div class="empty">まだ記録がありません</div>';el.querySelectorAll('.tx').forEach(n=>n.onclick=()=>openEdit(n.dataset.id))}
 function render(){let t=tot(),b=budget(),reserved=pendingRecurringExpense(),rem=b?Math.max(0,b-t.exp-reserved):null;$('monthLabel').textContent=view.getFullYear()+'年'+(view.getMonth()+1)+'月';$('remain').textContent=rem===null?'—':money(rem);$('heroSub').textContent=b?'予算 '+money(b)+' / 使用 '+money(t.exp)+(reserved?' / 予定固定費 '+money(reserved):''):'「計画」で月予算を設定できます';$('hExp').textContent=money(t.exp);$('hInc').textContent=money(t.inc);$('hSav').textContent=money(forecast());$('recentN').textContent=rows().length+'件';txList($('recent'),rows(),6);renderHist();$('budget').value=b||'';$('autoSav').classList.toggle('on',db.settings.autoSavings);let savPlan=db.settings.autoSavings?forecast():0;$('savForecast').textContent=money(savPlan);$('savForecastNote').textContent=db.settings.autoSavings?(extraIncome()?'月末に確定します（臨時収入を含む）':'月末に確定します'):'自動貯蓄がOFFです';$('savTotal').textContent=money(db.savings.reduce((a,x)=>a+Number(x.amount||0),0));let s=db.savings.slice().sort((a,b)=>b.month.localeCompare(a.month)).slice(0,6);$('savHist').innerHTML=s.map(x=>'<div class="tx"><div class="ico">💰</div><div><b>'+x.month+' の貯蓄</b></div><div class="amt income">'+money(x.amount)+'</div></div>').join('');renderMainCalendar();renderRecurring();renderCategoryManager()}
 function renderCategoryBreakdown(){
   let expenseRows=rows().filter(x=>x.type==='expense'),total=expenseRows.reduce((a,x)=>a+Number(x.amount||0),0),map={};
