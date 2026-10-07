@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=43">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=44">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -123,7 +123,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v43-calendar-polish';
+const APP_BUILD='v44-calendar-clean';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -153,7 +153,7 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=43',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=44',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 window.addEventListener('pageshow',()=>checkAppUpdate());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
@@ -665,7 +665,7 @@ function renderCalendarDay(){
   const list=$('calendarDayList'),title=$('calendarDayTitle'),summary=$('calendarDaySummary'),metrics=$('calendarDayMetrics');if(!list||!title)return;
   const a=db.tx.filter(x=>x.date===calendarSelected),d=calendarSelected?new Date(calendarSelected+'T00:00:00'):null;
   const wd=['日','月','火','水','木','金','土'];
-  title.textContent=d&&!isNaN(d)?(d.getMonth()+1)+'月'+d.getDate()+'日（'+wd[d.getDay()]+'）'):'日付を選択';
+  title.textContent=d&&!isNaN(d)?(d.getMonth()+1)+'月'+d.getDate()+'日（'+wd[d.getDay()]+'）':'日付を選択';
   const exp=a.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0),inc=a.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0);
   summary.textContent=a.length?a.length+'件':'記録なし';
   if(metrics){
