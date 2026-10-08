@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>くらし家計簿 | 緊急データ確認</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;color:#1b2737;background:#f6f8fc}
+*{box-sizing:border-box}body{margin:0;padding:14px 12px 40px}.app{max-width:650px;margin:0 auto}
+h1{font-size:19px;margin:9px 0 11px}h2{font-size:15px;margin:16px 0 8px}
+p{font-size:13px;line-height:1.7;margin:8px 0}small{font-size:11px;line-height:1.6;color:#6b7483}
+.card{border-radius:15px;border:1px solid #e1e6ef;background:#fff;padding:14px;margin-bottom:12px}
+.warn{border-color:#efd5a1;background:#fff9eb}
+.ok{background:#edf8f2;border-color:#c1e9cf}
+button,.link{display:inline-block;border:1px solid #cad3e8;background:white;color:#263a65;border-radius:10px;font-size:12px;font-weight:750;padding:10px 13px;cursor:pointer;line-height:1.2;text-decoration:none}
+button.primary{background:#315bd6;color:white;border-color:#315bd6}
+button:focus-visible,.link:focus-visible{outline:3px solid #93b6ff}
+.controls{display:flex;gap:9px;flex-wrap:wrap;margin:10px 0}
+.stat{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.stat b{font-size:15px}.item{border:1px solid #dde4ee;border-radius:12px;margin-bottom:9px;padding:12px;background:#fff}
+.item .top{display:flex;align-items:flex-start;justify-content:space-between;gap:9px}
+.item .src{font-size:11px;color:#737e91;overflow-wrap:anywhere}
+.item strong{font-size:18px;color:#234fc4}
+.item .meta{font-size:11px;color:#687589;margin:7px 0;line-height:1.8}
+.buttons{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+#diagnostics{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;font-size:11px}
+#status{font-weight:750;color:#315bd6}
+</style>
+</head>
+<body><div class="app">
+<h1>くらし家計簿｜緊急データ確認</h1>
+<div class="card warn"><b>この画面は読み取り専用です</b>
+<p>記録を復元・合体・削除・上書きしません。端末内に残っている家計簿の保存データを確認し、必要ならJSONファイルとして書き出せます。</p>
+<p><b>アプリの削除、Webサイトデータの消去、新規入力はしないでください。</b></p>
+</div>
+<div class="card">
+<div class="stat"><span>現在の利用環境</span><b id="environment">判定中…</b></div>
+<p id="contextNote">ホーム画面版とSafariでは、別々の保存領域が使われる場合があります。</p>
+<div class="controls"><button id="scan" class="primary" type="button">保存データを再確認</button><a class="link" href="./">家計簿の画面に戻る</a></div>
+<p id="status" aria-live="polite">読み取りを準備中…</p>
+</div>
+<h2>見つかったデータ候補</h2>
+<div id="summary" class="card"><small>確認中…</small></div>
+<div id="results"></div>
+<div class="card">
+<b>確認結果だけをコピー</b>
+<p><small>個々の支出の詳細を含まない診断情報です。候補の有無・記録件数・保存先の種類などを共有する際に使えます。</small></p>
+<div class="controls"><button id="copy" type="button">診断情報をコピー</button></div>
+<pre id="diagnostics">まだ確認していません。</pre>
+</div>
+<div class="card warn"><b>候補が見つからない場合</b>
+<p>データが存在しないと断定できません。特に、ホーム画面に追加したアプリで使っていた場合は、<b>必ずホーム画面の元のアプリアイコンからこのページへ移動</b>して確認してください。Safariで直接開いたページには同じデータが表示されないことがあります。</p>
+</div>
+</div>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const vaultName='kakeibo-data-v1';
+let candidates=[],notes=[],busy=false,detail='';
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const fmtTime=v=>{const n=Number(v||0);return n?new Date(n).toLocaleString('ja-JP'):'不明'};
+const valid=x=>x&&typeof x==='object'&&Array.isArray(x.tx);
+const count=x=>Array.isArray(x?.tx)?x.tx.length:0;
+const describe=x=>({
+  items:count(x),
+  budgets:x?.overallBudgets&&typeof x.overallBudgets==='object'?Object.keys(x.overallBudgets).length:0,
+  recurring:Array.isArray(x?.recurring)?x.recurring.length:0,
+  receiptRecords:(x?.tx||[]).filter(t=>t.receiptGroupId).length
+});
+function add(source,obj,time=0){
+  const state=valid(obj?.state)?obj.state:valid(obj)?obj:null;
+  if(!state)return;
+  candidates.push({source,time:Number(time||0),state,metrics:describe(state)});
+}
+function findLocal(){
+  let found=0;
+  try{
+    const keys=[];
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&/kakeibo|家計簿/i.test(k))keys.push(k)}
+    for(const key of keys){
+      try{
+        const raw=localStorage.getItem(key);
+        if(!raw)continue;
+        const obj=JSON.parse(raw);
+        const state=valid(obj?.state)?obj.state:obj;
+        if(!valid(state))continue;
+        add('端末内データ: '+key,state,obj?.savedAt||obj?.lastBackupAt||0);
+        found++
+      }catch(error){notes.push('ローカル保存 '+key+'：読み込めません')}
+    }
+    notes.push('端末内の保存キーを確認: '+keys.length+'件 / 認識データ: '+found+'件')
+  }catch(error){notes.push('ローカル保存の確認に失敗: '+String(error?.name||error))}
+}
+function openVaultIfPresent(){
+  return new Promise(resolve=>{
+    if(!window.indexedDB){notes.push('IndexedDBが利用できません');return resolve(null)}
+    let request,settled=false;
+    const done=database=>{if(settled)return;settled=true;resolve(database)};
+    try{
+      request=indexedDB.open(vaultName);
+      // Prevent the scan from creating a fresh empty database if it does not already exist.
+      request.onupgradeneeded=event=>{
+        try{event.target.transaction.abort()}catch{}
+        notes.push('過去の家計簿データ領域は見つかりませんでした');
+      };
+      request.onerror=()=>done(null);
+      request.onblocked=()=>{notes.push('データ領域が使用中です');done(null)};
+      request.onsuccess=()=>done(request.result)
+    }catch(error){notes.push('IndexedDB確認失敗: '+String(error));done(null)}
+  })
+}
+function getStateRecord(db){
+  return new Promise(resolve=>{
+    if(!db.objectStoreNames.contains('state'))return resolve();
+    try{
+      const tx=db.transaction('state','readonly'),req=tx.objectStore('state').openCursor();
+      req.onsuccess=e=>{
+        const cursor=e.target.result;
+        if(cursor){const val=cursor.value;add('IndexedDB: state / '+String(cursor.key),val,val?.savedAt);cursor.continue()}
+        else resolve()
+      };
+      req.onerror=()=>{notes.push('状態データ読み取りエラー');resolve()}
+    }catch(error){notes.push('状態データ読み取り失敗: '+String(error));resolve()}
+  })
+}
+function getSnapshots(db){
+  return new Promise(resolve=>{
+    if(!db.objectStoreNames.contains('snapshots'))return resolve();
+    try{
+      const tx=db.transaction('snapshots','readonly'),req=tx.objectStore('snapshots').openCursor(null,'prev');
+      let seen=0;
+      req.onsuccess=e=>{
+        const cursor=e.target.result;
+        if(cursor&&seen<300){
+          const v=cursor.value;
+          add('IndexedDB: 履歴 '+String(cursor.key)+(v?.reason?' / '+v.reason:''),v,v?.savedAt);
+          seen++;cursor.continue()
+        }else {if(seen>=300)notes.push('保護のため、古い履歴の表示は300件までです');resolve()}
+      };
+      req.onerror=()=>{notes.push('履歴読み取りエラー');resolve()}
+    }catch(error){notes.push('履歴読み取り失敗: '+String(error));resolve()}
+  })
+}
+function getReceiptCount(db){
+  return new Promise(resolve=>{
+    if(!db.objectStoreNames.contains('receipts'))return resolve();
+    try{
+      const tx=db.transaction('receipts','readonly'),req=tx.objectStore('receipts').count();
+      req.onsuccess=()=>{notes.push('保存済みレシート写真: '+req.result+'件');resolve()};
+      req.onerror=()=>resolve()
+    }catch{resolve()}
+  })
+}
+function exportState(i){
+  const item=candidates[i];if(!item)return;
+  try{
+    const data=JSON.stringify(item.state,null,2);
+    const blob=new Blob([data],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob);
+    const a=document.createElement('a'),stamp=new Date().toISOString().slice(0,10);
+    a.href=url;a.download='kakeibo_recovery_candidate_'+(i+1)+'_'+stamp+'.json';document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+    $('status').textContent='候補 '+(i+1)+' の書き出しを開始しました。ファイルが保存されたか確認してください。'
+  }catch(error){$('status').textContent='書き出し失敗: '+String(error)}
+}
+function render(){
+  candidates.sort((a,b)=>b.metrics.items-a.metrics.items||b.time-a.time);
+  const max=candidates.reduce((s,x)=>Math.max(s,x.metrics.items),0);
+  $('summary').innerHTML='<div class="stat"><span>見つかった候補</span><b>'+candidates.length+'件</b></div><div class="stat" style="margin-top:10px"><span>最大の記録件数</span><b>'+max+'件</b></div><p><small>件数が多い候補が正しいとは限りません。消去済みの取引や、別の保存領域にあった記録と混同しないよう、日時を確認してください。</small></p>';
+  $('results').innerHTML=candidates.length?candidates.map((o,i)=>'<div class="item"><div class="top"><div class="src">'+esc(o.source)+'</div><strong>'+o.metrics.items+'件</strong></div><div class="meta">保存日時: '+esc(fmtTime(o.time))+' ・ 予算設定: '+o.metrics.budgets+'か月 ・ 固定収支: '+o.metrics.recurring+'件 ・ 写真付き記録: '+o.metrics.receiptRecords+'件</div><div class="buttons"><button type="button" data-export="'+i+'">候補'+(i+1)+'をJSONで保全</button></div></div>').join(''):'<div class="card warn"><b>この保存領域では候補が見つかりません</b><p>元のホーム画面アプリから開いているか確認してください。アプリを消去しないでください。</p></div>';
+  document.querySelectorAll('[data-export]').forEach(b=>b.onclick=()=>exportState(Number(b.dataset.export)));
+  detail='くらし家計簿 データ確認\n環境: '+$('environment').textContent+'\n候補: '+candidates.length+'件\n最大取引数: '+max+'件\n'+candidates.map((x,i)=>(i+1)+'. '+x.source+' / '+x.metrics.items+'件 / '+fmtTime(x.time)).join('\n')+'\n'+notes.join('\n');
+  $('diagnostics').textContent=detail;
+}
+async function scan(){
+  if(busy)return;
+  busy=true;candidates=[];notes=[];
+  $('status').textContent='保存データを読み取り専用で調べています…';
+  try{
+    findLocal();
+    const db=await openVaultIfPresent();
+    if(db){
+      try{await getStateRecord(db);await getSnapshots(db);await getReceiptCount(db)}
+      finally{db.close()}
+    }
+    render();
+    $('status').textContent='確認が終わりました。データは変更していません。';
+  }catch(error){
+    notes.push('確認処理が停止: '+String(error));
+    render();
+    $('status').textContent='確認の途中でエラーが発生しました。保存データは変更していません。'
+  }finally{busy=false}
+}
+const standalone=!!(navigator.standalone||window.matchMedia?.('(display-mode: standalone)').matches);
+$('environment').textContent=standalone?'ホーム画面アプリ内':'Safari・ブラウザ内';
+$('contextNote').textContent=standalone?'ホーム画面から起動した保存領域を確認します。アプリは削除しないでください。':'Safariなどのブラウザから確認しています。ホーム画面アプリと保存領域が異なる場合があります。';
+$('scan').onclick=scan;
+$('copy').onclick=async()=>{
+  try{await navigator.clipboard.writeText(detail);$('status').textContent='診断情報をコピーしました（記録の内容は含まれません）。'}
+  catch{$('diagnostics').focus();$('status').textContent='コピーできない場合は下の診断情報を長押ししてください。'}
+};
+scan()
+})();
+</script>
+</body>
+</html>
