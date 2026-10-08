@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=44">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=45">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -117,13 +117,13 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 
 <dialog id="receipt"><div class="mh"><h3>レシート登録</h3><button data-close="receipt">×</button></div><div class="mb">
 <img id="preview" class="preview"><div class="status" id="rStatus">解析しています…</div><div class="progress"><i id="rProg"></i></div>
-<div style="margin-top:12px"><div class="batch-head"><div class="field"><label>店名</label><input id="merchant"></div><div class="field"><label>日付</label><input id="rDate" class="app-date" type="text" inputmode="none" readonly></div></div><div class="field"><label>レシート最終合計</label><input id="rTotal" class="app-number" type="text" inputmode="none" readonly></div><div id="receiptRows" class="batch-rows"></div><button id="addReceiptRow" class="batch-add" type="button">＋ 明細を追加</button><div id="receiptCheck" class="receipt-check"><span>明細合計</span><b>¥0</b></div><div class="receipt-row-note">商品ごとに金額・カテゴリを修正できます。値引きは該当商品の金額へ反映して登録します。</div><button class="primary" id="saveReceipt" style="width:100%;margin-top:10px">明細をまとめて登録</button></div>
+<div style="margin-top:12px"><div class="batch-head"><div class="field"><label>店名</label><input id="merchant"></div><div class="field"><label>日付</label><input id="rDate" class="app-date" type="text" inputmode="none" readonly></div></div><div class="field"><label>レシート最終合計</label><input id="rTotal" class="app-number" type="text" inputmode="none" readonly></div><div id="receiptRows" class="batch-rows"></div><button id="addReceiptRow" class="batch-add" type="button">＋ 明細を追加</button><details class="optional-note" style="margin-top:10px"><summary>📋 iPhone写真の「テキスト認識」から貼り付ける（無料）</summary><div class="field"><textarea id="receiptPastedText" placeholder="写真アプリで文字をコピーし、ここに貼り付けてください。" style="width:100%;min-height:95px"></textarea><button class="secondary" id="receiptParseText" type="button" style="margin-top:6px;width:100%">貼り付けた文字を解析する</button></div></details><button id="receiptTotalOnly" class="batch-add" type="button" style="margin-top:7px">明細を読めない場合：合計だけ登録</button><div id="receiptCheck" class="receipt-check"><span>明細合計</span><b>¥0</b></div><div class="receipt-row-note">読み取り結果は必ず原本と照合してください。画像は有料APIに送信しません。</div><button class="primary" id="saveReceipt" style="width:100%;margin-top:10px">明細をまとめて登録</button></div>
 </div></dialog>
 <dialog id="receiptImageDialog"><div class="mh"><h3>レシート画像</h3><button data-close="receiptImageDialog">×</button></div><div class="mb"><img id="receiptSavedImage" class="receipt-photo-large"><div class="note" id="receiptImageNote" style="margin-top:8px"></div></div></dialog><div class="toast hide" id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v44-calendar-clean';
+const APP_BUILD='v45-free-receipt';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -153,7 +153,7 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=44',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=45',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 window.addEventListener('pageshow',()=>checkAppUpdate());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
@@ -713,7 +713,7 @@ function syncReceiptRowsFromDom(){
 function renderReceiptCheck(){let sum=receiptRowsData.reduce((a,r)=>a+Number(r.amount||0),0),box=$('receiptCheck');if(!box)return;let bad=receiptExpectedTotal>0&&Math.abs(sum-receiptExpectedTotal)>1;box.classList.toggle('warn',bad);box.innerHTML='<span>'+(bad?'明細合計（レシート合計と不一致）':'明細合計')+'</span><b>'+money(sum)+'</b>'}
 function renderReceiptRows(){
   let box=$('receiptRows');if(!box)return;
-  box.innerHTML=receiptRowsData.map((r,idx)=>'<div class="batch-row"><div class="batch-row-top"><b>明細 '+(idx+1)+'</b><button class="batch-remove" type="button" data-receipt-remove="'+r.id+'">削除</button></div><div class="batch-fields"><div class="field"><label>商品・名目</label><input data-receipt-name="'+r.id+'" value="'+esc(r.name)+'" placeholder="商品名"></div><div class="field"><label>金額</label><input id="receiptAmount-'+r.id+'" data-receipt-amount="'+r.id+'" class="app-number" type="text" inputmode="none" readonly value="'+(r.amount||'')+'"></div></div><div class="field batch-cat"><label>カテゴリ</label><select data-receipt-cat="'+r.id+'">'+db.categories.expense.map(x=>'<option value="'+esc(x[0])+'" '+(x[0]===r.category?'selected':'')+'>'+esc(x[0])+'</option>').join('')+'</select></div></div>').join('');
+  box.innerHTML=receiptRowsData.map((r,idx)=>'<div class="batch-row"><div class="batch-row-top"><b>明細 '+(idx+1)+(r.uncertain?' <span class="badge" style="background:#fff3dd;color:#986318">要確認</span>':'')+'</b><button class="batch-remove" type="button" data-receipt-remove="'+r.id+'">削除</button></div><div class="batch-fields"><div class="field"><label>商品・名目</label><input data-receipt-name="'+r.id+'" value="'+esc(r.name)+'" placeholder="商品名"></div><div class="field"><label>金額</label><input id="receiptAmount-'+r.id+'" data-receipt-amount="'+r.id+'" class="app-number" type="text" inputmode="none" readonly value="'+(r.amount||'')+'"></div></div><div class="field batch-cat"><label>カテゴリ</label><select data-receipt-cat="'+r.id+'">'+db.categories.expense.map(x=>'<option value="'+esc(x[0])+'" '+(x[0]===r.category?'selected':'')+'>'+esc(x[0])+'</option>').join('')+'</select></div></div>').join('');
   box.querySelectorAll('[data-receipt-name]').forEach(el=>el.oninput=syncReceiptRowsFromDom);box.querySelectorAll('[data-receipt-cat]').forEach(el=>el.onchange=syncReceiptRowsFromDom);box.querySelectorAll('[data-receipt-amount]').forEach(el=>el.onclick=()=>openNumpad(el.id));box.querySelectorAll('[data-receipt-remove]').forEach(b=>b.onclick=()=>{syncReceiptRowsFromDom();receiptRowsData=receiptRowsData.filter(x=>x.id!==b.dataset.receiptRemove);renderReceiptRows()});renderReceiptCheck()
 }
 function saveReceiptEntries(){
@@ -725,10 +725,16 @@ function openEdit(id){let x=db.tx.find(z=>z.id===id);if(x)openEntry(x.type,id)}
 function normalizeMoneyChars(s){return String(s||'').replace(/[￥\\]/g,'¥').replace(/[，]/g,',').replace(/[−―–—]/g,'-')}
 function digitsFromOcr(s){return String(s||'').replace(/[Oo〇]/g,'0').replace(/[Il|]/g,'1').replace(/,/g,'')}
 function amountInfo(line,allowBare=true){
-  let s=normalizeMoneyChars(line),all=[...s.matchAll(/¥\s*([-]?\s*[0-9Oo〇Il|][0-9Oo〇Il|,]*)/g)],m=all.at(-1);
-  if(m){let v=Number(digitsFromOcr(m[1]).replace(/\s+/g,''));if(Number.isFinite(v))return {amount:v,index:m.index}}
-  if(allowBare){m=s.match(/(?:^|\s)(-?\s*[0-9Oo〇Il|][0-9Oo〇Il|,]{0,7})\s*(?:円)?\s*$/);if(m){let v=Number(digitsFromOcr(m[1]).replace(/\s+/g,''));if(Number.isFinite(v))return {amount:v,index:s.lastIndexOf(m[1])}}}
-  return null
+  const s=normalizeMoneyChars(line).trim();
+  let m=[...s.matchAll(/(?:¥|￥)\s*([−+-]?\s*[0-9Oo〇Il|][0-9Oo〇Il|,]*)/g)].at(-1);
+  if(m){const v=Number(digitsFromOcr(m[1]).replace(/\s+/g,''));if(Number.isInteger(v))return {amount:v,index:m.index}}
+  if(!allowBare)return null;
+  m=s.match(/(?:^|[\s　])([−+-]?\s*[0-9Oo〇Il|][0-9Oo〇Il|,]{0,7})\s*(?:円|[＊*※])?\s*$/);
+  if(!m)m=s.match(/([0-9Oo〇Il|][0-9Oo〇Il|,]{1,6})\s*円\s*$/);
+  if(!m)return null;
+  const v=Number(digitsFromOcr(m[1]).replace(/\s+/g,''));
+  if(!Number.isInteger(v)||v<0||v>9999999)return null;
+  return {amount:v,index:s.lastIndexOf(m[1])};
 }
 function parseDate(t){
   let m=String(t||'').match(/(20\d{2})\s*[\/\-年.]\s*(\d{1,2})\s*[\/\-月.]\s*(\d{1,2})\s*日?\s*(?:\(([日月火水木金土])\))?/);if(!m)return '';
@@ -758,47 +764,65 @@ function simplifyReceiptName(name){
   return s.length>18?s.slice(0,18):s
 }
 function receiptNameQuality(name){let s=simplifyReceiptName(name),jp=(s.match(/[ぁ-んァ-ヶ一-龯]/g)||[]).length;return jp>=3?3:jp>=1?2:0}
-function isSummaryStartLine(c){return /商品小計|商品合計|品代合計|小計|お買上点数|買上点数|課税対象|税対象|外税|内税|消費税|税合計|総?合計|お会計|現計/.test(c)}
-function isFinalTotalLine(c){return /(?:^|[^商品小税])(?:総?合計|お会計|現計)/.test(c)&&!/商品小計|商品合計|品代合計|値引合計|割引合計|内消費税|消費税|税合計|対象/.test(c)}
-function isDiscountLine(c){return /^(?:値引(?:き)?|割引|値下げ|クーポン|code\d+割引|\d+品割引|\d+品値引)/i.test(c)}
+function isSummaryStartLine(c){
+  return /商品小計|商品合計|品代合計|小計|お買[い]?上[げ]?(?:金額|合計)|お支払[い]?(?:金額|合計)|ご請求額|請求金額|課税対象|税対象|外税|内税|消費税|税合計|総?合計|お会計|現計/.test(c)
+}
+function isFinalTotalLine(c){
+  if(/商品小計|商品合計|品代合計|値引合計|割引合計|消費税|税合計|内税|課税|税対象|対象額|お預|預り|おつり|釣銭|お釣|ポイント|残高|現金受取|クレジット|電子マネー/.test(c))return false;
+  return /(?:^|[^商品小税])(?:総?合計|お会計|現計|お支払[い]?(?:金額|合計)|ご請求額|請求金額|お買[い]?上[げ]?(?:金額|合計))/.test(c)
+}
+function isDiscountLine(c){return /^(?:値引(?:き)?|割引|値下げ|クーポン|割戻|code\d+割引|\d+品割引|\d+品値引)/i.test(c)}
 function parseSummary(lines,start){
-  let productTotal=0,subtotal=0,tax=0,total=0,discountTotal=0,finalIndex=-1;
+  let productTotal=0,subtotal=0,tax=0,total=0,discountTotal=0,finalIndex=-1,totalSource='';
   for(let i=Math.max(0,start);i<lines.length;i++){
-    let line=lines[i],c=line.replace(/\s+/g,''),a=amountInfo(line,true);if(!a)continue;let v=Math.abs(a.amount);
+    const line=lines[i],c=line.replace(/\s+/g,''),a=amountInfo(line,true);
+    if(!a||!a.amount)continue;
+    const v=Math.abs(a.amount);
     if(/商品小計|商品合計|品代合計/.test(c)){productTotal=v;continue}
     if(/値引合計|割引合計/.test(c)){discountTotal=v;continue}
     if(/小計/.test(c)&&!/商品小計/.test(c)){subtotal=v;continue}
     if(/(?:消費税|外税|税合計)/.test(c)&&!/対象額|商品金額|課税対象|税込/.test(c)){tax=Math.max(tax,v);continue}
-    if(isFinalTotalLine(c)){total=v;finalIndex=i;break}
+    if(isFinalTotalLine(c)){total=v;finalIndex=i;totalSource='label';break}
+    if(i>start&&isFinalTotalLine(lines[i-1].replace(/\s+/g,''))&&/^[¥￥]?\s*[\d,]+\s*円?$/.test(line)){total=v;finalIndex=i;totalSource='split_label';break}
   }
-  if(!total&&subtotal>0&&tax>0)total=subtotal+tax;
-  if(!total&&productTotal>0)total=Math.max(0,productTotal-discountTotal)+(tax||0);
-  return {productTotal,subtotal,tax,total,discountTotal,finalIndex}
+  if(!total&&subtotal>0&&tax>0){total=subtotal+tax;totalSource='subtotal_plus_tax'}
+  if(!total&&productTotal>0){total=Math.max(0,productTotal-discountTotal)+(tax||0);totalSource='computed'}
+  return {productTotal,subtotal,tax,total,discountTotal,finalIndex,totalSource}
 }
 function parseOCR(t){
-  let lines=String(t||'').split(/\n/).map(s=>s.replace(/\s+/g,' ').trim()).filter(Boolean),merchant=knownMerchant(lines),summaryStart=lines.findIndex(x=>isSummaryStartLine(x.replace(/\s+/g,'')));
-  if(summaryStart<0)summaryStart=lines.length;
-  let summary=parseSummary(lines,summaryStart),items=[],last=-1;
-  for(let i=0;i<summaryStart;i++){
-    let line=lines[i],c=line.replace(/\s+/g,''),a=amountInfo(line,true);
-    if(/電話|住所|領収|receipt|レジ|担当|取引|No\.?|登録番号|営業時間|TEL|ポイント|会員/i.test(c)||/20\d{2}.*\d{1,2}:\d{2}/.test(line))continue;
-    if(isDiscountLine(c)){
-      let d=amountInfo(line,true);if(d&&last>=0){let off=Math.abs(d.amount);if(off>0&&off<items[last].amount){items[last].original_amount=items[last].amount;items[last].discount=(items[last].discount||0)+off;items[last].amount-=off}}continue
+  const rawLines=String(t||'').split(/\n/).map(s=>s.replace(/[　\t]+/g,' ').trim()).filter(Boolean),lines=[];
+  for(let i=0;i<rawLines.length;i++){
+    const s=rawLines[i];
+    if(/^[¥￥]?\s*\d{2,6}\s*円?$/.test(s)&&lines.length){
+      const before=lines[lines.length-1],p=before.replace(/\s+/g,'');
+      if(!amountInfo(before,true)&&!isSummaryStartLine(p)&&!/レジ|領収|電話|TEL|取引|登録|お預|商品点数|日時|No\.?|[0-9]{4}[\/.-][0-9]{1,2}/i.test(p)&&receiptNameQuality(before)>0){lines[lines.length-1]=before+' '+s;continue}
     }
-    if(!a||!(a.amount>0)||a.amount>999999)continue;
-    let name=simplifyReceiptName(normalizeMoneyChars(line).slice(0,a.index));if(!name)continue;
+    lines.push(s)
+  }
+  const merchant=knownMerchant(lines),k=lines.findIndex(s=>isSummaryStartLine(s.replace(/\s+/g,''))),start=k<0?lines.length:k;
+  const summary=parseSummary(lines,start),items=[];
+  let last=-1;
+  for(let i=0;i<start;i++){
+    const line=lines[i],v=line.replace(/\s+/g,''),a=amountInfo(line,true);
+    if(/電話|住所|領収|receipt|レジ|担当|取引|No\.?|登録番号|営業時間|TEL|ポイント|会員|店番号|お買上日|お買物日|カード|会計|合計|現計|税率|税額|対象|支払|釣銭|お釣り/i.test(v)||/20\d{2}.*\d{1,2}:\d{2}/.test(line))continue;
+    if(isDiscountLine(v)){
+      if(a&&last>=0){let off=Math.abs(a.amount);if(off>0&&off<items[last].amount){items[last].original_amount=items[last].amount;items[last].discount=(items[last].discount||0)+off;items[last].amount-=off}}
+      continue
+    }
+    if(!a||a.amount<=0||a.amount>999999)continue;
+    const name=simplifyReceiptName(normalizeMoneyChars(line).slice(0,a.index));
+    if(!name||receiptNameQuality(name)<2)continue;
     items.push({name,amount:a.amount,original_amount:a.amount,discount:0});last=items.length-1
   }
-  let total=summary.total;
-  // Reject impossible OCR prices, never guess a replacement price from the digits themselves.
-  if(total>0)items=items.filter(x=>x.amount>0&&x.amount<=total);
-  let itemSum=items.reduce((s,x)=>s+x.amount,0);
-  // Some stores print pre-tax item prices. If the gap equals tax, distribute tax proportionally across items.
-  if(total>0&&summary.tax>0&&itemSum>0&&itemSum<total&&Math.abs((itemSum+summary.tax)-total)<=2){
-    let gap=total-itemSum,base=itemSum,allocated=0;
-    items=items.map((x,idx)=>{let add=idx===items.length-1?gap-allocated:Math.round(gap*x.amount/base);allocated+=add;return {...x,amount:x.amount+add,tax_alloc:add}});itemSum=items.reduce((s,x)=>s+x.amount,0)
+  const total=summary.total;
+  let clean=total>0?items.filter(x=>x.amount>0&&x.amount<=total):items;
+  let itemSum=clean.reduce((s,x)=>s+x.amount,0);
+  if(total>0&&summary.tax>0&&itemSum>0&&itemSum<total&&Math.abs(itemSum+summary.tax-total)<=2){
+    const gap=total-itemSum,base=itemSum;let allocated=0;
+    clean=clean.map((x,idx)=>{let add=idx===clean.length-1?gap-allocated:Math.round(gap*x.amount/base);allocated+=add;return {...x,amount:x.amount+add,tax_alloc:add}});
+    itemSum=clean.reduce((s,x)=>s+x.amount,0)
   }
-  return {merchant,date:parseDate(t),total,items,itemSum,itemMathOk:total>0&&itemSum===total,summary,rawText:String(t||'')}
+  return {merchant,date:parseDate(lines.join('\n')),total,items:clean,itemSum,itemMathOk:total>0&&itemSum===total,summary,rawText:String(t||'')}
 }
 function scoreReceiptParse(r){
   let s=0;if(r.total>0)s+=10;if(r.date)s+=2;if(r.merchant)s+=2;if(r.itemMathOk)s+=12;
@@ -814,15 +838,14 @@ function receiptConsensusValue(values){
   return {value:best==null?null:best,count}
 }
 function receiptConsensusName(names){
-  const map=new Map();
-  for(const raw of names){
-    const n=simplifyReceiptName(raw);
-    if(!n||n==='商品名を確認')continue;
-    map.set(n,(map.get(n)||0)+1)
-  }
-  let best='',count=0;
-  for(const [n,c] of map){if(c>count){best=n;count=c}}
-  return count>=2?best:'商品名を確認'
+  const a=names.map(n=>simplifyReceiptName(n)).filter(n=>n&&n!=='商品名を確認'&&receiptNameQuality(n)>0);
+  if(!a.length)return {name:'商品名を確認',uncertain:true};
+  const votes=new Map();
+  for(const n of a){const key=kanaSearchNorm(n).replace(/[^\wぁ-ん一-龯]/g,'');votes.set(key,(votes.get(key)||0)+1)}
+  let key='',count=0;
+  for(const [k,n] of votes)if(n>count){key=k;count=n}
+  if(count>=2)return {name:a.find(n=>kanaSearchNorm(n).replace(/[^\wぁ-ん一-龯]/g,'')===key),uncertain:false};
+  return {name:a.sort((x,y)=>receiptNameQuality(y)-receiptNameQuality(x)||x.length-y.length)[0],uncertain:true}
 }
 function buildReceiptConsensus(parses){
   const ranked=(parses||[]).slice().sort((a,b)=>scoreReceiptParse(b)-scoreReceiptParse(a));
@@ -860,7 +883,7 @@ function buildReceiptConsensus(parses){
       const names=[],orders=[];
       rec.perPass.forEach(list=>{if(list[occ]){names.push(list[occ].name);orders.push(list[occ].itemIndex)}});
       const order=orders.length?orders.reduce((a,b)=>a+b,0)/orders.length:999;
-      confirmed.push({name:receiptConsensusName(names),amount,order,category:''})
+      const label=receiptConsensusName(names);confirmed.push({name:label.name,amount,order,category:'',uncertain:label.uncertain})
     }
   }
   confirmed.sort((a,b)=>a.order-b.order||a.amount-b.amount);
@@ -872,13 +895,13 @@ function buildReceiptConsensus(parses){
 }
 function sanitizeReceiptForUi(r,merchant=''){
   let total=Math.max(0,Math.round(Number(r?.total||0))),raw=Array.isArray(r?.items)?r.items:[],items=[];
-  for(let x of raw){let name=simplifyReceiptName(String(typeof x==='string'?x:x?.name||'')),amount=Math.max(0,Math.round(Number(typeof x==='string'?0:x?.amount||0)));if(!name)name='商品名を確認';if(!(amount>0)||!total||amount>total)continue;items.push({name,amount,category:(typeof x==='object'&&x?.category&&db.categories.expense.some(v=>v[0]===x.category))?x.category:receiptCategory(name,merchant)})}
+  for(let x of raw){let name=simplifyReceiptName(String(typeof x==='string'?x:x?.name||'')),amount=Math.max(0,Math.round(Number(typeof x==='string'?0:x?.amount||0)));if(!name)name='商品名を確認';if(!(amount>0)||!total||amount>total)continue;items.push({name,amount,uncertain:!!(typeof x==='object'&&x?.uncertain),category:(typeof x==='object'&&x?.category&&db.categories.expense.some(v=>v[0]===x.category))?x.category:receiptCategory(name,merchant)})}
   if(!(total>0))return {total:0,items:[],corrected:true,reason:'total_unknown'};
   // Never allow cumulative known items to exceed total. Keep plausible lines in printed order.
   let kept=[],sum=0;for(let x of items){if(sum+x.amount<=total){kept.push(x);sum+=x.amount}}
   let remaining=total-sum;
   if(remaining>0)kept.push({name:'未判定（要確認）',amount:remaining,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0],uncertain:true});
-  return {total,items:kept,corrected:remaining>0||kept.length!==items.length,reason:remaining>0?'remainder':'ok'}
+  return {total,items:kept,corrected:remaining>0||kept.length!==items.length||kept.some(x=>x.uncertain),reason:remaining>0?'remainder':'ok'}
 }
 function guess(m,it){let s=(m+' '+it.join(' ')).toLowerCase(),r=[[/薬局|ドラッグ|マツキヨ|ウエルシア/,'日用品'],[/病院|医院|歯科/,'医療'],[/jr|鉄道|バス|タクシー/,'交通'],[/ユニクロ|gu|しまむら/,'衣服'],[/コンビニ|ファミリーマート|familymart|セブン|ローソン|スーパー|食品|弁当|飲料|パン|肉|野菜|茶|ベーコン|茶碗蒸し/,'食費']];for(let [re,c] of r)if(re.test(s)&&db.categories.expense.some(x=>x[0]===c))return c;return db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]}
 function applyR(r,src){
@@ -889,7 +912,6 @@ async function analyze(f){
   pendingReceiptArchive=archiveReceiptImage(f).catch(()=>null);resetReadingCapture('merchant');
   $('receipt').showModal();$('preview').src=URL.createObjectURL(f);$('rStatus').textContent='レシートを解析しています…';$('rProg').style.width='12%';receiptRowsData=[];receiptExpectedTotal=0;renderReceiptRows();$('merchant').value='';$('rDate').value=today();$('rTotal').value='';
   let imgs=await receiptImageVariants(f);
-  try{let c=new AbortController(),tm=setTimeout(()=>c.abort(),5000),health=await fetch(AI,{method:'GET',signal:c.signal,cache:'no-store'});clearTimeout(tm);let h=await health.json().catch(()=>({}));if(h?.configured){let ctl=new AbortController(),tm2=setTimeout(()=>ctl.abort(),30000),res=await fetch(AI,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image_data_url:imgs.raw,categories:db.categories.expense.map(x=>x[0])}),signal:ctl.signal});clearTimeout(tm2);let j=await res.json().catch(()=>({}));if(res.ok&&j.ok&&j.receipt){applyR(j.receipt,'AI');return}}}catch{}
   $('rStatus').textContent='レシートを読み取っています…';let worker=null;
   try{
     worker=await Tesseract.createWorker('jpn+eng',1,{logger:m=>{if(m.status==='recognizing text')$('rProg').style.width=(20+Math.round((m.progress||0)*22))+'%'}});
@@ -912,6 +934,21 @@ async function analyze(f){
     }
   }catch{$('rStatus').textContent='解析できませんでした。明細を入力してください。';$('rDate').value=today();receiptRowsData=[{id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]}];renderReceiptRows()}finally{if(worker)await worker.terminate().catch(()=>{})}
 }
+$('receiptParseText').onclick=()=>{
+  const text=$('receiptPastedText').value.trim();
+  if(!text)return toast('レシートの文字を貼り付けてください');
+  const result=parseOCR(text);
+  applyR(result,'iPhoneのテキスト認識');
+  $('rStatus').textContent=result.total?'貼り付けた文字を解析しました。合計と明細を確認してください。':'合計が読み取れませんでした。合計欄を手入力してください。';
+};
+$('receiptTotalOnly').onclick=()=>{
+  const total=Math.round(Number($('rTotal').value||0));
+  if(!(total>0))return toast('先に「レシート最終合計」を入力してください');
+  receiptExpectedTotal=total;
+  receiptRowsData=[{id:uid(),name:'レシート合計',amount:total,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]}];
+  renderReceiptRows();
+  $('rStatus').textContent='合計1件で登録する準備ができました。店名・日付・カテゴリを確認してください。'
+};
 $$('.app-number').forEach(el=>el.onclick=()=>openNumpad(el.id));$$('.app-date').forEach(el=>el.onclick=()=>openCalendar(el.id));
 $$('[data-num]').forEach(b=>b.onclick=()=>{if(numberBuffer.length>=10)return;let add=b.dataset.num;if(!numberBuffer&&add==='00')add='0';numberBuffer=(numberBuffer+add).replace(/^0+(?=\d)/,'');updateNumpad()});$('numBack').onclick=()=>{numberBuffer=numberBuffer.slice(0,-1);updateNumpad()};$('numClear').onclick=()=>{numberBuffer='';updateNumpad()};$('numDone').onclick=()=>{if(numberTarget){$(numberTarget).value=numberBuffer;if(numberTarget.startsWith('batchAmount-'))syncBatchRowsFromDom();if(numberTarget.startsWith('receiptAmount-'))syncReceiptRowsFromDom()}$('numpadDialog').close()};
 $('calPrev').onclick=()=>{calView=new Date(calView.getFullYear(),calView.getMonth()-1,1);renderCalendar()};$('calNext').onclick=()=>{calView=new Date(calView.getFullYear(),calView.getMonth()+1,1);renderCalendar()};$('calToday').onclick=()=>{let v=today();if(dateTarget)$(dateTarget).value=v;$('calendarDialog').close()};
