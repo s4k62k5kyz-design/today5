@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=46">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=47">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -35,6 +35,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 </style></head>
 <body>
 <div class="app">
+<div id="emergencyRecoveryBar" class="card hide" style="margin:0 0 12px;background:#fff8e8;border-color:#e7c46e"><b style="display:block;font-size:13px">以前の記録が見えない場合</b><p style="font-size:11px;margin:6px 0 10px">入力や復元は行わず、端末内に残っているデータを安全に確認してください。</p><a href="./recovery.html" style="font-size:12px;font-weight:800;color:#335ccc">データの確認・保全ページを開く →</a></div>
 <div class="top"><div class="logo">¥</div><div><h1>くらし家計簿</h1><p>迷わず続ける、シンプル家計簿</p></div></div>
 <div class="month"><button id="prev">‹</button><b id="monthLabel"></b><button id="next">›</button></div>
 
@@ -74,6 +75,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 </div>
 </div>
 <div class="section"><div class="head"><h2>アプリ更新</h2><span>最新版を確認</span></div><div class="card"><div class="row"><div><b style="font-size:12px">現在のバージョン</b><div class="note" id="appVersion">確認中…</div></div><button class="secondary" id="forceUpdate" type="button">更新</button></div><div class="note" style="margin-top:8px">更新しても家計簿データは消しません。</div></div></div>
+<div class="section"><div class="head"><h2>緊急データ確認</h2><span>読み取り専用</span></div><div class="card"><a href="./recovery.html" style="font-size:12px;font-weight:850;color:#335ccc">保存データを確認・書き出す →</a><div class="note" style="margin-top:6px">復元する前に候補を確認します。保存データはこの操作では書き換えません。</div></div></div>
 <div class="section"><div class="head"><h2>データ保護</h2><span>長期保存モード</span></div><div class="card"><div class="note" id="recoveryStatus">長期保存領域を確認しています。</div><div class="note" id="storageStatus" style="margin-top:5px">容量を確認中…</div><div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:9px"><button class="secondary" id="snapshotNow" type="button">今の状態をバックアップ</button><button class="secondary" id="recoverData" type="button">過去データから復元</button></div><div class="note" style="margin-top:9px">家計簿本体は大容量の保存領域へ保存し、レシート画像は別保存します。古いバックアップは一定数だけ残します。</div></div></div>
 <div class="section"><div class="head"><h2>データ</h2><span>バックアップ</span></div><div class="card"><button class="secondary" id="export">バックアップを書き出す</button><label class="secondary" style="display:inline-block;margin-top:8px">バックアップを読み込む<input id="import" type="file" accept="application/json" hidden></label><div class="note" style="margin-top:10px">データはこのブラウザ内に保存されます。</div></div></div></section>
 </div>
@@ -122,7 +124,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <dialog id="receiptImageDialog"><div class="mh"><h3>レシート画像</h3><button data-close="receiptImageDialog">×</button></div><div class="mb"><img id="receiptSavedImage" class="receipt-photo-large"><div class="note" id="receiptImageNote" style="margin-top:8px"></div></div></dialog><div class="toast hide" id="toast"></div>
 <script>
 (()=>{
-const APP_BUILD='v46-receipt-recovery';
+const APP_BUILD='v47-data-safety';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -152,13 +154,13 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=46',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=47',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 window.addEventListener('pageshow',()=>checkAppUpdate());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
 setTimeout(checkAppUpdate,500);
 
-const KEY='kakeibo_pro_v2',BACKUP_KEY='kakeibo_pro_v2_last_good',RECOVERY_KEY='kakeibo_recovery_v31',SNAP_PREFIX='kakeibo_pro_v2_snapshot_',META_KEY='kakeibo_pro_v2_meta',BOOT_KEY='kakeibo_boot_v1',VAULT_DB='kakeibo-data-v1',LOCAL_MIRROR_LIMIT=1000000,VAULT_SNAPSHOT_LIMIT=5;
+const KEY='kakeibo_pro_v2',BACKUP_KEY='kakeibo_pro_v2_last_good',RECOVERY_KEY='kakeibo_recovery_v31',SNAP_PREFIX='kakeibo_pro_v2_snapshot_',META_KEY='kakeibo_pro_v2_meta',BOOT_KEY='kakeibo_boot_v1',VAULT_DB='kakeibo-data-v1',LOCAL_MIRROR_LIMIT=1000000,VAULT_SNAPSHOT_LIMIT=50;
 const cats={expense:[['食費','🍚'],['日用品','🧻'],['交通','🚃'],['住居','🏠'],['水道光熱','💡'],['通信','📱'],['娯楽','🎮'],['医療','🏥'],['衣服','👕'],['交際費','🍻'],['教育','📚'],['その他','📦']],income:[['給与','💰'],['賞与','✨'],['副収入','💼'],['臨時収入','🎁'],['その他','📥']]};
 const $=x=>document.getElementById(x),$$=q=>[...document.querySelectorAll(q)],pad=n=>String(n).padStart(2,'0'),uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36),money=n=>'¥'+Math.round(Number(n||0)).toLocaleString('ja-JP'),mk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1),today=()=>{let d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
 const def=()=>({version:8,tx:[],categories:JSON.parse(JSON.stringify(cats)),overallBudgets:{},savings:[],recurring:[],settings:{autoSavings:true,merchantReadings:{},nameReadings:{}}});
@@ -391,12 +393,7 @@ async function vaultSnapshot(state,reason='save'){
       tx.objectStore('snapshots').add({savedAt,build:APP_BUILD,reason,state:clean});
       tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)
     });
-    await new Promise((resolve,reject)=>{
-      const tx=idb.transaction('snapshots','readwrite'),store=tx.objectStore('snapshots'),req=store.openCursor(null,'prev');
-      let seen=0;
-      req.onsuccess=e=>{const cur=e.target.result;if(!cur)return;if(++seen>VAULT_SNAPSHOT_LIMIT)cur.delete();cur.continue()};
-      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)
-    }).catch(()=>{});
+    // Recovery period: never delete old snapshots automatically.
     idb.close();
     try{localStorage.setItem(META_KEY,JSON.stringify({lastBackupAt:savedAt,build:APP_BUILD,txCount:clean.tx.length,mode:'indexeddb'}))}catch{}
     writeLocalMirror(clean,savedAt);
@@ -404,21 +401,22 @@ async function vaultSnapshot(state,reason='save'){
   }catch{return false}
 }
 async function hydrateFromLongTermStorage(){
+  // Recovery: read-only startup. Never overwrite vault or delete backups here.
   const local=readPrimaryState(),boot=readBootMeta(),vault=await getVaultLatest();
-  if(vault?.state&&validStateObject(vault.state)){
-    const useVault=!local||boot?.idbPrimary||Number(vault.savedAt||0)>=Number(boot?.savedAt||0);
-    if(useVault)db=norm(vault.state);
-    else db=norm(local);
-  }else if(local){
-    db=norm(local);
-  }else{
+  const localGood=local&&Array.isArray(local.tx)?local:null;
+  const vaultGood=validStateObject(vault?.state)?norm(vault.state):null;
+  if(localGood&&vaultGood){
+    if(localGood.tx.length&&!vaultGood.tx.length)db=norm(localGood);
+    else if(vaultGood.tx.length&&!localGood.tx.length)db=norm(vaultGood);
+    else db=norm((!boot?.idbPrimary&&Number(boot?.savedAt||0)>Number(vault.savedAt||0))?localGood:vaultGood);
+  }else if(vaultGood)db=norm(vaultGood);
+  else if(localGood)db=norm(localGood);
+  else{
     const fallback=readLocalFallback();
     if(fallback?.state)db=norm(fallback.state)
   }
   lastPersistedTxCount=db.tx.length;
-  const ok=await vaultSnapshot(db,'migration-v40');
-  if(ok)cleanupLegacyLocalBackups();
-  return ok
+  return true
 }
 function currentProtectionStatus(){
   let meta=null;try{meta=JSON.parse(localStorage.getItem(META_KEY)||'null')}catch{}
@@ -1110,7 +1108,9 @@ async function startLongTermApp(){
   setCategoryFold(false);
   await hydrateFromLongTermStorage();
   refreshCategorySelects();
-  autoRecurring();syncSav();render();
+  if(!db.tx.length){const bar=$('emergencyRecoveryBar');if(bar)bar.classList.remove('hide')}
+  // No automatic writes at startup while data recovery is ongoing.
+  render();
   if($('recoveryStatus')){
     const meta=currentProtectionStatus();
     $('recoveryStatus').textContent='長期保存モード・現在 '+(db.tx?.length||0)+'件'+(meta?.lastBackupAt?' ・ 最終保護 '+new Date(meta.lastBackupAt).toLocaleString('ja-JP'):'');
