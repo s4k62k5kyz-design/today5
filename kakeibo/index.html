@@ -1145,7 +1145,7 @@ $('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObje
   }catch(error){toast('読み込みできません: '+(error?.message||'形式を確認してください'))}
   finally{e.target.value=''}
 };$('importEmergencyBackup').onclick=()=>$('import').click();
-$('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
+$$('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 async function startLongTermApp(){
   setCategoryFold(false);
   await hydrateFromLongTermStorage();
