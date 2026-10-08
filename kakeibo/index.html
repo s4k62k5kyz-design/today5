@@ -42,7 +42,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <section id="home" class="page on">
 <div class="hero"><small>今月あと使える</small><strong id="remain">—</strong><div id="heroSub">月予算を設定すると表示されます</div></div>
 <div class="stats"><div class="stat"><small>支出</small><b class="expense" id="hExp">¥0</b></div><div class="stat"><small>収入</small><b class="income" id="hInc">¥0</b></div><div class="stat"><small>貯蓄見込</small><b id="hSav">¥0</b></div></div>
-<div class="quick"><label>📷<span>レシート</span><input id="receiptFile" type="file" accept="image/*" capture="environment" hidden></label><button id="addExp">−<span>支出</span></button><button id="addInc">＋<span>収入</span></button></div><button class="batch-launch" id="openBatch" type="button">＋ まとめて登録 <span style="font-weight:500">（商品ごとにカテゴリ分け）</span></button>
+<div class="quick"><label style="background:#e9edf4;color:#718096;cursor:default" title="安全確認のため一時停止中">📷<span>レシート調整中</span><input id="receiptFile" type="file" accept="image/*" capture="environment" disabled hidden></label><button id="addExp">−<span>支出</span></button><button id="addInc">＋<span>収入</span></button></div><button class="batch-launch" id="openBatch" type="button">＋ まとめて登録 <span style="font-weight:500">（商品ごとにカテゴリ分け）</span></button>
 <div class="section"><div class="head"><h2>最近の記録</h2><span id="recentN"></span></div><div class="card" id="recent"></div></div>
 </section>
 
@@ -245,15 +245,14 @@ function cleanupLegacyLocalBackups(){
 function writeLocalMirror(state,savedAt=Date.now()){
   let raw='';
   try{raw=JSON.stringify(state)}catch{return false}
+  if(raw.length>LOCAL_MIRROR_LIMIT)return false;
   try{
-    localStorage.setItem(BOOT_KEY,JSON.stringify({savedAt,txCount:state.tx?.length||0,idbPrimary:raw.length>LOCAL_MIRROR_LIMIT,build:APP_BUILD}));
-    if(raw.length<=LOCAL_MIRROR_LIMIT){
-      const prev=localStorage.getItem(KEY);
-      if(prev&&prev.length<=LOCAL_MIRROR_LIMIT&&parseStoredState(prev)?.tx?.length)localStorage.setItem(BACKUP_KEY,prev);
-      localStorage.setItem(KEY,raw);
-    }else{
-      // Keep previous local backups if the full state exceeds the local mirror limit.
-    }
+    const prev=safeStorageGet(KEY);
+    // Only keep a nonempty prior state as the last-good backup.
+    if(prev&&prev.length<=LOCAL_MIRROR_LIMIT&&parseStoredState(prev)?.tx?.length>0)
+      localStorage.setItem(BACKUP_KEY,prev);
+    localStorage.setItem(KEY,raw);
+    localStorage.setItem(BOOT_KEY,JSON.stringify({savedAt,txCount:state.tx?.length||0,idbPrimary:false,build:APP_BUILD}));
     return true
   }catch{return false}
 }
@@ -389,20 +388,36 @@ async function showReceiptImage(groupId){
   $('receiptImageDialog').showModal()
 }
 async function vaultSnapshot(state,reason='save'){
+  let clean;
+  try{clean=norm(JSON.parse(JSON.stringify(state)))}catch{return false}
+  const savedAt=Date.now();
+  let vaultSaved=false,idb=null;
   try{
-    const clean=norm(JSON.parse(JSON.stringify(state))),savedAt=Date.now(),idb=await openDataVault();
+    idb=await openDataVault();
     await new Promise((resolve,reject)=>{
       const tx=idb.transaction(['state','snapshots'],'readwrite');
       tx.objectStore('state').put({key:'latest',savedAt,build:APP_BUILD,state:clean});
       tx.objectStore('snapshots').add({savedAt,build:APP_BUILD,reason,state:clean});
-      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)
+      tx.oncomplete=resolve;
+      tx.onerror=()=>reject(tx.error)
     });
-    // Recovery period: never delete old snapshots automatically.
-    idb.close();
-    try{localStorage.setItem(META_KEY,JSON.stringify({lastBackupAt:savedAt,build:APP_BUILD,txCount:clean.tx.length,mode:'indexeddb'}))}catch{}
-    writeLocalMirror(clean,savedAt);
-    return true
-  }catch{return false}
+    vaultSaved=true
+  }catch(error){
+    console.error('Long-term storage save failed',error)
+  }finally{
+    if(idb)idb.close()
+  }
+  // If IndexedDB fails, preserve a full copy in localStorage when size permits.
+  const localSaved=writeLocalMirror(clean,savedAt);
+  if(vaultSaved){
+    try{
+      localStorage.setItem(BOOT_KEY,JSON.stringify({savedAt,txCount:clean.tx.length,idbPrimary:!localSaved,build:APP_BUILD}));
+    }catch{}
+  }
+  if(vaultSaved||localSaved){
+    try{localStorage.setItem(META_KEY,JSON.stringify({lastBackupAt:savedAt,build:APP_BUILD,txCount:clean.tx.length,mode:vaultSaved?'indexeddb':'localStorage'}))}catch{}
+  }
+  return vaultSaved||localSaved
 }
 let startupDataSource='未確認',startupShowRecoveryPrompt=false;
 async function hydrateFromLongTermStorage(){
