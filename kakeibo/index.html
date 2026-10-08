@@ -930,7 +930,6 @@ function guess(m,it){let s=(m+' '+it.join(' ')).toLowerCase(),r=[[/薬局|ドラ
 function applyR(r,src){
   let merchant=String(r?.merchant||r?.store||'').trim(),safe=sanitizeReceiptForUi(r,merchant);$('merchant').value=merchant;$('rDate').value=r?.date||today();receiptExpectedTotal=safe.total;$('rTotal').value=receiptExpectedTotal||'';receiptRowsData=safe.items.map(x=>({id:uid(),name:x.name,amount:x.amount,category:x.category,uncertain:!!x.uncertain}));if(!receiptRowsData.length&&receiptExpectedTotal>0)receiptRowsData=[{id:uid(),name:'未判定（要確認）',amount:receiptExpectedTotal,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0],uncertain:true}];renderReceiptRows();let sum=receiptRowsData.reduce((a,x)=>a+Number(x.amount||0),0),ok=receiptExpectedTotal>0&&receiptRowsData.length&&Math.abs(sum-receiptExpectedTotal)<=1;$('rStatus').className='status '+(ok&&!safe.corrected?'ok':'');$('rStatus').textContent=safe.corrected?'読めない明細や不整合な金額は採用せず、「未判定」にまとめました。確認してください。':(ok?'読み取りました。商品ごとのカテゴリを確認してください。':'一部読み取れませんでした。明細を確認・修正してください。');$('rProg').style.width='100%'
 }
-async 
 const RECEIPT_OCR_SOURCES=[
 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js'
