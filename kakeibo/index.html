@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=45">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=46">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -116,14 +116,13 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <dialog id="calendarDialog"><div class="mh"><h3>日付を選択</h3><button data-close="calendarDialog">×</button></div><div class="mb"><div class="calendar-head"><button id="calPrev" type="button">‹</button><b id="calLabel"></b><button id="calNext" type="button">›</button></div><div class="weekdays"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div><div id="calendarGrid" class="calendar-grid"></div><button id="calToday" class="secondary" style="width:100%;margin-top:9px">今日</button></div></dialog>
 
 <dialog id="receipt"><div class="mh"><h3>レシート登録</h3><button data-close="receipt">×</button></div><div class="mb">
-<img id="preview" class="preview"><div class="status" id="rStatus">解析しています…</div><div class="progress"><i id="rProg"></i></div>
+<img id="preview" class="preview"><div class="status" id="rStatus" aria-live="polite">解析しています…</div><div class="progress"><i id="rProg"></i></div><div class="note" id="receiptErrorDetail" style="margin-top:8px;line-height:1.5">レシート画像を選んでください。</div><button class="secondary hide" type="button" id="retryReceipt" style="width:100%;margin-top:8px">もう一度読み取る</button>
 <div style="margin-top:12px"><div class="batch-head"><div class="field"><label>店名</label><input id="merchant"></div><div class="field"><label>日付</label><input id="rDate" class="app-date" type="text" inputmode="none" readonly></div></div><div class="field"><label>レシート最終合計</label><input id="rTotal" class="app-number" type="text" inputmode="none" readonly></div><div id="receiptRows" class="batch-rows"></div><button id="addReceiptRow" class="batch-add" type="button">＋ 明細を追加</button><details class="optional-note" style="margin-top:10px"><summary>📋 iPhone写真の「テキスト認識」から貼り付ける（無料）</summary><div class="field"><textarea id="receiptPastedText" placeholder="写真アプリで文字をコピーし、ここに貼り付けてください。" style="width:100%;min-height:95px"></textarea><button class="secondary" id="receiptParseText" type="button" style="margin-top:6px;width:100%">貼り付けた文字を解析する</button></div></details><button id="receiptTotalOnly" class="batch-add" type="button" style="margin-top:7px">明細を読めない場合：合計だけ登録</button><div id="receiptCheck" class="receipt-check"><span>明細合計</span><b>¥0</b></div><div class="receipt-row-note">読み取り結果は必ず原本と照合してください。画像は有料APIに送信しません。</div><button class="primary" id="saveReceipt" style="width:100%;margin-top:10px">明細をまとめて登録</button></div>
 </div></dialog>
 <dialog id="receiptImageDialog"><div class="mh"><h3>レシート画像</h3><button data-close="receiptImageDialog">×</button></div><div class="mb"><img id="receiptSavedImage" class="receipt-photo-large"><div class="note" id="receiptImageNote" style="margin-top:8px"></div></div></dialog><div class="toast hide" id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 (()=>{
-const APP_BUILD='v45-free-receipt';
+const APP_BUILD='v46-receipt-recovery';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -153,7 +152,7 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=45',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=46',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 window.addEventListener('pageshow',()=>checkAppUpdate());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkAppUpdate()});
@@ -717,7 +716,7 @@ function renderReceiptRows(){
   box.querySelectorAll('[data-receipt-name]').forEach(el=>el.oninput=syncReceiptRowsFromDom);box.querySelectorAll('[data-receipt-cat]').forEach(el=>el.onchange=syncReceiptRowsFromDom);box.querySelectorAll('[data-receipt-amount]').forEach(el=>el.onclick=()=>openNumpad(el.id));box.querySelectorAll('[data-receipt-remove]').forEach(b=>b.onclick=()=>{syncReceiptRowsFromDom();receiptRowsData=receiptRowsData.filter(x=>x.id!==b.dataset.receiptRemove);renderReceiptRows()});renderReceiptCheck()
 }
 function saveReceiptEntries(){
-  syncReceiptRowsFromDom();let merchant=$('merchant').value.trim(),date=$('rDate').value,total=Number($('rTotal').value||0),valid=receiptRowsData.filter(r=>Number(r.amount)>0&&(r.name.trim()||merchant));if(!date||!valid.length)return toast('日付と明細を確認してください');learnReadingFromInput('merchant','merchant',merchant);if(total>0&&valid.some(r=>Number(r.amount)>total))return toast('合計額を超える明細は登録できません');let sum=valid.reduce((a,r)=>a+Number(r.amount||0),0);if(total>0&&Math.abs(sum-total)>1)return toast('レシート合計と明細合計が一致していません');let group=uid(),now=Date.now();valid.forEach((r,i)=>db.tx.push({id:uid(),type:'expense',amount:Number(r.amount),date,category:r.category,account:'現金',toAccount:'',memo:r.name.trim()?(merchant?merchant+' / '+r.name.trim():r.name.trim()):(merchant||'レシート'),merchant,itemName:r.name.trim(),receiptGroupId:group,tags:['レシート'],fixed:false,recurringId:'',createdAt:now+i}));save();if(pendingReceiptArchive){Promise.resolve(pendingReceiptArchive).then(blob=>saveReceiptImage(group,blob,{merchant,date,total})).catch(()=>{});pendingReceiptArchive=null}$('receipt').close();view=new Date(date+'T00:00:00');calendarSelected=date;render();toast(valid.length+'件をレシートから登録しました')
+  syncReceiptRowsFromDom();let merchant=$('merchant').value.trim(),date=$('rDate').value,total=Number($('rTotal').value||0),valid=receiptRowsData.filter(r=>Number(r.amount)>0&&(r.name.trim()||merchant));if(!date||!valid.length)return toast('日付と明細を確認してください');learnReadingFromInput('merchant','merchant',merchant);if(total>0&&valid.some(r=>Number(r.amount)>total))return toast('合計額を超える明細は登録できません');let sum=valid.reduce((a,r)=>a+Number(r.amount||0),0);if(total>0&&Math.abs(sum-total)>1)return toast('レシート合計と明細合計が一致していません');let group=uid(),now=Date.now();valid.forEach((r,i)=>db.tx.push({id:uid(),type:'expense',amount:Number(r.amount),date,category:r.category,account:'現金',toAccount:'',memo:r.name.trim()?(merchant?merchant+' / '+r.name.trim():r.name.trim()):(merchant||'レシート'),merchant,itemName:r.name.trim(),receiptGroupId:group,tags:['レシート'],fixed:false,recurringId:'',createdAt:now+i}));save();if(pendingReceiptArchive){const pending=pendingReceiptArchive;pendingReceiptArchive=null;Promise.resolve().then(()=>typeof pending==='function'?pending():pending).then(blob=>saveReceiptImage(group,blob,{merchant,date,total})).catch(()=>{})}$('receipt').close();view=new Date(date+'T00:00:00');calendarSelected=date;render();toast(valid.length+'件をレシートから登録しました')
 }
 function openEntry(t,id=''){type=t;edit=id;let x=id?db.tx.find(z=>z.id===id):null;if(x)type=x.type;$('entryTitle').textContent=x?'記録を編集':(type==='income'?'収入を記録':'支出を記録');$('amount').value=x?.amount||'';$('date').value=x?.date||today();$('memo').value=x?.itemName||x?.memo||'';$('merchantInput').value=x?.merchant||'';$('entryNote').value=x?.note||'';$('noteDetails').open=!!x?.note;$('merchantLabel').textContent=type==='income'?'入金元・相手（任意）':'店名・利用先（任意）';$('memoSuggestions').classList.add('hide');$('merchantSuggestions').classList.add('hide');resetReadingCapture('memo');resetReadingCapture('merchantInput');options($('cat'),db.categories[type].map(v=>v[0]),x?.category);$('deleteEntry').classList.toggle('hide',!x);$('viewReceiptImage').classList.toggle('hide',!x?.receiptGroupId);$('viewReceiptImage').onclick=x?.receiptGroupId?()=>showReceiptImage(x.receiptGroupId):null;$('entry').showModal()}
 function openEdit(id){let x=db.tx.find(z=>z.id===id);if(x)openEntry(x.type,id)}
@@ -907,33 +906,159 @@ function guess(m,it){let s=(m+' '+it.join(' ')).toLowerCase(),r=[[/薬局|ドラ
 function applyR(r,src){
   let merchant=String(r?.merchant||r?.store||'').trim(),safe=sanitizeReceiptForUi(r,merchant);$('merchant').value=merchant;$('rDate').value=r?.date||today();receiptExpectedTotal=safe.total;$('rTotal').value=receiptExpectedTotal||'';receiptRowsData=safe.items.map(x=>({id:uid(),name:x.name,amount:x.amount,category:x.category,uncertain:!!x.uncertain}));if(!receiptRowsData.length&&receiptExpectedTotal>0)receiptRowsData=[{id:uid(),name:'未判定（要確認）',amount:receiptExpectedTotal,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0],uncertain:true}];renderReceiptRows();let sum=receiptRowsData.reduce((a,x)=>a+Number(x.amount||0),0),ok=receiptExpectedTotal>0&&receiptRowsData.length&&Math.abs(sum-receiptExpectedTotal)<=1;$('rStatus').className='status '+(ok&&!safe.corrected?'ok':'');$('rStatus').textContent=safe.corrected?'読めない明細や不整合な金額は採用せず、「未判定」にまとめました。確認してください。':(ok?'読み取りました。商品ごとのカテゴリを確認してください。':'一部読み取れませんでした。明細を確認・修正してください。');$('rProg').style.width='100%'
 }
-async function receiptImageVariants(f){return new Promise((ok,no)=>{let i=new Image(),u=URL.createObjectURL(f);i.onload=()=>{try{let target=i.width<900?Math.min(1800,i.width*4):Math.min(2400,i.width*1.5),sc=target/i.width,c=document.createElement('canvas');c.width=Math.max(1,Math.round(i.width*sc));c.height=Math.max(1,Math.round(i.height*sc));let ctx=c.getContext('2d',{willReadFrequently:true});ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(i,0,0,c.width,c.height);let raw=c.toDataURL('image/jpeg',.92),im=ctx.getImageData(0,0,c.width,c.height),d=im.data;for(let p=0;p<d.length;p+=4){let y=.299*d[p]+.587*d[p+1]+.114*d[p+2];y=Math.max(0,Math.min(255,(y-128)*1.35+128));d[p]=d[p+1]=d[p+2]=y}ctx.putImageData(im,0,0);let gray=c.toDataURL('image/png');let th=ctx.getImageData(0,0,c.width,c.height),td=th.data;for(let p=0;p<td.length;p+=4){let y=td[p];let v=y>172?255:y<92?0:Math.round((y-92)/(172-92)*255);td[p]=td[p+1]=td[p+2]=v}ctx.putImageData(th,0,0);let threshold=c.toDataURL('image/png');URL.revokeObjectURL(u);ok({raw,gray,threshold})}catch(e){URL.revokeObjectURL(u);no(e)}};i.onerror=no;i.src=u})}
-async function analyze(f){
-  pendingReceiptArchive=archiveReceiptImage(f).catch(()=>null);resetReadingCapture('merchant');
-  $('receipt').showModal();$('preview').src=URL.createObjectURL(f);$('rStatus').textContent='レシートを解析しています…';$('rProg').style.width='12%';receiptRowsData=[];receiptExpectedTotal=0;renderReceiptRows();$('merchant').value='';$('rDate').value=today();$('rTotal').value='';
-  let imgs=await receiptImageVariants(f);
-  $('rStatus').textContent='レシートを読み取っています…';let worker=null;
-  try{
-    worker=await Tesseract.createWorker('jpn+eng',1,{logger:m=>{if(m.status==='recognizing text')$('rProg').style.width=(20+Math.round((m.progress||0)*22))+'%'}});
-    let parses=[];
-    for(let pass of [{img:imgs.gray,psm:'6'},{img:imgs.threshold,psm:'6'},{img:imgs.gray,psm:'11'}]){
-      await worker.setParameters({tessedit_pageseg_mode:pass.psm,preserve_interword_spaces:'1'});
-      let out=await worker.recognize(pass.img);let parsed=parseOCR(out.data?.text||'');parses.push(parsed)
+async 
+const RECEIPT_OCR_SOURCES=[
+'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js',
+'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js'
+];
+let receiptOCRScript=null,receiptFileLast=null,receiptOCRRunning=false;
+function receiptProgress(label,description='',progress=0){
+  $('rStatus').textContent=label;
+  $('receiptErrorDetail').textContent=description;
+  $('rProg').style.width=String(Math.min(100,Math.max(0,progress)))+'%';
+}
+async function loadReceiptOcrScript(){
+  if(window.Tesseract?.createWorker)return window.Tesseract;
+  if(receiptOCRScript)return receiptOCRScript;
+  receiptOCRScript=(async()=>{
+    for(const url of RECEIPT_OCR_SOURCES){
+      try{
+        await new Promise((ok,fail)=>{
+          const s=document.createElement('script');
+          let finished=false;
+          const done=(error)=>{
+            if(finished)return;
+            finished=true;clearTimeout(timer);
+            s.onload=null;s.onerror=null;
+            if(error){s.remove();fail(error)}
+            else ok()
+          };
+          const timer=setTimeout(()=>done(Error('OCR_SCRIPT_TIMEOUT')),12000);
+          s.async=true;s.src=url;
+          s.onload=()=>window.Tesseract?.createWorker?done():done(Error('OCR_SCRIPT_MISSING'));
+          s.onerror=()=>done(Error('OCR_SCRIPT_LOAD_FAILED'));
+          document.head.appendChild(s)
+        });
+        if(window.Tesseract?.createWorker)return window.Tesseract
+      }catch{}
     }
-    let combined=buildReceiptConsensus(parses);
+    throw Error('OCR_SCRIPT_UNAVAILABLE')
+  })().catch(error=>{receiptOCRScript=null;throw error});
+  return receiptOCRScript
+}
+function receiptImageVariants(f){
+  return new Promise((ok,no)=>{
+    const img=new Image(),u=URL.createObjectURL(f);
+    let finished=false;
+    const done=(error,data)=>{
+      if(finished)return;
+      finished=true;clearTimeout(timer);URL.revokeObjectURL(u);
+      if(error)no(error);
+      else ok(data)
+    };
+    const timer=setTimeout(()=>done(Error('IMAGE_OPEN_TIMEOUT')),15000);
+    img.onerror=()=>done(Error('IMAGE_FORMAT_UNAVAILABLE'));
+    img.onload=()=>{
+      let canvas=null;
+      try{
+        if(!img.width||!img.height)throw Error('INVALID_IMAGE_SIZE');
+        const maxPixels=2800000,maxSide=2100;
+        const factor=Math.min(2,Math.max(1,1000/img.width),maxSide/Math.max(img.width,img.height),Math.sqrt(maxPixels/(img.width*img.height)));
+        canvas=document.createElement('canvas');
+        canvas.width=Math.max(1,Math.round(img.width*factor));
+        canvas.height=Math.max(1,Math.round(img.height*factor));
+        const ctx=canvas.getContext('2d',{willReadFrequently:true});
+        if(!ctx)throw Error('CANVAS_UNAVAILABLE');
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+        const pixels=ctx.getImageData(0,0,canvas.width,canvas.height),d=pixels.data;
+        for(let p=0;p<d.length;p+=4){
+          let y=Math.max(0,Math.min(255,(0.299*d[p]+0.587*d[p+1]+0.114*d[p+2]-128)*1.30+128));
+          d[p]=d[p+1]=d[p+2]=y
+        }
+        ctx.putImageData(pixels,0,0);
+        const gray=canvas.toDataURL('image/jpeg',0.85);
+        for(let p=0;p<d.length;p+=4){
+          const y=d[p],v=y>175?255:y<95?0:Math.round((y-95)*3.1875);
+          d[p]=d[p+1]=d[p+2]=v
+        }
+        ctx.putImageData(pixels,0,0);
+        const threshold=canvas.toDataURL('image/jpeg',0.82);
+        canvas.width=1;canvas.height=1;
+        done(null,{gray,threshold})
+      }catch(error){if(canvas){canvas.width=1;canvas.height=1}done(error)}
+    };
+    img.src=u
+  })
+}
+function limitedOcrTime(promise,ms=45000){
+  let timer;
+  return Promise.race([
+    promise,
+    new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('OCR_TIME_LIMIT')),ms)})
+  ]).finally(()=>clearTimeout(timer))
+}
+async function analyze(f){
+  if(receiptOCRRunning)return toast('現在の読み取りが終わるまでお待ちください');
+  if(!f)return;
+  receiptOCRRunning=true;receiptFileLast=f;
+  pendingReceiptArchive=()=>archiveReceiptImage(f);
+  resetReadingCapture('merchant');
+  $('receipt').showModal();
+  const preview=$('preview');
+  if(preview.dataset.sourceURL)URL.revokeObjectURL(preview.dataset.sourceURL);
+  preview.dataset.sourceURL=URL.createObjectURL(f);
+  preview.src=preview.dataset.sourceURL;
+  $('rStatus').className='status';
+  $('retryReceipt').classList.add('hide');
+  receiptRowsData=[];receiptExpectedTotal=0;renderReceiptRows();
+  $('merchant').value='';$('rDate').value=today();$('rTotal').value='';
+  let stage='image',worker=null;
+  try{
+    receiptProgress('画像を準備しています…','iPhoneで動くよう画像サイズを調整しています。',10);
+    const imgs=await receiptImageVariants(f);
+    stage='script';
+    receiptProgress('OCRを準備しています…','初回は無料の文字認識プログラムをダウンロードします。',22);
+    const engine=await loadReceiptOcrScript();
+    stage='language';
+    receiptProgress('日本語の辞書を準備しています…','日本語と英語の認識データを読み込んでいます。',30);
+    worker=await limitedOcrTime(engine.createWorker(['jpn','eng'],1,{
+      logger:m=>{
+        if(m.status==='recognizing text')$('rProg').style.width=(45+Math.round((m.progress||0)*15))+'%';
+      }
+    }),60000);
+    stage='recognition';
+    const results=[];
+    const passes=[{img:imgs.gray,psm:'6'},{img:imgs.threshold,psm:'11'},{img:imgs.gray,psm:'11'}];
+    for(let p=0;p<passes.length;p++){
+      if(p===2&&results.length>=2){
+        const pre=buildReceiptConsensus(results);
+        if(pre.totalReliable&&pre.confirmedItemCount)break;
+      }
+      receiptProgress('レシートの文字を読んでいます…','読取 '+(p+1)+' / 最大3回',48+Math.round(p*14));
+      await limitedOcrTime(worker.setParameters({tessedit_pageseg_mode:passes[p].psm,preserve_interword_spaces:'1'}),12000);
+      const out=await limitedOcrTime(worker.recognize(passes[p].img),50000);
+      if(out?.data?.text?.trim())results.push(parseOCR(out.data.text));
+    }
+    if(!results.length)throw Error('NO_RECOGNIZED_TEXT');
+    const combined=buildReceiptConsensus(results);
     applyR(combined,'OCR');
     $('rStatus').className='status '+(combined.totalReliable&&combined.itemMathOk?'ok':'');
-    if(!combined.totalReliable){
-      $('rStatus').textContent='合計金額が一致せず、確定できませんでした。レシートの合計を入力してください（明細は自動入力しません）。';
-    }else if(!combined.confirmedItemCount){
-      $('rStatus').textContent='合計は確認できましたが、明細は確信できないため「未判定」にしました。';
-    }else if(!combined.itemMathOk){
-      $('rStatus').textContent='複数回一致した明細だけ入力しました。読み切れない差額は「未判定」です。';
-    }else{
-      $('rStatus').textContent='複数回一致した金額だけ入力しました。商品名・カテゴリを確認してください。';
-    }
-  }catch{$('rStatus').textContent='解析できませんでした。明細を入力してください。';$('rDate').value=today();receiptRowsData=[{id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]}];renderReceiptRows()}finally{if(worker)await worker.terminate().catch(()=>{})}
+    if(!combined.totalReliable)receiptProgress('文字は認識しましたが、合計金額が不明です。','読み取れない金額を推測して登録しないようにしています。レシート最終合計を手入力するか、iPhoneのテキスト認識をご利用ください。',100);
+    else receiptProgress('読み取りが完了しました。','表示された店名、合計金額、商品名を原本で確認してください。',100);
+  }catch(error){
+    $('rStatus').className='status';
+    const err=String(error?.message||error||'UNKNOWN').slice(0,100);
+    const errorId=stage==='image'?'E01':stage==='script'?'E02':stage==='language'?'E03':'E04';
+    const description=stage==='image'?'画像を開けません。写真のスクリーンショットで再試行してください。':stage==='script'?'OCRプログラムを取得できません。通信状況をご確認ください。':stage==='language'?'日本語辞書を準備できません。通信状況や端末のメモリをご確認ください。':'文字認識に失敗しました。画像を小さくするか、テキスト認識の貼り付け機能をご利用ください。';
+    receiptProgress('読み取りに失敗しました（'+errorId+'）',description+' エラー: '+err,100);
+    $('retryReceipt').classList.remove('hide')
+  }finally{
+    receiptOCRRunning=false;
+    if(worker){try{await limitedOcrTime(worker.terminate(),2500)}catch{}}
+  }
 }
+$('retryReceipt').onclick=()=>{if(receiptFileLast)analyze(receiptFileLast)};
 $('receiptParseText').onclick=()=>{
   const text=$('receiptPastedText').value.trim();
   if(!text)return toast('レシートの文字を貼り付けてください');
