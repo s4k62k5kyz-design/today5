@@ -657,7 +657,7 @@ function openNumpad(id){
 function updateNumpad(){
   const expression=calcExpression+numberBuffer,result=calcFinalValue();
   $('numpadExpression').textContent=calcExpression?expression.replace(/([+\-×÷])/g,' $1 '):'';
-  $('numpadDisplay').textContent=result===null?'計算できません':money(result)
+  $('numpadDisplay').textContent=result===null?(expression?'計算できません':'¥0'):money(result)
 }
 function calcOperator(operator){
   if(numberBuffer){
