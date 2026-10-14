@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=52">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=53">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -130,7 +130,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <dialog id="receiptImageDialog"><div class="mh"><h3>レシート画像</h3><button data-close="receiptImageDialog">×</button></div><div class="mb"><img id="receiptSavedImage" class="receipt-photo-large"><div class="note" id="receiptImageNote" style="margin-top:8px"></div></div></dialog><div class="toast hide" id="toast"></div>
 <script>
 (()=>{
-const APP_BUILD='v52-numpad-calculator';
+const APP_BUILD='v53-auto-recovery';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -148,7 +148,7 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=52',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=53',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 // Avoid automatic page reloads during data rescue.
 setTimeout(()=>checkAppUpdate(false),800);
@@ -323,6 +323,37 @@ async function getLatestNonemptyVaultSnapshot(){
   }catch{return null}
   finally{if(idb)idb.close()}
 }
+// Read all recent recovery snapshots without opening the database at a fixed schema version.
+// Read-only: never updates or deletes a candidate while looking for a safe recovery.
+async function getBestNonemptyVaultSnapshot(){
+  let idb=null;
+  try{
+    idb=await new Promise((resolve,reject)=>{
+      const req=indexedDB.open(VAULT_DB);
+      req.onupgradeneeded=e=>{try{e.target.transaction.abort()}catch{}};
+      req.onsuccess=()=>resolve(req.result);
+      req.onerror=()=>reject(req.error||Error('recovery database unavailable'));
+      req.onblocked=()=>reject(Error('recovery database blocked'))
+    });
+    if(!idb.objectStoreNames.contains('snapshots'))return null;
+    return await new Promise((resolve,reject)=>{
+      const tx=idb.transaction('snapshots','readonly');
+      const req=tx.objectStore('snapshots').openCursor(null,'prev');
+      let best=null,seen=0;
+      req.onsuccess=e=>{
+        const cur=e.target.result;
+        if(!cur||seen++>=300){resolve(best);return}
+        const record=cur.value, state=record?.state;
+        if(validStateObject(state)&&state.tx.length>0&&(!best||state.tx.length>best.state.tx.length||(state.tx.length===best.state.tx.length&&Number(record.savedAt||0)>Number(best.savedAt||0)))){
+          best=record
+        }
+        cur.continue()
+      };
+      req.onerror=()=>reject(req.error)
+    })
+  }catch(error){console.warn('Recovery history scan:',error);return null}
+  finally{try{idb?.close()}catch{}}
+}
 async function storageEstimateText(){
   try{
     if(!navigator.storage?.estimate)return '長期保存モードで保護中';
@@ -426,37 +457,59 @@ async function vaultSnapshot(state,reason='save'){
   return vaultSaved||localSaved
 }
 let startupDataSource='未確認',startupShowRecoveryPrompt=false;
+let startupAutoRecovery=null;
 async function hydrateFromLongTermStorage(){
-  // No writes, no migrations, no snapshots, and no backup deletion at startup.
+  // Compare the primary records and a read-only history scan before displaying an empty ledger.
+  // Do not overwrite anything while inspecting recovery candidates.
   const local=readPrimaryState(),boot=readBootMeta();
-  const deadline=(p)=>Promise.race([p,new Promise(ok=>setTimeout(()=>ok(null),6500))]);
-  const vault=await deadline(getVaultLatest());
+  const deadline=(promise,ms=12000)=>Promise.race([promise,new Promise(resolve=>setTimeout(()=>resolve(null),ms))]);
+  const [vault,history]=await Promise.all([
+    deadline(getVaultLatest()),deadline(getBestNonemptyVaultSnapshot())
+  ]);
   const candidates=[];
-  if(validStateObject(vault?.state)&&vault.state.tx.length>0)
-    candidates.push({source:'長期保存領域',state:vault.state,at:Number(vault.savedAt||0)});
-  if(validStateObject(local)&&local.tx.length>0)
-    candidates.push({source:'端末内の保存',state:local,at:boot?.idbPrimary?0:Number(boot?.savedAt||0)});
+  const add=(source,state,at=0,kind='backup')=>{
+    if(validStateObject(state)&&state.tx.length>0)candidates.push({source,state,at:Number(at||0),kind})
+  };
+  add('長期保存領域',vault?.state,vault?.savedAt,'primary');
+  add('端末内の保存',local,boot?.savedAt,'primary');
+  // Include every legacy local backup that the emergency recovery page can discover.
+  const checked=new Set();
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(!key||!/kakeibo|家計簿/i.test(key)||checked.has(key))continue;
+      checked.add(key);
+      const raw=safeStorageGet(key),state=parseStoredState(raw);
+      if(!state)continue;
+      let at=0;
+      try{const outer=JSON.parse(raw);at=Number(outer?.savedAt||outer?.lastBackupAt||0)}catch{}
+      add('端末内の保存履歴',state,at)
+    }
+  }catch(error){console.warn('Local recovery scan:',error)}
   const fallback=readLocalFallback();
-  if(validStateObject(fallback?.state)&&fallback.state.tx.length>0)
-    candidates.push({source:'過去の端末内バックアップ',state:fallback.state,at:Number(fallback.savedAt||0)});
-  // Search past snapshots only when the latest candidates are missing records.
-  if(!candidates.length){
-    const snap=await deadline(getLatestNonemptyVaultSnapshot());
-    if(validStateObject(snap?.state)&&snap.state.tx.length>0)
-      candidates.push({source:'保存履歴',state:snap.state,at:Number(snap.savedAt||0)})
+  add('過去の端末内バックアップ',fallback?.state,fallback?.savedAt);
+  add('過去の保存履歴',history?.state,history?.savedAt);
+  // A complete, current primary always wins. Older snapshots may reflect intentionally deleted entries.
+  const primary=candidates.filter(c=>c.kind==='primary').sort((a,b)=>b.at-a.at||b.state.tx.length-a.state.tx.length)[0];
+  const strongest=candidates.slice().sort((a,b)=>b.state.tx.length-a.state.tx.length||b.at-a.at)[0];
+  const knownCount=Number(boot?.txCount||0);
+  let chosen=primary||strongest;
+  if(primary&&strongest&&strongest.state.tx.length>primary.state.tx.length&&knownCount>=strongest.state.tx.length){
+    // Only repair a partial primary when device metadata confirms it used to hold at least this many records.
+    chosen=strongest
   }
-  if(candidates.length){
-    candidates.sort((a,b)=>b.at-a.at||b.state.tx.length-a.state.tx.length);
-    db=norm(candidates[0].state);
-    startupDataSource=candidates[0].source;
+  if(chosen){
+    db=norm(chosen.state);
+    startupDataSource=chosen.source;
+    // Automatically make a durable copy only when restoring absent/partial primary records.
+    // All existing snapshots remain intact, and no empty ledger is ever written.
+    if(chosen!==primary&&db.tx.length>0)startupAutoRecovery={count:db.tx.length,source:chosen.source};
   }else{
-    // Preserve what we can read, even if it is empty, without overwriting anything.
     db=norm(validStateObject(vault?.state)?vault.state:validStateObject(local)?local:fallback?.state||db);
-    startupDataSource='保存候補を確認できませんでした';
+    startupDataSource='保存候補を確認できませんでした'
   }
-  const previouslyStored=Number(boot?.txCount||0);
-  startupShowRecoveryPrompt=(db.tx.length===0&&previouslyStored>0);
-  lastPersistedTxCount=Math.max(db.tx.length,previouslyStored);
+  startupShowRecoveryPrompt=(db.tx.length===0&&knownCount>0);
+  lastPersistedTxCount=Math.max(db.tx.length,knownCount);
   return true
 }
 function currentProtectionStatus(){
@@ -1255,12 +1308,25 @@ $('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObje
 $$('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 async function startLongTermApp(){
   setCategoryFold(false);
-  await hydrateFromLongTermStorage();
+  try{await hydrateFromLongTermStorage()}
+  catch(error){console.error('Startup recovery failed',error);startupDataSource='読込エラー（保存領域は変更していません）'}
   refreshCategorySelects();
   $('loadedDataInfo').textContent='読込済み '+db.tx.length+'件（'+startupDataSource+'）';
-  if(!db.tx.length){const bar=$('emergencyRecoveryBar');if(bar)bar.classList.remove('hide')}
-  // No automatic writes at startup while data recovery is ongoing.
+  if(!db.tx.length){$('emergencyRecoveryBar')?.classList.remove('hide')}
   render();
+  if(startupAutoRecovery&&db.tx.length>0){
+    $('loadedDataInfo').textContent='保存履歴から '+db.tx.length+'件を検出。保存を確認中…';
+    // Preserve found data on screen even if durable storage is unavailable.
+    const count=db.tx.length, saved=await vaultSnapshot(db,'automatic-recovery');
+    const [localCopy,vaultCopy]=await Promise.all([Promise.resolve(readPrimaryState()),getVaultLatest()]);
+    const same=state=>validStateObject(state)&&state.tx.length===count&&db.tx.every(x=>state.tx.some(y=>y.id===x.id));
+    const verified=!!saved&&(same(localCopy)||same(vaultCopy?.state));
+    $('loadedDataInfo').textContent=verified?'自動復旧 '+count+'件（保存確認済み）':'復旧候補 '+count+'件（端末への保存未確認）';
+    if(!verified){
+      $('emergencyRecoveryBar')?.classList.remove('hide');
+      toast('保存候補を表示しました。JSONで保全してください')
+    }
+  }
   if($('recoveryStatus')){
     const meta=currentProtectionStatus();
     $('recoveryStatus').textContent='長期保存モード・現在 '+(db.tx?.length||0)+'件'+(meta?.lastBackupAt?' ・ 最終保護 '+new Date(meta.lastBackupAt).toLocaleString('ja-JP'):'');
