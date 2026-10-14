@@ -335,11 +335,23 @@ async function getBestNonemptyVaultSnapshot(){
       req.onerror=()=>reject(req.error||Error('recovery database unavailable'));
       req.onblocked=()=>reject(Error('recovery database blocked'))
     });
-    if(!idb.objectStoreNames.contains('snapshots'))return null;
+    // Some older installations store their best copy in "state" rather than history.
+    let current=null;
+    if(idb.objectStoreNames.contains('state')){
+      current=await new Promise(resolve=>{
+        try{
+          const req=idb.transaction('state','readonly').objectStore('state').get('latest');
+          req.onsuccess=()=>resolve(req.result||null);
+          req.onerror=()=>resolve(null)
+        }catch{resolve(null)}
+      })
+    }
+    const primaryCandidate=validStateObject(current?.state)&&current.state.tx.length>0?current:null;
+    if(!idb.objectStoreNames.contains('snapshots'))return primaryCandidate;
     return await new Promise((resolve,reject)=>{
       const tx=idb.transaction('snapshots','readonly');
       const req=tx.objectStore('snapshots').openCursor(null,'prev');
-      let best=null,seen=0;
+      let best=primaryCandidate,seen=0;
       req.onsuccess=e=>{
         const cur=e.target.result;
         if(!cur||seen++>=300){resolve(best);return}
