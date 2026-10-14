@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=53">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=54">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -130,7 +130,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <dialog id="receiptImageDialog"><div class="mh"><h3>レシート画像</h3><button data-close="receiptImageDialog">×</button></div><div class="mb"><img id="receiptSavedImage" class="receipt-photo-large"><div class="note" id="receiptImageNote" style="margin-top:8px"></div></div></dialog><div class="toast hide" id="toast"></div>
 <script>
 (()=>{
-const APP_BUILD='v53-auto-recovery';
+const APP_BUILD='v54-auto-recovery-safe-open';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -148,7 +148,7 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=53',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=54',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 // Avoid automatic page reloads during data rescue.
 setTimeout(()=>checkAppUpdate(false),800);
@@ -268,7 +268,8 @@ function readBootMeta(){
 function openDataVault(){
   return new Promise((resolve,reject)=>{
     if(!('indexedDB' in window))return reject(new Error('indexedDB unavailable'));
-    const req=indexedDB.open(VAULT_DB,2);
+    // Open the existing version instead of requesting v2; newer databases must not throw VersionError.
+    const req=indexedDB.open(VAULT_DB);
     req.onupgradeneeded=()=>{
       const idb=req.result;
       if(!idb.objectStoreNames.contains('state'))idb.createObjectStore('state',{keyPath:'key'});
@@ -335,11 +336,23 @@ async function getBestNonemptyVaultSnapshot(){
       req.onerror=()=>reject(req.error||Error('recovery database unavailable'));
       req.onblocked=()=>reject(Error('recovery database blocked'))
     });
-    if(!idb.objectStoreNames.contains('snapshots'))return null;
+    // Some older installations store their best copy in "state" rather than history.
+    let current=null;
+    if(idb.objectStoreNames.contains('state')){
+      current=await new Promise(resolve=>{
+        try{
+          const req=idb.transaction('state','readonly').objectStore('state').get('latest');
+          req.onsuccess=()=>resolve(req.result||null);
+          req.onerror=()=>resolve(null)
+        }catch{resolve(null)}
+      })
+    }
+    const primaryCandidate=validStateObject(current?.state)&&current.state.tx.length>0?current:null;
+    if(!idb.objectStoreNames.contains('snapshots'))return primaryCandidate;
     return await new Promise((resolve,reject)=>{
       const tx=idb.transaction('snapshots','readonly');
       const req=tx.objectStore('snapshots').openCursor(null,'prev');
-      let best=null,seen=0;
+      let best=primaryCandidate,seen=0;
       req.onsuccess=e=>{
         const cur=e.target.result;
         if(!cur||seen++>=300){resolve(best);return}
