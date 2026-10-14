@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=51">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=52">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -26,7 +26,10 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 .cal-overview{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:12px}.cal-overview>div{background:#f7f9fd;border:1px solid var(--line);border-radius:12px;padding:9px 8px;min-width:0}.cal-overview small{display:block;font-size:8px;color:var(--muted);margin-bottom:3px}.cal-overview b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cal-overview .out{color:var(--r)}.cal-overview .in{color:var(--g)}
 .month-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.month-cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:6px}.month-cal-head span{text-align:center;font-size:9px;color:var(--muted);font-weight:850;padding-bottom:2px}.month-cal-head span:first-child{color:#d85a65}.month-cal-head span:last-child{color:#527bd6}.month-day{min-height:74px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:6px 5px;text-align:left;display:flex;flex-direction:column;gap:4px;min-width:0;transition:transform .08s,background .12s,border-color .12s}.month-day:active{transform:scale(.97)}.month-day.other{opacity:.34;background:#fafbfd}.month-day.sun .dnum{color:#d85a65}.month-day.sat .dnum{color:#527bd6}.month-day.today:not(.selected) .dnum{display:grid;place-items:center;width:22px;height:22px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--p);color:#fff}.month-day.selected{background:var(--p);border-color:var(--p);box-shadow:0 5px 14px rgba(65,105,225,.22)}.month-day.selected .dnum,.month-day.selected.sun .dnum,.month-day.selected.sat .dnum,.month-day.selected .dexp{color:#fff}.month-day.selected .dcnt{color:rgba(255,255,255,.78)}.month-day .dnum{font-size:12px;font-weight:900;line-height:1}.month-day .dexp{font-size:9px;color:var(--r);font-weight:850;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.month-day .dcnt{font-size:8px;color:var(--muted);margin-top:auto}.cal-day-metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}.cal-day-metrics>div{background:#fff;border:1px solid var(--line);border-radius:13px;padding:10px 11px}.cal-day-metrics small{display:block;font-size:8px;color:var(--muted);margin-bottom:3px}.cal-day-metrics b{font-size:14px}.cal-day-metrics .out{color:var(--r)}.cal-day-metrics .in{color:var(--g)}.receipt-view-btn{width:100%;margin-top:8px}.receipt-photo-large{width:100%;max-height:68dvh;object-fit:contain;border-radius:12px;background:#f5f5f5}
 .optional-note{border:1px solid var(--line);border-radius:11px;background:#fafbfe;margin-bottom:10px;overflow:hidden}.optional-note summary{cursor:pointer;list-style:none;padding:10px 11px;font-size:10px;color:var(--muted);font-weight:800}.optional-note summary::-webkit-details-marker{display:none}.optional-note[open] summary{border-bottom:1px solid var(--line)}.optional-note .field{margin:9px 10px 10px}.optional-note textarea{width:100%;min-height:72px;resize:vertical;border:1px solid var(--line);background:white;border-radius:11px;padding:10px;font:inherit;font-size:11px}
-.app-number,.app-date{background:#f8f9fc!important;cursor:pointer}.input-hint{font-size:9px;color:var(--muted);margin-top:4px}.tool-display{background:#f6f8fc;border:1px solid var(--line);border-radius:13px;padding:14px;text-align:right;font-size:28px;font-weight:850;margin-bottom:10px;min-height:62px}.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.numpad button{border:1px solid var(--line);background:white;border-radius:13px;padding:15px 4px;font-size:18px;font-weight:750}.numpad .sub{font-size:13px;color:var(--muted)}.numpad-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.calendar-head button{border:0;background:#f3f5f8;border-radius:10px;width:36px;height:34px}.calendar-head b{font-size:14px}.weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.weekdays span{text-align:center;font-size:9px;color:var(--muted);padding:4px}.calendar-grid button{border:0;background:white;border-radius:10px;min-height:38px;font-size:11px}.calendar-grid button.other{color:#b8beca}.calendar-grid button.today{background:var(--soft);color:var(--p);font-weight:800}.calendar-grid button.selected{background:var(--p);color:white;font-weight:800}
+.app-number,.app-date{background:#f8f9fc!important;cursor:pointer}.input-hint{font-size:9px;color:var(--muted);margin-top:4px}.tool-display{background:#f6f8fc;border:1px solid var(--line);border-radius:13px;padding:14px;text-align:right;font-size:28px;font-weight:850;margin-bottom:10px;min-height:62px}.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.numpad button{border:1px solid var(--line);background:white;border-radius:13px;padding:15px 4px;font-size:18px;font-weight:750}.numpad .sub{font-size:13px;color:var(--muted)}.numpad-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:9px}
+.calc-expression{min-height:18px;text-align:right;color:var(--muted);font-size:12px;overflow-wrap:anywhere;margin-bottom:3px}
+.calc-ops{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}
+.calc-ops button{border:1px solid #cbd6f6;background:var(--soft);color:var(--p);border-radius:12px;padding:13px 5px;font-size:20px;font-weight:800}.calendar-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.calendar-head button{border:0;background:#f3f5f8;border-radius:10px;width:36px;height:34px}.calendar-head b{font-size:14px}.weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.weekdays span{text-align:center;font-size:9px;color:var(--muted);padding:4px}.calendar-grid button{border:0;background:white;border-radius:10px;min-height:38px;font-size:11px}.calendar-grid button.other{color:#b8beca}.calendar-grid button.today{background:var(--soft);color:var(--p);font-weight:800}.calendar-grid button.selected{background:var(--p);color:white;font-weight:800}
 .batch-launch{width:100%;margin-top:8px;border:1px solid #cbd6f6;background:var(--soft);color:var(--p);border-radius:14px;padding:11px 12px;font-size:11px;font-weight:850}
 .batch-head{display:grid;grid-template-columns:1fr 1fr;gap:8px}.batch-rows{display:flex;flex-direction:column;gap:9px;margin-top:10px}.batch-row{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fbfcff}.batch-row-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.batch-row-top b{font-size:11px}.batch-remove{border:0;background:#fff1f2;color:var(--r);border-radius:9px;padding:6px 8px;font-size:9px;font-weight:800}.batch-fields{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(88px,.8fr);gap:7px}.batch-fields .field{margin-bottom:0}.batch-cat{margin-top:7px}.batch-total{display:flex;align-items:center;justify-content:space-between;background:#f6f8fc;border-radius:12px;padding:11px 12px;margin:10px 0}.batch-total span{font-size:10px;color:var(--muted)}.batch-total b{font-size:18px}.batch-add{width:100%;border:1px dashed #bfcaf0;background:white;color:var(--p);border-radius:12px;padding:10px;font-size:10px;font-weight:800;margin-top:9px}.receipt-check{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f6f8fc;border-radius:12px;padding:10px 11px;margin:9px 0}.receipt-check span{font-size:10px;color:var(--muted)}.receipt-check b{font-size:14px}.receipt-check.warn{background:#fff7e9}.receipt-check.warn b{color:#b97514}.receipt-row-note{font-size:9px;color:var(--muted);line-height:1.45;margin:5px 1px 0}
 @media(max-width:430px){.batch-head{grid-template-columns:1fr}.batch-fields{grid-template-columns:minmax(0,1fr) 104px}}
@@ -113,8 +116,10 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <dialog id="categoryDialog"><div class="mh"><h3 id="categoryTitle">カテゴリを追加</h3><button data-close="categoryDialog">×</button></div><div class="mb">
 <input id="categoryOriginal" type="hidden"><input id="categoryType" type="hidden"><div class="field"><label>カテゴリ名</label><input id="categoryName" maxlength="20" placeholder="例：美容"></div><div class="field"><label>アイコン</label><input id="categoryIcon" maxlength="4" placeholder="例：💇"></div><button class="primary" id="saveCategory" style="width:100%">保存</button><button class="secondary hide" id="deleteCategory" style="width:100%;margin-top:8px;color:var(--r)">このカテゴリを削除</button></div></dialog>
 
-<dialog id="numpadDialog"><div class="mh"><h3 id="numpadTitle">金額を入力</h3><button data-close="numpadDialog">×</button></div><div class="mb"><div id="numpadDisplay" class="tool-display">0</div><div class="numpad">
-<button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button><button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button><button data-num="7">7</button><button data-num="8">8</button><button data-num="9">9</button><button data-num="00">00</button><button data-num="0">0</button><button id="numBack" class="sub">⌫</button></div><div class="numpad-actions"><button id="numClear" class="secondary">クリア</button><button id="numDone" class="primary">決定</button></div></div></dialog>
+<dialog id="numpadDialog"><div class="mh"><h3 id="numpadTitle">金額を入力</h3><button data-close="numpadDialog">×</button></div><div class="mb"><div id="numpadExpression" class="calc-expression" aria-live="polite"></div><div id="numpadDisplay" class="tool-display">0</div><div class="numpad">
+<button data-num="1">1</button><button data-num="2">2</button><button data-num="3">3</button><button data-num="4">4</button><button data-num="5">5</button><button data-num="6">6</button><button data-num="7">7</button><button data-num="8">8</button><button data-num="9">9</button><button data-num="00">00</button><button data-num="0">0</button><button id="numBack" class="sub">⌫</button></div>
+<div class="calc-ops"><button type="button" data-calc-op="+">＋</button><button type="button" data-calc-op="-">−</button><button type="button" data-calc-op="×">×</button><button type="button" data-calc-op="÷">÷</button></div>
+<div class="numpad-actions"><button id="numClear" class="secondary">クリア</button><button id="numEquals" class="secondary" type="button">＝</button><button id="numDone" class="primary">決定</button></div><div class="input-hint" style="text-align:center">計算結果は1円単位に四捨五入します</div></div></dialog>
 
 <dialog id="calendarDialog"><div class="mh"><h3>日付を選択</h3><button data-close="calendarDialog">×</button></div><div class="mb"><div class="calendar-head"><button id="calPrev" type="button">‹</button><b id="calLabel"></b><button id="calNext" type="button">›</button></div><div class="weekdays"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div><div id="calendarGrid" class="calendar-grid"></div><button id="calToday" class="secondary" style="width:100%;margin-top:9px">今日</button></div></dialog>
 
@@ -125,7 +130,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <dialog id="receiptImageDialog"><div class="mh"><h3>レシート画像</h3><button data-close="receiptImageDialog">×</button></div><div class="mb"><img id="receiptSavedImage" class="receipt-photo-large"><div class="note" id="receiptImageNote" style="margin-top:8px"></div></div></dialog><div class="toast hide" id="toast"></div>
 <script>
 (()=>{
-const APP_BUILD='v51-fix-dialog-buttons';
+const APP_BUILD='v52-numpad-calculator';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -143,7 +148,7 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=51',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=52',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 // Avoid automatic page reloads during data rescue.
 setTimeout(()=>checkAppUpdate(false),800);
@@ -623,9 +628,53 @@ function learnReadingFromInput(kind,id,value){
   const el=$(id),parts=el?el._readingParts||[]:[];
   if(parts.length)learnReading(kind,value,parts.join(''))
 }
-let numberTarget='',numberBuffer='';
-function openNumpad(id){let el=$(id);if(!el)return;numberTarget=id;numberBuffer=String(el.value||'').replace(/\D/g,'').slice(0,10);updateNumpad();$('numpadTitle').textContent=id==='budget'?'月予算を入力':'金額を入力';$('numpadDialog').showModal()}
-function updateNumpad(){$('numpadDisplay').textContent=numberBuffer?money(Number(numberBuffer)):'¥0'}
+let numberTarget='',numberBuffer='',calcExpression='';
+// Calculate without eval. Multiplication and division take precedence.
+function calcValue(expression){
+  if(!/^\d+(?:[+\-×÷]\d+)*$/.test(expression))return null;
+  const parts=expression.split(/([+\-×÷])/),terms=[Number(parts[0])];
+  for(let i=1;i<parts.length;i+=2){
+    const op=parts[i],n=Number(parts[i+1]);
+    if(op==='×'||op==='÷'){
+      const left=terms.pop();
+      terms.push(op==='×'?left*n:n===0?NaN:left/n);
+    }else{terms.push(op,n)}
+  }
+  let result=terms[0];
+  for(let i=1;i<terms.length;i+=2)result=terms[i]==='+'?result+terms[i+1]:result-terms[i+1];
+  return Number.isFinite(result)?result:null
+}
+function calcFinalValue(){
+  let expression=calcExpression+numberBuffer;
+  if(/[+\-×÷]$/.test(expression))expression=expression.slice(0,-1);
+  return expression?calcValue(expression):null
+}
+function openNumpad(id){
+  let el=$(id);if(!el)return;
+  numberTarget=id;numberBuffer=String(el.value||'').replace(/\D/g,'').slice(0,10);calcExpression='';
+  updateNumpad();$('numpadTitle').textContent=id==='budget'?'月予算を入力':'金額を入力';$('numpadDialog').showModal()
+}
+function updateNumpad(){
+  const expression=calcExpression+numberBuffer,result=calcFinalValue();
+  $('numpadExpression').textContent=calcExpression?expression.replace(/([+\-×÷])/g,' $1 '):'';
+  $('numpadDisplay').textContent=result===null?'計算できません':money(result)
+}
+function calcOperator(operator){
+  if(numberBuffer){
+    calcExpression+=String(Number(numberBuffer))+operator;
+    numberBuffer='';
+  }else if(calcExpression && /[+\-×÷]$/.test(calcExpression)){
+    calcExpression=calcExpression.slice(0,-1)+operator;
+  }else if(!calcExpression){calcExpression='0'+operator}
+  updateNumpad()
+}
+function settleCalculation(){
+  const result=calcFinalValue();
+  if(result===null){toast('計算式を確認してください');return false}
+  const amount=Math.round(result);
+  if(amount<0||amount>9999999999){toast('金額は0〜9,999,999,999円の範囲で入力してください');return false}
+  numberBuffer=String(amount);calcExpression='';updateNumpad();return true
+}
 let dateTarget='',calView=new Date(),calSelected='';
 function openCalendar(id){let el=$(id);if(!el)return;dateTarget=id;calSelected=el.value||today();let d=new Date(calSelected+'T00:00:00');if(isNaN(d))d=new Date();calView=new Date(d.getFullYear(),d.getMonth(),1);renderCalendar();$('calendarDialog').showModal()}
 function renderCalendar(){let y=calView.getFullYear(),m=calView.getMonth(),first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());$('calLabel').textContent=y+'年'+(m+1)+'月';let out='';for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let v=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),cls=[];if(d.getMonth()!==m)cls.push('other');if(v===today())cls.push('today');if(v===calSelected)cls.push('selected');out+='<button type="button" class="'+cls.join(' ')+'" data-cal-date="'+v+'">'+d.getDate()+'</button>'}$('calendarGrid').innerHTML=out;$$('[data-cal-date]').forEach(b=>b.onclick=()=>{calSelected=b.dataset.calDate;$(dateTarget).value=calSelected;$('calendarDialog').close()})}
@@ -1114,7 +1163,24 @@ $('receiptTotalOnly').onclick=()=>{
   $('rStatus').textContent='合計1件で登録する準備ができました。店名・日付・カテゴリを確認してください。'
 };
 $$('.app-number').forEach(el=>el.onclick=()=>openNumpad(el.id));$$('.app-date').forEach(el=>el.onclick=()=>openCalendar(el.id));
-$$('[data-num]').forEach(b=>b.onclick=()=>{if(numberBuffer.length>=10)return;let add=b.dataset.num;if(!numberBuffer&&add==='00')add='0';numberBuffer=(numberBuffer+add).replace(/^0+(?=\d)/,'');updateNumpad()});$('numBack').onclick=()=>{numberBuffer=numberBuffer.slice(0,-1);updateNumpad()};$('numClear').onclick=()=>{numberBuffer='';updateNumpad()};$('numDone').onclick=()=>{if(numberTarget){$(numberTarget).value=numberBuffer;if(numberTarget.startsWith('batchAmount-'))syncBatchRowsFromDom();if(numberTarget.startsWith('receiptAmount-'))syncReceiptRowsFromDom()}$('numpadDialog').close()};
+$('[data-num]').forEach(b=>b.onclick=()=>{if(numberBuffer.length>=10)return;let add=b.dataset.num;if(!numberBuffer&&add==='00')add='0';numberBuffer=(numberBuffer+add).replace(/^0+(?=\d)/,'');updateNumpad()});
+$('[data-calc-op]').forEach(b=>b.onclick=()=>calcOperator(b.dataset.calcOp));
+$('numBack').onclick=()=>{
+  if(numberBuffer){numberBuffer=numberBuffer.slice(0,-1)}
+  else if(calcExpression){
+    const prefix=calcExpression.slice(0,-1),match=prefix.match(/(\d+)$/);
+    if(match){numberBuffer=match[1];calcExpression=prefix.slice(0,-match[1].length)}
+    else calcExpression=prefix
+  }
+  updateNumpad()
+};
+$('numClear').onclick=()=>{numberBuffer='';calcExpression='';updateNumpad()};
+$('numEquals').onclick=()=>{if(numberBuffer||calcExpression)settleCalculation()};
+$('numDone').onclick=()=>{
+  if(calcExpression&&!settleCalculation())return;
+  if(numberTarget){$(numberTarget).value=numberBuffer;if(numberTarget.startsWith('batchAmount-'))syncBatchRowsFromDom();if(numberTarget.startsWith('receiptAmount-'))syncReceiptRowsFromDom()}
+  $('numpadDialog').close()
+};
 $('calPrev').onclick=()=>{calView=new Date(calView.getFullYear(),calView.getMonth()-1,1);renderCalendar()};$('calNext').onclick=()=>{calView=new Date(calView.getFullYear(),calView.getMonth()+1,1);renderCalendar()};$('calToday').onclick=()=>{let v=today();if(dateTarget)$(dateTarget).value=v;$('calendarDialog').close()};
 bindReadingCapture('memo','name',renderMemoSuggestions);bindReadingCapture('merchantInput','merchant',renderMerchantSuggestions);bindReadingCapture('batchStore','merchant',null);bindReadingCapture('merchant','merchant',null);$('memo').onblur=()=>setTimeout(()=>$('memoSuggestions').classList.add('hide'),180);$('merchantInput').onblur=()=>setTimeout(()=>$('merchantSuggestions').classList.add('hide'),180);
 function setCategoryFold(open){let wrap=$('categorySettingsFold'),body=$('categoryFoldBody'),btn=$('categoryFoldToggle');if(!wrap||!body||!btn)return;wrap.classList.toggle('open',!!open);body.classList.toggle('hide',!open);btn.setAttribute('aria-expanded',open?'true':'false')}
