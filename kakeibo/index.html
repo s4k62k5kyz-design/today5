@@ -493,8 +493,9 @@ const save=(opts={})=>{
   let clean;
   try{clean=norm(JSON.parse(JSON.stringify(db)))}catch{toast('データ保存を準備できません');return false}
   lastPersistedTxCount=Math.max(lastPersistedTxCount,clean.tx.length);
-  saveQueue=saveQueue.catch(()=>{}).then(()=>vaultSnapshot(clean,opts.reason||'save')).then(ok=>{
+  saveQueue=saveQueue.catch(()=>false).then(()=>vaultSnapshot(clean,opts.reason||'save')).then(ok=>{
     if(!ok){console.error('Failed to persist budget data');toast('保存できませんでした。バックアップを確認してください。')}
+    return !!ok
   });
   return true
 },rows=(d=view)=>db.tx.filter(x=>(x.date||'').slice(0,7)===mk(d)),tot=(d=view)=>({inc:rows(d).filter(x=>x.type==='income').reduce((a,x)=>a+Number(x.amount||0),0),exp:rows(d).filter(x=>x.type==='expense').reduce((a,x)=>a+Number(x.amount||0),0)}),budget=(d=view)=>Number(db.overallBudgets[mk(d)]||0),pendingRecurringExpense=(d=view)=>{
@@ -1245,10 +1246,28 @@ $('export').onclick=()=>{let a=document.createElement('a');a.href=URL.createObje
       }catch{toast('今のデータを退避できませんでした。読み込みを中止します');return}
     }
     db=norm(x);lastPersistedTxCount=0;
-    save({reason:'manual-file-import'});
+    // Do not claim recovery is complete before a durable write and readback.
+    if(!save({reason:'manual-file-import'})){
+      alert('データ保存を開始できませんでした。JSONバックアップを保管してください。');
+      return
+    }
+    const written=await saveQueue;
+    const sameTransactions=state=>{
+      if(!validStateObject(state)||state.tx.length!==x.tx.length)return false;
+      const ids=new Set(state.tx.map(r=>String(r.id||'')));
+      return x.tx.every(r=>ids.has(String(r.id||'')))
+    };
+    const localCopy=readPrimaryState();
+    const vaultCopy=await getVaultLatest();
+    const confirmed=written&&(sameTransactions(localCopy)||sameTransactions(vaultCopy?.state));
     refreshCategorySelects();render();
+    $('loadedDataInfo').textContent='読込済み '+db.tx.length+'件（'+(confirmed?'端末へ保存確認済み':'保存未確認')+'）';
+    if(!confirmed){
+      alert('画面上にはデータを読み込みましたが、端末への保存を確認できていません。JSONファイルを消さず、アプリを閉じたり更新したりしないでください。');
+      return
+    }
     $('emergencyRecoveryBar')?.classList.add('hide');
-    toast('バックアップを読み込みました。記録の件数を確認してください。')
+    toast('バックアップ '+db.tx.length+'件を端末へ保存・再確認しました')
   }catch(error){toast('読み込みできません: '+(error?.message||'形式を確認してください'))}
   finally{e.target.value=''}
 };$('importEmergencyBackup').onclick=()=>$('import').click();
