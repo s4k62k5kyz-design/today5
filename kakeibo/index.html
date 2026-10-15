@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=55">
+<meta name="theme-color" content="#f5f7fb"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest?v=56">
 <meta name="apple-mobile-web-app-title" content="くらし家計簿"><title>くらし家計簿</title>
 <style>
 :root{--bg:#f5f7fb;--card:#fff;--text:#182033;--muted:#7a8499;--line:#e7eaf0;--p:#4169e1;--g:#12a06a;--r:#e65b64;--soft:#eef3ff}
@@ -56,7 +56,10 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 
 <section id="plan" class="page">
 <div class="section"><div class="head"><h2>月予算</h2><span>今月の上限</span></div><div class="card"><div class="field"><label>月予算</label><input id="budget" class="app-number" type="text" inputmode="none" readonly placeholder="100000"><div class="input-hint">タップして専用テンキーで入力</div></div><button class="primary" id="saveBudget">保存</button></div></div>
-<div class="section"><div class="head"><h2>自動貯蓄</h2><span>月末の余り</span></div><div class="card"><div class="row"><div><b style="font-size:12px">余った額を自動で貯蓄</b><div class="note">予算−支出−未払い固定費。予算未設定なら収入から計算。</div></div><button id="autoSav" class="toggle"></button></div><div style="background:#f6f8fc;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px"><div class="note">今月の貯蓄予定</div><div class="savebig" id="savForecast" style="margin-top:3px">¥0</div><div class="note" id="savForecastNote" style="margin-top:4px">月末に確定します</div></div><hr style="border:0;border-top:1px solid var(--line);margin:12px 0"><div class="note">自動貯蓄累計</div><div class="savebig" id="savTotal">¥0</div><div id="savHist"></div></div></div>
+<div class="section"><div class="head"><h2>自動貯蓄</h2><span>月末の余り</span></div><div class="card"><div class="row"><div><b style="font-size:12px">余った額を自動で貯蓄</b><div class="note">予算−支出−未払い固定費。予算未設定なら収入から計算。</div></div><button id="autoSav" class="toggle"></button></div><div style="background:#f6f8fc;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px"><div class="note">今月の貯蓄予定</div><div class="savebig" id="savForecast" style="margin-top:3px">¥0</div><div class="note" id="savForecastNote" style="margin-top:4px">月末に確定します</div></div><hr style="border:0;border-top:1px solid var(--line);margin:12px 0"><div class="note">現在の貯蓄額（積立−臨時出費）</div><div class="savebig" id="savTotal">¥0</div>
+<div class="row" style="margin-top:7px;margin-bottom:10px"><span class="note" id="savBreakdown">積立 ¥0 − 臨時出費 ¥0</span><button class="secondary" id="addSavingsExpense" type="button">＋ 貯蓄から臨時出費</button></div>
+<div class="note" style="margin-bottom:5px">臨時出費の履歴（月間の支出には含みません）</div><div id="savingsExpenseList"></div>
+<div class="note" style="margin-top:10px;margin-bottom:5px">積立履歴</div><div id="savHist"></div></div></div>
 <div class="section"><div class="head"><h2>固定費・サブスク</h2><span>毎月自動記録</span></div><div class="card"><div class="rec-summary"><div><div class="note">今月の予定額</div><b id="recTotal">¥0</b></div><button class="primary" id="addRecurring">＋ 追加</button></div><div class="note" style="margin-bottom:6px">家賃・スマホ・動画配信・給与などを一度登録すると、期日に自動記録します。</div><div class="rec-list" id="recList"></div></div></div>
 </section>
 
@@ -85,6 +88,15 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 
 <div class="navwrap"><div class="nav"><button class="on" data-p="home"><b>⌂</b>ホーム</button><button data-p="history"><b>≡</b>履歴</button><button data-p="calendarPage"><b>▦</b>カレンダー</button><button data-p="plan"><b>◎</b>計画</button><button data-p="settings"><b>⚙</b>設定</button></div></div>
 
+<dialog id="savingsExpenseDialog"><div class="mh"><h3>貯蓄からの臨時出費</h3><button type="button" data-close="savingsExpenseDialog">×</button></div>
+<div class="mb">
+<div class="field"><label>出費した金額</label><input id="savingsExpenseAmount" class="app-number" type="text" inputmode="none" readonly placeholder="0"><div class="input-hint">タップして電卓から入力</div></div>
+<div class="field"><label>日付</label><input id="savingsExpenseDate" class="app-date" type="text" inputmode="none" readonly></div>
+<div class="field"><label>用途</label><input id="savingsExpensePurpose" maxlength="100" autocomplete="off" placeholder="例：家電の買い替え、旅行"></div>
+<div class="note" id="savingsExpenseBalanceNote" style="margin:4px 0 12px">現在の貯蓄額を確認してください</div>
+<button class="primary" id="saveSavingsExpense" type="button" style="width:100%">貯蓄から差し引いて記録</button>
+<div class="note" style="margin-top:8px">通常の月間支出には加算せず、貯蓄残高だけを減らします。</div>
+</div></dialog>
 <dialog id="entry"><div class="mh"><h3 id="entryTitle">支出を記録</h3><button data-close="entry">×</button></div><div class="mb">
 <div class="field"><label>金額</label><input id="amount" class="app-number" type="text" inputmode="none" readonly placeholder="0"><div class="input-hint">タップして専用テンキーで入力</div></div>
 <div class="field"><label>日付</label><input id="date" class="app-date" type="text" inputmode="none" readonly><div class="input-hint">タップしてカレンダーから選択</div></div>
@@ -130,7 +142,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <dialog id="receiptImageDialog"><div class="mh"><h3>レシート画像</h3><button data-close="receiptImageDialog">×</button></div><div class="mb"><img id="receiptSavedImage" class="receipt-photo-large"><div class="note" id="receiptImageNote" style="margin-top:8px"></div></div></dialog><div class="toast hide" id="toast"></div>
 <script>
 (()=>{
-const APP_BUILD='v55-runtime-startup-fix';
+const APP_BUILD='v56-savings-emergency-withdrawals';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -148,15 +160,15 @@ async function checkAppUpdate(force=false){
   finally{updateCheckBusy=false}
 }
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js?v=55',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
+  navigator.serviceWorker.register('./sw.js?v=56',{scope:'./',updateViaCache:'none'}).then(reg=>reg.update()).catch(()=>{});
 }
 // Avoid automatic page reloads during data rescue.
 setTimeout(()=>checkAppUpdate(false),800);
 const KEY='kakeibo_pro_v2',BACKUP_KEY='kakeibo_pro_v2_last_good',RECOVERY_KEY='kakeibo_recovery_v31',SNAP_PREFIX='kakeibo_pro_v2_snapshot_',META_KEY='kakeibo_pro_v2_meta',BOOT_KEY='kakeibo_boot_v1',VAULT_DB='kakeibo-data-v1',LOCAL_MIRROR_LIMIT=1000000,VAULT_SNAPSHOT_LIMIT=50;
 const cats={expense:[['食費','🍚'],['日用品','🧻'],['交通','🚃'],['住居','🏠'],['水道光熱','💡'],['通信','📱'],['娯楽','🎮'],['医療','🏥'],['衣服','👕'],['交際費','🍻'],['教育','📚'],['その他','📦']],income:[['給与','💰'],['賞与','✨'],['副収入','💼'],['臨時収入','🎁'],['その他','📥']]};
 const $=x=>document.getElementById(x),$$=q=>[...document.querySelectorAll(q)],pad=n=>String(n).padStart(2,'0'),uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36),money=n=>'¥'+Math.round(Number(n||0)).toLocaleString('ja-JP'),mk=d=>d.getFullYear()+'-'+pad(d.getMonth()+1),today=()=>{let d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
-const def=()=>({version:8,tx:[],categories:JSON.parse(JSON.stringify(cats)),overallBudgets:{},savings:[],recurring:[],settings:{autoSavings:true,merchantReadings:{},nameReadings:{}}});
-function norm(x){let d=def(),s=x&&typeof x==='object'?x:{},cs=s.categories&&Array.isArray(s.categories.expense)&&Array.isArray(s.categories.income)?s.categories:d.categories,st=s.settings&&typeof s.settings==='object'?s.settings:{};return {...d,...s,tx:Array.isArray(s.tx)?s.tx:[],categories:cs,overallBudgets:s.overallBudgets||{},savings:Array.isArray(s.savings)?s.savings:[],recurring:Array.isArray(s.recurring)?s.recurring:[],settings:{...d.settings,...st,autoSavings:st.autoSavings!==false,merchantReadings:st.merchantReadings&&typeof st.merchantReadings==='object'?st.merchantReadings:{},nameReadings:st.nameReadings&&typeof st.nameReadings==='object'?st.nameReadings:{}}}}
+const def=()=>({version:8,tx:[],categories:JSON.parse(JSON.stringify(cats)),overallBudgets:{},savings:[],savingsWithdrawals:[],recurring:[],settings:{autoSavings:true,merchantReadings:{},nameReadings:{}}});
+function norm(x){let d=def(),s=x&&typeof x==='object'?x:{},cs=s.categories&&Array.isArray(s.categories.expense)&&Array.isArray(s.categories.income)?s.categories:d.categories,st=s.settings&&typeof s.settings==='object'?s.settings:{};return {...d,...s,tx:Array.isArray(s.tx)?s.tx:[],categories:cs,overallBudgets:s.overallBudgets||{},savings:Array.isArray(s.savings)?s.savings:[],savingsWithdrawals:Array.isArray(s.savingsWithdrawals)?s.savingsWithdrawals:[],recurring:Array.isArray(s.recurring)?s.recurring:[],settings:{...d.settings,...st,autoSavings:st.autoSavings!==false,merchantReadings:st.merchantReadings&&typeof st.merchantReadings==='object'?st.merchantReadings:{},nameReadings:st.nameReadings&&typeof st.nameReadings==='object'?st.nameReadings:{}}}}
 function stateSigTx(x){
   if(x?.id)return 'id:'+x.id;
   return ['tx',x?.date||'',x?.type||'',Number(x?.amount||0),x?.category||'',x?.memo||'',x?.merchant||'',x?.itemName||''].join('|')
@@ -770,7 +782,61 @@ function openRecurring(id=''){
   let r=id?db.recurring.find(x=>x.id===id):null;$('recurring').dataset.id=id;$('recTitle').textContent=r?'固定収支を編集':'固定費・サブスクを追加';$('recType').value=r?.type==='income'?'income':'expense';$('recName').value=r?.name||'';$('recAmount').value=r?.amount||'';$('recDay').innerHTML=Array.from({length:31},(_,i)=>'<option value="'+(i+1)+'">'+(i===30?'月末':(i+1)+'日')+'</option>').join('');$('recDay').value=Number(r?.day||1);fillRecCats();if(r?.category)$('recCat').value=recCat(r);$('recAuto').classList.toggle('on',r?r.autoPost!==false:true);$('recurring').showModal()
 }
 function txList(el,a,limit=999){let r=a.slice().sort((x,y)=>(y.date||'').localeCompare(x.date||'')||(y.createdAt||0)-(x.createdAt||0)).slice(0,limit),isRecent=el?.id==='recent';el.innerHTML=r.length?r.map(x=>{let name=x.itemName||x.memo||x.category,main=isRecent?(x.merchant||name):name,sub=esc(x.date)+' ・ '+esc(x.category);if(isRecent&&name&&name!==main)sub+=' ・ '+esc(name);else if(!isRecent&&x.merchant)sub+=' ・ '+esc(x.merchant);if(x.note)sub+=' ・ '+esc(x.note);return '<div class="tx" data-id="'+x.id+'"><div class="ico">'+(x.type==='income'?'💰':icon(x.category))+'</div><div><b>'+esc(main)+(x.receiptGroupId?' 📷':'')+'</b><p>'+sub+'</p></div><div class="amt '+(x.type==='income'?'income':'expense')+'">'+(x.type==='income'?'+':'−')+money(x.amount)+'</div></div>'}).join(''):'<div class="empty">まだ記録がありません</div>';el.querySelectorAll('.tx').forEach(n=>n.onclick=()=>openEdit(n.dataset.id))}
-function render(){let t=tot(),b=budget(),reserved=pendingRecurringExpense(),rem=b?Math.max(0,b-t.exp-reserved):null;$('monthLabel').textContent=view.getFullYear()+'年'+(view.getMonth()+1)+'月';$('remain').textContent=rem===null?'—':money(rem);$('heroSub').textContent=b?'予算 '+money(b)+' / 使用 '+money(t.exp)+(reserved?' / 予定固定費 '+money(reserved):''):'「計画」で月予算を設定できます';$('hExp').textContent=money(t.exp);$('hInc').textContent=money(t.inc);$('hSav').textContent=money(forecast());$('recentN').textContent=rows().length+'件';txList($('recent'),rows(),6);renderHist();$('budget').value=b||'';$('autoSav').classList.toggle('on',db.settings.autoSavings);let savPlan=db.settings.autoSavings?forecast():0;$('savForecast').textContent=money(savPlan);$('savForecastNote').textContent=db.settings.autoSavings?(extraIncome()?'月末に確定します（臨時収入を含む）':'月末に確定します'):'自動貯蓄がOFFです';$('savTotal').textContent=money(db.savings.reduce((a,x)=>a+Number(x.amount||0),0));let s=db.savings.slice().sort((a,b)=>b.month.localeCompare(a.month)).slice(0,6);$('savHist').innerHTML=s.map(x=>'<div class="tx"><div class="ico">💰</div><div><b>'+x.month+' の貯蓄</b></div><div class="amt income">'+money(x.amount)+'</div></div>').join('');renderMainCalendar();renderRecurring();renderCategoryManager()}
+function savingsGross(){return db.savings.reduce((sum,x)=>sum+Number(x.amount||0),0)}
+function savingsExpensesTotal(){return db.savingsWithdrawals.reduce((sum,x)=>sum+Number(x.amount||0),0)}
+function savingsBalance(){return savingsGross()-savingsExpensesTotal()}
+function renderSavingsExpenses(){
+  $('savTotal').textContent=money(savingsBalance());
+  $('savBreakdown').textContent='積立 '+money(savingsGross())+' − 臨時出費 '+money(savingsExpensesTotal());
+  const list=db.savingsWithdrawals.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||(b.createdAt||0)-(a.createdAt||0));
+  $('savingsExpenseList').innerHTML=list.length?list.map(x=>'<div class="tx"><div class="ico">💸</div><div><b>'+esc(x.purpose||'臨時出費')+'</b><p>'+esc(x.date||'')+' ・ 貯蓄から支出</p></div><div style="text-align:right"><div class="amt expense">−'+money(x.amount)+'</div><button class="secondary" type="button" data-savings-expense-delete="'+esc(x.id)+'" style="margin-top:5px;padding:4px 8px;font-size:9px">削除</button></div></div>').join(''):'<div class="note" style="padding:6px 0">臨時出費はまだありません</div>';
+  $$('[data-savings-expense-delete]').forEach(b=>b.onclick=()=>deleteSavingsExpense(b.dataset.savingsExpenseDelete))
+}
+function openSavingsExpense(){
+  if(!db.tx.length){toast('保存データを確認してから操作してください');return}
+  $('savingsExpenseAmount').value='';
+  $('savingsExpenseDate').value=today();
+  $('savingsExpensePurpose').value='';
+  $('savingsExpenseBalanceNote').textContent='現在の貯蓄額 '+money(savingsBalance());
+  $('savingsExpenseDialog').showModal()
+}
+async function persistSavingsExpenseChange(before,successMessage){
+  const ok=save({reason:'savings-expense'});
+  if(!ok){db.savingsWithdrawals=before;render();toast('保存を開始できませんでした');return false}
+  await saveQueue;
+  const [localCopy,vaultCopy]=await Promise.all([Promise.resolve(readPrimaryState()),getVaultLatest()]);
+  const matches=state=>validStateObject(state)&&Array.isArray(state.savingsWithdrawals)&&state.savingsWithdrawals.length===db.savingsWithdrawals.length&&
+    db.savingsWithdrawals.every(x=>state.savingsWithdrawals.some(y=>y.id===x.id&&Number(y.amount)===Number(x.amount)&&y.date===x.date));
+  if(!matches(localCopy)&&!matches(vaultCopy?.state)){
+    db.savingsWithdrawals=before;
+    render();
+    toast('保存できませんでした。既存データは変更しません');
+    return false
+  }
+  render();
+  toast(successMessage);
+  return true
+}
+async function addSavingsExpense(){
+  const btn=$('saveSavingsExpense');if(btn.disabled)return;
+  const amount=Number($('savingsExpenseAmount').value),date=$('savingsExpenseDate').value,purpose=$('savingsExpensePurpose').value.trim();
+  if(!Number.isSafeInteger(amount)||amount<=0||!/^\d{4}-\d{2}-\d{2}$/.test(date)||!purpose){toast('金額・日付・用途を入力してください');return}
+  if(amount>savingsBalance()){toast('現在の貯蓄額を超えています');return}
+  const before=db.savingsWithdrawals.slice();
+  btn.disabled=true;btn.textContent='保存を確認中…';
+  try{
+    db.savingsWithdrawals.push({id:uid(),amount,date,purpose,createdAt:Date.now()});
+    if(await persistSavingsExpenseChange(before,'貯蓄から'+money(amount)+'を差し引きました'))$('savingsExpenseDialog').close()
+  }finally{btn.disabled=false;btn.textContent='貯蓄から差し引いて記録'}
+}
+async function deleteSavingsExpense(id){
+  const row=db.savingsWithdrawals.find(x=>x.id===id);
+  if(!row||!confirm('「'+row.purpose+'」'+money(row.amount)+'を貯蓄の臨時出費履歴から削除しますか？'))return;
+  const before=db.savingsWithdrawals.slice();
+  db.savingsWithdrawals=db.savingsWithdrawals.filter(x=>x.id!==id);
+  await persistSavingsExpenseChange(before,'臨時出費の記録を削除しました')
+}
+function render(){let t=tot(),b=budget(),reserved=pendingRecurringExpense(),rem=b?Math.max(0,b-t.exp-reserved):null;$('monthLabel').textContent=view.getFullYear()+'年'+(view.getMonth()+1)+'月';$('remain').textContent=rem===null?'—':money(rem);$('heroSub').textContent=b?'予算 '+money(b)+' / 使用 '+money(t.exp)+(reserved?' / 予定固定費 '+money(reserved):''):'「計画」で月予算を設定できます';$('hExp').textContent=money(t.exp);$('hInc').textContent=money(t.inc);$('hSav').textContent=money(forecast());$('recentN').textContent=rows().length+'件';txList($('recent'),rows(),6);renderHist();$('budget').value=b||'';$('autoSav').classList.toggle('on',db.settings.autoSavings);let savPlan=db.settings.autoSavings?forecast():0;$('savForecast').textContent=money(savPlan);$('savForecastNote').textContent=db.settings.autoSavings?(extraIncome()?'月末に確定します（臨時収入を含む）':'月末に確定します'):'自動貯蓄がOFFです';renderSavingsExpenses();let s=db.savings.slice().sort((a,b)=>b.month.localeCompare(a.month)).slice(0,6);$('savHist').innerHTML=s.map(x=>'<div class="tx"><div class="ico">💰</div><div><b>'+x.month+' の貯蓄</b></div><div class="amt income">'+money(x.amount)+'</div></div>').join('');renderMainCalendar();renderRecurring();renderCategoryManager()}
 function renderCategoryBreakdown(){
   let expenseRows=rows().filter(x=>x.type==='expense'),total=expenseRows.reduce((a,x)=>a+Number(x.amount||0),0),map={};
   expenseRows.forEach(x=>{let c=x.category||'その他';map[c]=(map[c]||0)+Number(x.amount||0)});
@@ -1277,7 +1343,7 @@ if(edit){let i=db.tx.findIndex(x=>x.id===edit);if(i<0){toast('編集対象が見
 else db.tx.push({id:uid(),...o});
 save();$('entry').close();render();toast(file?'写真付きで登録しました':'登録しました')
 }finally{$('saveEntry').disabled=false;$('saveEntry').textContent='登録'}
-};$('deleteEntry').onclick=()=>{if(edit&&confirm('削除しますか？')){let x=db.tx.find(z=>z.id===edit),g=x?.receiptGroupId;db.tx=db.tx.filter(x=>x.id!==edit);save();if(g&&!db.tx.some(x=>x.receiptGroupId===g))deleteReceiptImage(g);$('entry').close();render()}};$('q').oninput=renderHist;$('qcat').onchange=renderHist;$('catClear').onclick=()=>{$('qcat').value='';$('q').value='';renderHist()};$('saveBudget').onclick=()=>{db.overallBudgets[mk(view)]=Number($('budget').value||0);save();render();toast('予算を保存しました')};$('autoSav').onclick=()=>{db.settings.autoSavings=!db.settings.autoSavings;save();syncSav();render()};$('addRecurring').onclick=()=>openRecurring();$('recType').onchange=fillRecCats;$('recAuto').onclick=()=>$('recAuto').classList.toggle('on');$('saveRec').onclick=()=>{let id=$('recurring').dataset.id,name=$('recName').value.trim(),amount=Number($('recAmount').value),day=Number($('recDay').value),rt=$('recType').value;if(!name||!(amount>0))return toast('名前と金額を入力してください');let obj={id:id||uid(),type:rt,amount,name,day,category:$('recCat').value,autoPost:$('recAuto').classList.contains('on'),active:id?(db.recurring.find(x=>x.id===id)?.active!==false):true,freq:'monthly'};let i=db.recurring.findIndex(x=>x.id===obj.id);if(i>=0)db.recurring[i]={...db.recurring[i],...obj};else db.recurring.push(obj);save();autoRecurring();$('recurring').close();render();toast('固定収支を保存しました')};if($('receiptFile'))$('receiptFile').onchange=e=>{let f=e.target.files[0];if(f)analyze(f);e.target.value=''};$('addReceiptRow').onclick=()=>{syncReceiptRowsFromDom();receiptRowsData.push({id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]});renderReceiptRows()};$('saveReceipt').onclick=saveReceiptEntries;if($('appVersion'))$('appVersion').textContent=APP_BUILD;
+};$('deleteEntry').onclick=()=>{if(edit&&confirm('削除しますか？')){let x=db.tx.find(z=>z.id===edit),g=x?.receiptGroupId;db.tx=db.tx.filter(x=>x.id!==edit);save();if(g&&!db.tx.some(x=>x.receiptGroupId===g))deleteReceiptImage(g);$('entry').close();render()}};$('q').oninput=renderHist;$('qcat').onchange=renderHist;$('catClear').onclick=()=>{$('qcat').value='';$('q').value='';renderHist()};$('saveBudget').onclick=()=>{db.overallBudgets[mk(view)]=Number($('budget').value||0);save();render();toast('予算を保存しました')};$('autoSav').onclick=()=>{db.settings.autoSavings=!db.settings.autoSavings;save();syncSav();render()};$('addSavingsExpense').onclick=openSavingsExpense;$('saveSavingsExpense').onclick=addSavingsExpense;$('addRecurring').onclick=()=>openRecurring();$('recType').onchange=fillRecCats;$('recAuto').onclick=()=>$('recAuto').classList.toggle('on');$('saveRec').onclick=()=>{let id=$('recurring').dataset.id,name=$('recName').value.trim(),amount=Number($('recAmount').value),day=Number($('recDay').value),rt=$('recType').value;if(!name||!(amount>0))return toast('名前と金額を入力してください');let obj={id:id||uid(),type:rt,amount,name,day,category:$('recCat').value,autoPost:$('recAuto').classList.contains('on'),active:id?(db.recurring.find(x=>x.id===id)?.active!==false):true,freq:'monthly'};let i=db.recurring.findIndex(x=>x.id===obj.id);if(i>=0)db.recurring[i]={...db.recurring[i],...obj};else db.recurring.push(obj);save();autoRecurring();$('recurring').close();render();toast('固定収支を保存しました')};if($('receiptFile'))$('receiptFile').onchange=e=>{let f=e.target.files[0];if(f)analyze(f);e.target.value=''};$('addReceiptRow').onclick=()=>{syncReceiptRowsFromDom();receiptRowsData.push({id:uid(),name:'',amount:0,category:db.categories.expense.some(x=>x[0]==='その他')?'その他':db.categories.expense[0][0]});renderReceiptRows()};$('saveReceipt').onclick=saveReceiptEntries;if($('appVersion'))$('appVersion').textContent=APP_BUILD;
 if($('forceUpdate'))$('forceUpdate').onclick=()=>checkAppUpdate(true);
 if($('recoveryStatus')){
   const meta=currentProtectionStatus();
