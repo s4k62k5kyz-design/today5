@@ -1,9 +1,17 @@
 {
-  "name":"くらし家計簿",
-  "short_name":"家計簿",
-  "start_url":"./",
-  "scope":"./",
-  "display":"standalone",
-  "background_color":"#f5f7fb",
-  "theme_color":"#f5f7fb"
+  "name": "くらし家計簿",
+  "short_name": "くらし家計簿",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fb",
+  "theme_color": "#4169e1",
+  "icons": [
+    {
+      "src": "./icons/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }
