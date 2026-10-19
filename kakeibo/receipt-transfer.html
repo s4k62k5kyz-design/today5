@@ -193,7 +193,7 @@ function verifyImage(db,groupId,expectedSize){
   return new Promise(resolve=>{
     try{
       const req=db.transaction('receipts','readonly').objectStore('receipts').get(groupId);
-      req.onsuccess=()=>resolve(req.result?.blob instanceof Blob&&req.result.blob.size===expectedSize);
+      req.onsuccess=()=>resolve(req.result?.blob instanceof Blob&&req.result.blob.size>0&&(expectedSize===null||req.result.blob.size===expectedSize));
       req.onerror=()=>resolve(false)
     }catch{resolve(false)}
   })
@@ -230,9 +230,9 @@ async function importImages(){
       const metadata={groupId:x.groupId,blob,merchant:String(x.merchant||'').slice(0,200),date:String(x.date||'').slice(0,30),total:Number(x.total||0),savedAt:Number(x.savedAt||Date.now())};
       const outcome=await insertIfAbsent(db,metadata);
       if(outcome==='inserted')added++;else skipped++;
-      if(await verifyImage(db,x.groupId,blob.size))verified++;
+      if(await verifyImage(db,x.groupId,outcome==='inserted'?blob.size:null))verified++;
     }
-    status('移行処理が完了しました。\n新しく保存：'+added+'件 ／ すでにあった画像：'+skipped+'件 ／ 対象外：'+unmatched+'件\nサイズ確認済み：'+verified+'/'+matched.length+'件。\n新アプリでレシート画像を開いて確認してください。古いアプリとファイルはまだ消さないでください。');
+    status('移行処理が完了しました。\n新しく保存：'+added+'件 ／ すでにあった画像：'+skipped+'件 ／ 対象外：'+unmatched+'件\n保存確認済み：'+verified+'/'+matched.length+'件。\n新アプリでレシート画像を開いて確認してください。古いアプリとファイルはまだ消さないでください。');
   }catch(error){fail(error)}
   finally{try{db?.close()}catch{}busy(false)}
 }
