@@ -57,7 +57,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 
 <section id="plan" class="page">
 <div class="section"><div class="head"><h2>月予算</h2><span>今月の上限</span></div><div class="card"><div class="field"><label>月予算</label><input id="budget" class="app-number" type="text" inputmode="none" readonly placeholder="100000"><div class="input-hint">タップして専用テンキーで入力</div></div><button class="primary" id="saveBudget">保存</button></div></div>
-<div class="section"><div class="head"><h2>自動貯蓄</h2><span>月末の余り</span></div><div class="card"><div class="row"><div><b style="font-size:12px">余った額を自動で貯蓄</b><div class="note">予算 − 支出 ＋ 収入。予算未設定時は予算0円として計算。</div></div><button id="autoSav" class="toggle"></button></div><div style="background:#f6f8fc;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px"><div class="note">今月の貯蓄予定</div><div class="savebig" id="savForecast" style="margin-top:3px">¥0</div><div class="note" id="savForecastNote" style="margin-top:4px">月末に確定します</div></div><hr style="border:0;border-top:1px solid var(--line);margin:12px 0"><div class="note">現在の貯蓄額（積立−臨時出費）</div><div class="savebig" id="savTotal">¥0</div>
+<div class="section"><div class="head"><h2>自動貯蓄</h2><span>月末の余り</span></div><div class="card"><div class="row"><div><b style="font-size:12px">余った額を自動で貯蓄</b><div class="note">予算 − 支出 − 未払い固定費 ＋ 収入。固定費から自動記録された支出は二重に差し引きません。予算未設定時は予算0円として計算。</div></div><button id="autoSav" class="toggle"></button></div><div style="background:#f6f8fc;border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:12px"><div class="note">今月の貯蓄予定</div><div class="savebig" id="savForecast" style="margin-top:3px">¥0</div><div class="note" id="savForecastNote" style="margin-top:4px">月末に確定します</div></div><hr style="border:0;border-top:1px solid var(--line);margin:12px 0"><div class="note">現在の貯蓄額（積立−臨時出費）</div><div class="savebig" id="savTotal">¥0</div>
 <div class="row" style="margin-top:7px;margin-bottom:10px"><span class="note" id="savBreakdown">積立 ¥0 − 臨時出費 ¥0</span><button class="secondary" id="addSavingsExpense" type="button">＋ 貯蓄から臨時出費</button></div>
 <div class="note" style="margin-bottom:5px">臨時出費の履歴（月間の支出には含みません）</div><div id="savingsExpenseList"></div>
 <div class="note" style="margin-top:10px;margin-bottom:5px">積立履歴</div><div id="savHist"></div></div></div>
@@ -144,7 +144,7 @@ dialog{border:0;border-radius:20px;padding:0;width:min(94vw,520px);max-width:cal
 <dialog id="receiptImageDialog"><div class="mh"><h3>レシート画像</h3><button data-close="receiptImageDialog">×</button></div><div class="mb"><img id="receiptSavedImage" class="receipt-photo-large"><div class="note" id="receiptImageNote" style="margin-top:8px"></div></div></dialog><div class="toast hide" id="toast"></div>
 <script>
 (()=>{
-const APP_BUILD='v58-savings-forecast-income';
+const APP_BUILD='v59-unpaid-fixed-forecast';
 let updateCheckBusy=false;
 async function checkAppUpdate(force=false){
   if(updateCheckBusy)return;
@@ -584,7 +584,7 @@ const save=(opts={})=>{
     const posted=db.tx.some(x=>x.type==='expense'&&x.recurringId===r.id&&(x.date||'').slice(0,7)===month);
     return sum+(posted?0:Number(r.amount||0));
   },0)
-},extraIncome=(d=view)=>rows(d).filter(x=>x.type==='income'&&x.category==='臨時収入').reduce((a,x)=>a+Number(x.amount||0),0),forecast=(d=view)=>{const t=tot(d);return budget(d)-t.exp+t.inc},icon=(c,t='expense')=>db.categories[t]?.find(x=>x[0]===c)?.[1]||'📦';
+},extraIncome=(d=view)=>rows(d).filter(x=>x.type==='income'&&x.category==='臨時収入').reduce((a,x)=>a+Number(x.amount||0),0),forecast=(d=view)=>{const t=tot(d);return budget(d)-t.exp-pendingRecurringExpense(d)+t.inc},icon=(c,t='expense')=>db.categories[t]?.find(x=>x[0]===c)?.[1]||'📦';
 function toast(s){$('toast').textContent=s;$('toast').classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>$('toast').classList.add('hide'),2200)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 function options(el,a,v){el.innerHTML=a.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');if(v&&a.includes(v))el.value=v}
@@ -839,7 +839,7 @@ async function deleteSavingsExpense(id){
   db.savingsWithdrawals=db.savingsWithdrawals.filter(x=>x.id!==id);
   await persistSavingsExpenseChange(before,'臨時出費の記録を削除しました')
 }
-function render(){let t=tot(),b=budget(),reserved=pendingRecurringExpense(),rem=b?Math.max(0,b-t.exp-reserved):null;$('monthLabel').textContent=view.getFullYear()+'年'+(view.getMonth()+1)+'月';$('remain').textContent=rem===null?'—':money(rem);$('heroSub').textContent=b?'予算 '+money(b)+' / 使用 '+money(t.exp)+(reserved?' / 予定固定費 '+money(reserved):''):'「計画」で月予算を設定できます';$('hExp').textContent=money(t.exp);$('hInc').textContent=money(t.inc);$('hSav').textContent=savingsMoney(forecast());$('recentN').textContent=rows().length+'件';txList($('recent'),rows(),6);renderHist();$('budget').value=b||'';$('autoSav').classList.toggle('on',db.settings.autoSavings);let savPlan=db.settings.autoSavings?forecast():0;$('savForecast').textContent=savingsMoney(savPlan);$('savForecastNote').textContent=db.settings.autoSavings?'月末に確定します（全収入を反映）':'自動貯蓄がOFFです';renderSavingsExpenses();let s=db.savings.slice().sort((a,b)=>b.month.localeCompare(a.month)).slice(0,6);$('savHist').innerHTML=s.map(x=>'<div class="tx"><div class="ico">💰</div><div><b>'+x.month+' の貯蓄</b></div><div class="amt income">'+money(x.amount)+'</div></div>').join('');renderMainCalendar();renderRecurring();renderCategoryManager()}
+function render(){let t=tot(),b=budget(),reserved=pendingRecurringExpense(),rem=b?Math.max(0,b-t.exp-reserved):null;$('monthLabel').textContent=view.getFullYear()+'年'+(view.getMonth()+1)+'月';$('remain').textContent=rem===null?'—':money(rem);$('heroSub').textContent=b?'予算 '+money(b)+' / 使用 '+money(t.exp)+(reserved?' / 予定固定費 '+money(reserved):''):'「計画」で月予算を設定できます';$('hExp').textContent=money(t.exp);$('hInc').textContent=money(t.inc);$('hSav').textContent=savingsMoney(forecast());$('recentN').textContent=rows().length+'件';txList($('recent'),rows(),6);renderHist();$('budget').value=b||'';$('autoSav').classList.toggle('on',db.settings.autoSavings);let savPlan=db.settings.autoSavings?forecast():0;$('savForecast').textContent=savingsMoney(savPlan);$('savForecastNote').textContent=db.settings.autoSavings?'月末に確定します（未払い固定費を差し引き、全収入を反映）':'自動貯蓄がOFFです';renderSavingsExpenses();let s=db.savings.slice().sort((a,b)=>b.month.localeCompare(a.month)).slice(0,6);$('savHist').innerHTML=s.map(x=>'<div class="tx"><div class="ico">💰</div><div><b>'+x.month+' の貯蓄</b></div><div class="amt income">'+money(x.amount)+'</div></div>').join('');renderMainCalendar();renderRecurring();renderCategoryManager()}
 function renderCategoryBreakdown(){
   let expenseRows=rows().filter(x=>x.type==='expense'),total=expenseRows.reduce((a,x)=>a+Number(x.amount||0),0),map={};
   expenseRows.forEach(x=>{let c=x.category||'その他';map[c]=(map[c]||0)+Number(x.amount||0)});
